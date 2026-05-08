@@ -9,7 +9,6 @@ class CalculatorController extends GetxController {
   final npoptkpController = TextEditingController();
   final besaranController = TextEditingController();
 
-  // 🔥 TAMBAHAN
   var hasilFinal = "".obs;
   var isCalculated = false.obs;
 
@@ -45,14 +44,11 @@ class CalculatorController extends GetxController {
       hasil = nilai * 0.025;
     }
 
-    // isi field atas
     besaranController.text = formatRupiah(hasil);
 
-    // simpan untuk hasil bawah
     hasilFinal.value = formatRupiah(hasil);
   }
 
-  // 🔥 DIPANGGIL SAAT KLIK BUTTON
   void hitungFinal() {
     hitungOtomatis();
     isCalculated.value = true;

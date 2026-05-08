@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Ppat_Controller.dart';
@@ -55,8 +54,8 @@ class PpatPage extends StatelessWidget {
                 icon: Icons.insert_drive_file_outlined,
                 buttonLabel: "Tambah",
                 onButtonPressed: () {
-                Get.to(() => TambahPekerjaanPage());
-              },
+                  Get.to(() => TambahPekerjaanPage());
+                },
               ),
 
               Container(
@@ -132,8 +131,10 @@ class PpatPage extends StatelessWidget {
               const SizedBox(height: 10),
 
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -183,8 +184,7 @@ class PpatPage extends StatelessWidget {
 
                 return ListView.builder(
                   shrinkWrap: true,
-                  physics:
-                      const NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                   itemCount: controller.filteredList.length,
                   itemBuilder: (context, index) {

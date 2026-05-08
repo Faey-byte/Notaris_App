@@ -1,7 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'package:get/route_manager.dart';
-import 'package:notaris_app/Pages/PPAT_page.dart';
+import 'package:get/get.dart';
+import 'Routes/routes.dart';
+import 'Routes/pages.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,10 +13,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp (
-      title: 'Flutter Demo',
+    return GetMaterialApp(
+      title: 'Notaris & PPAT',
       debugShowCheckedModeBanner: false,
-      home: PpatPage(),
+      initialRoute: AppRoutes.loginpage,  // mulai dari login
+      getPages: AppPages.pages,
     );
   }
 }

@@ -4,7 +4,7 @@ import 'package:notaris_app/Model/Ppat_Model.dart';
 class PpatController extends GetxController {
 
   var search = "".obs;
-  var selectedJenis = "Semua Berkas".obs;
+  var selectedJenis = "Semua berkas".obs;
 
   var berkasList = <BerkasModel>[].obs;
   var filteredList = <BerkasModel>[].obs;
@@ -59,7 +59,7 @@ class PpatController extends GetxController {
           .toLowerCase()
           .contains(search.value.toLowerCase());
 
-      final matchJenis = selectedJenis.value == "Semua"
+      final matchJenis = selectedJenis.value == "Semua berkas"
           ? true
           : item.jenis == selectedJenis.value;
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:notaris_app/Pages/Detail_Berkas_PPAT.dart';
 
 class BerkasCard extends StatelessWidget {
   final dynamic data;
@@ -57,7 +59,7 @@ class BerkasCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Nama + Status Badge ──────────────────────
+
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -90,7 +92,6 @@ class BerkasCard extends StatelessWidget {
             const Divider(height: 1, color: Color(0xFFF0F0F0)),
             const SizedBox(height: 10),
 
-            // ── Jenis + Tanggal ──────────────────────────
             Row(
               children: [
                 Icon(_getJenisIcon(data.jenis),
@@ -111,7 +112,6 @@ class BerkasCard extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // ── Avatar Icons + Detail ────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -128,7 +128,12 @@ class BerkasCard extends StatelessWidget {
                     ],
                   ],
                 ),
-                _DetailButton(onTap: () {}),
+
+                _DetailButton(
+                  onTap: () {
+                    Get.to(() => DetailBerkasPage(data: data));
+                  },
+                ),
               ],
             ),
           ],
@@ -137,8 +142,6 @@ class BerkasCard extends StatelessWidget {
     );
   }
 }
-
-// ── Private sub-widgets ───────────────────────────────────────────────────────
 
 class _StatusBadge extends StatelessWidget {
   final _StatusStyle style;

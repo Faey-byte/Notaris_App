@@ -1,83 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Pages/Dynamic_Form_Page.dart';
+import 'package:notaris_app/Controller/tambah_pekerjaan_controller.dart';
+import 'package:notaris_app/utils/app_colors.dart';
 
 class TambahPekerjaanPage extends StatelessWidget {
   TambahPekerjaanPage({super.key});
 
-  final List<Map<String, String>> jenisList = [
-    {"title": "Jual Beli", "kode": "AJB", "desc": "Pemindahan hak atas tanah"},
-    {
-      "title": "Akta Pembagian Hak Bersama",
-      "kode": "APHB",
-      "desc": "APHB untuk pemisahan aset",
-    },
-    {"title": "SKMHT", "kode": "SKMHT", "desc": "Surat Kuasa Membebankan HT"},
-    {"title": "APHT", "kode": "APHT", "desc": "Akta Pemberian Hak Tanggungan"},
-    {
-      "title": "Hibah",
-      "kode": "HIBAH",
-      "desc": "Pemberian sukarela tanpa imbalan",
-    },
-    {
-      "title": "Tukar Menukar",
-      "kode": "TUKAR",
-      "desc": "Pertukaran objek antar pihak",
-    },
-    {
-      "title": "Turun Waris",
-      "kode": "WARIS",
-      "desc": "Pencatatan peralihan hak waris",
-    },
-    {
-      "title": "Akta Pembagian Hak Waris",
-      "kode": "APHW",
-      "desc": "Penetapan porsi bagian waris",
-    },
-    {
-      "title": "Validasi Buku Tanah",
-      "kode": "VALIDASI",
-      "desc": "Pengecekan keabsahan data BPN",
-    },
-    {"title": "Roya", "kode": "ROYA", "desc": "Penghapusan Hak Tanggungan"},
-    {
-      "title": "Ralat Data",
-      "kode": "RALAT",
-      "desc": "Perbaikan administrasi sertifikat",
-    },
-    {
-      "title": "Ganti Nama Kreditur",
-      "kode": "CESSIE",
-      "desc": "Pengalihan piutang",
-    },
-    {
-      "title": "Ganti Blanko",
-      "kode": "BLANKO",
-      "desc": "Penggantian formulir sertifikat",
-    },
-    {
-      "title": "Lelang",
-      "kode": "LELANG",
-      "desc": "Peralihan hak melalui lelang",
-    },
-    {
-      "title": "Wakaf",
-      "kode": "WAKAF",
-      "desc": "Peralihan hak untuk kepentingan sosial",
-    },
-  ];
+  final c = Get.put(TambahPekerjaanController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
-        leading: const BackButton(color: Colors.black),
+        leading: const BackButton(color: AppColors.textPrimary),
         title: const Text(
           "Pilih Jenis Pekerjaan PPAT",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: Column(
@@ -87,13 +31,17 @@ class TambahPekerjaanPage extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.white,
                 borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: AppColors.border),
               ),
-              child: const TextField(
-                decoration: InputDecoration(
-                  icon: Icon(Icons.search),
+              child: TextField(
+                onChanged: c.onSearchChanged,
+                style: const TextStyle(color: AppColors.textPrimary),
+                decoration: const InputDecoration(
+                  icon: Icon(Icons.search, color: AppColors.textSecondary),
                   hintText: "Cari jenis pekerjaan...",
+                  hintStyle: TextStyle(color: AppColors.textSecondary),
                   border: InputBorder.none,
                 ),
               ),
@@ -101,78 +49,86 @@ class TambahPekerjaanPage extends StatelessWidget {
           ),
 
           Expanded(
-            child: ListView.builder(
-              itemCount: jenisList.length,
-              itemBuilder: (context, index) {
-                final item = jenisList[index];
+            child: Obx(
+              () => ListView.builder(
+                itemCount: c.filteredList.length,
+                itemBuilder: (context, index) {
+                  final item = c.filteredList[index];
 
-                return GestureDetector(
-                  onTap: () {
-                    Get.to(() => DynamicFormPage(jenis: item["kode"]!));
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 45,
-                          height: 45,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFBE9E7),
-                            borderRadius: BorderRadius.circular(12),
+                  return GestureDetector(
+                    onTap: () => c.goToForm(item),
+
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.border),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
-                          child: const Icon(
-                            Icons.description,
-                            color: Colors.redAccent,
+                        ],
+                      ),
+
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 45,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySoft,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.description,
+                              color: AppColors.primary,
+                            ),
                           ),
-                        ),
 
-                        const SizedBox(width: 16),
+                          const SizedBox(width: 16),
 
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item["title"]!,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.title,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item["desc"]!,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[600],
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.desc,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
 
-                        const Icon(Icons.arrow_forward_ios, size: 16),
-                      ],
+                          const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                            color: AppColors.textSecondary,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
         ],

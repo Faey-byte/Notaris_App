@@ -4,11 +4,11 @@ import 'package:notaris_app/Controller/Ppat_Controller.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
 import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
-import 'package:notaris_app/Widget/Berkas_Card.dart';
-import 'package:notaris_app/Widget/Jenis_Filter_Chip.dart';
-import 'package:notaris_app/Widget/Page_Header_Widget.dart';
-import 'package:notaris_app/Widget/Search_Bar_Widget.dart';
-import 'package:notaris_app/Widget/Status_Chip.dart';
+import 'package:notaris_app/Widget/Berkas/Berkas_Card.dart';
+import 'package:notaris_app/Widget/Berkas/Jenis_Filter_Chip.dart';
+import 'package:notaris_app/Widget/Berkas/Page_Header_Widget.dart';
+import 'package:notaris_app/Widget/Berkas/Search_Bar_Widget.dart';
+import 'package:notaris_app/Widget/Berkas/Status_Chip.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class PpatPage extends StatelessWidget {

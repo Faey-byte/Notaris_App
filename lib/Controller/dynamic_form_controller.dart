@@ -1,55 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Model/form_field_model.dart';
+
+class DynamicField {
+  final String label;
+  final String type;
+  final String? placeholder;
+
+  DynamicField({
+    required this.label,
+    required this.type,
+    this.placeholder,
+  });
+}
 
 class DynamicFormController extends GetxController {
   final String jenis;
 
   DynamicFormController(this.jenis);
 
-  var fields = <FormFieldModel>[].obs;
-  final Map<String, TextEditingController> controllers = {};
+  var fields = <DynamicField>[].obs;
+
+  var controllers = <String, TextEditingController>{};
 
   @override
   void onInit() {
     super.onInit();
-    loadForm();
+    generateForm();
   }
 
-  final Map<String, List<FormFieldModel>> formConfig = {
-    "AJB": [
-      FormFieldModel(label: "Nama Penjual", type: "text"),
-      FormFieldModel(label: "Nama Pembeli", type: "text"),
-      FormFieldModel(label: "Harga Transaksi", type: "number"),
-    ],
-    "HIBAH": [
-      FormFieldModel(label: "Pemberi Hibah", type: "text"),
-      FormFieldModel(label: "Penerima Hibah", type: "text"),
-    ],
-  };
+  void generateForm() {
+    if (jenis == "Jual Beli") {
+      fields.value = [
+        DynamicField(
+          label: "Nama Klien / Nama Perusahaan",
+          type: "text",
+          placeholder: "Masukkan nama klien atau perusahaan",
+        ),
+        DynamicField(label: "Sertifikat Asli", type: "upload"),
+        DynamicField(label: "KTP Pemilik Sertipikat", type: "upload"),
+        DynamicField(label: "KK Pemilik Sertipikat", type: "upload"),
+        DynamicField(label: "Surat Nikah", type: "upload"),
+        DynamicField(label: "PBB Tahun Berjalan", type: "upload"),
+        DynamicField(label: "Foto Objek", type: "upload"),
+        DynamicField(label: "Titik Koordinat", type: "coordinate"),
+        DynamicField(label: "KTP Pembeli", type: "upload"),
+        DynamicField(label: "Total Biaya Layanan", type: "number"),
+        DynamicField(
+          label: "Nama Staff",
+          type: "text",
+          placeholder: "Masukkan nama staff",
+        ),
+      ];
+    }
 
-  void loadForm() {
-    fields.value = formConfig[jenis] ?? [];
-
-    fields.insertAll(0, [FormFieldModel(label: "Nama Klien", type: "text")]);
-
-    fields.addAll([
-      FormFieldModel(label: "Total Biaya", type: "number"),
-      FormFieldModel(label: "Nama Staff", type: "text"),
-    ]);
-
-    for (var field in fields) {
-      controllers[field.label] = TextEditingController();
+    for (var f in fields) {
+      if (f.type == "text" || f.type == "number") {
+        controllers[f.label] = TextEditingController();
+      }
     }
   }
 
   void submit() {
-    final result = controllers.map((key, value) {
-      return MapEntry(key, value.text);
-    });
+    final data = {};
 
-    print("DATA: $result");
+    for (var f in fields) {
+      if (controllers.containsKey(f.label)) {
+        data[f.label] = controllers[f.label]!.text;
+      }
+    }
 
-    Get.snackbar("Sukses", "Data berhasil disimpan");
+    print(data);
   }
 }

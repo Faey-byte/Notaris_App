@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Calculator_Controller.dart';
 import 'package:notaris_app/utils/app_colors.dart';
-import '../Widget/Berkas/Text_Field_Widget.dart';
+import '../Widget/Text_Field_Widget.dart';
 import '../Widget/App_Bottom_Navbar.dart';
 import 'PPAT_page.dart';
 

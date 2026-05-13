@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Ppat_Controller.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
+import 'package:notaris_app/Pages/Home_Page.dart';
+import 'package:notaris_app/Pages/Notaris_Page.dart';
+import 'package:notaris_app/Pages/Profile_Page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
 import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
 import 'package:notaris_app/Widget/Berkas_Card.dart';
@@ -202,10 +205,20 @@ class PpatPage extends StatelessWidget {
         currentIndex: 2,
         onTap: (index) {
           switch (index) {
+            case 0:
+            Get.offAll(() => const HomePage());
+              break;
+            case 1:
+              Get.offAll(() => const NotarisPage());
+              break;
             case 2:
+              Get.offAll(() => PpatPage());
               break;
             case 3:
               Get.offAll(() => CalculatorPage());
+              break;
+            case 4:
+              Get.offAll(() => const ProfilePage());
               break;
           }
         },

@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:notaris_app/Pages/Home_Page.dart';
+import 'package:notaris_app/Pages/PPAT_page.dart';
+import 'package:notaris_app/Pages/Calculator_Page.dart';
+import 'package:notaris_app/Pages/Profile_Page.dart';
+import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
+
 
 class NotarisPage extends StatefulWidget {
   const NotarisPage({super.key});
@@ -46,6 +53,27 @@ class _NotarisPageState extends State<NotarisPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
+      bottomNavigationBar: AppBottomNavBar(
+        currentIndex: 1,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Get.offAll(() => const HomePage());
+              break;
+            case 1:
+              break;
+            case 2:
+              Get.offAll(() => PpatPage());
+              break;
+            case 3:
+              Get.offAll(() => CalculatorPage());
+              break;
+            case 4:
+              Get.offAll(() => const ProfilePage());
+              break;
+          }
+        },
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -138,12 +166,12 @@ class _NotarisPageState extends State<NotarisPage> {
             ),
           ],
         ),
-        child: Row(
+        child: const Row(
           children: [
-            const SizedBox(width: 12),
-            const Icon(Icons.search, color: Color(0xFF94A3B8), size: 22),
-            const SizedBox(width: 8),
-            const Expanded(
+            SizedBox(width: 12),
+            Icon(Icons.search, color: Color(0xFF94A3B8), size: 22),
+            SizedBox(width: 8),
+            Expanded(
               child: TextField(
                 style: TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
                 decoration: InputDecoration(
@@ -158,7 +186,7 @@ class _NotarisPageState extends State<NotarisPage> {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
           ],
         ),
       ),
@@ -181,7 +209,10 @@ class _NotarisPageState extends State<NotarisPage> {
               child: GestureDetector(
                 onTap: () => setState(() => _selectedFilter = i),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: isActive ? const Color(0xFF913632) : Colors.white,
                     border: isActive
@@ -192,9 +223,11 @@ class _NotarisPageState extends State<NotarisPage> {
                   child: Text(
                     _filters[i],
                     style: TextStyle(
-                      color: isActive ? Colors.white : const Color(0xFF475569),
+                      color:
+                          isActive ? Colors.white : const Color(0xFF475569),
                       fontSize: 12,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight:
+                          isActive ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -233,7 +266,6 @@ class _AktaCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title row
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -266,17 +298,18 @@ class _AktaCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          // Divider
           const Divider(height: 1, color: Color(0xFFF8FAFC)),
           const SizedBox(height: 12),
-          // Meta row
           Row(
             children: [
               Expanded(
                 child: Row(
                   children: [
-                    const Icon(Icons.description_outlined,
-                        color: Color(0xFF94A3B8), size: 18),
+                    const Icon(
+                      Icons.description_outlined,
+                      color: Color(0xFF94A3B8),
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,8 +338,11 @@ class _AktaCard extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined,
-                        color: Color(0xFF94A3B8), size: 18),
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      color: Color(0xFF94A3B8),
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:notaris_app/Pages/Calculator_Page.dart';
+import 'package:notaris_app/Pages/Notaris_Page.dart';
+import 'package:notaris_app/Pages/PPAT_page.dart';
+import 'package:notaris_app/Pages/Profile_Page.dart';
+import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
+
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -7,6 +16,28 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
+      bottomNavigationBar: AppBottomNavBar(
+        currentIndex: 0,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+            Get.offAll(() => const HomePage());
+              break;
+            case 1:
+              Get.offAll(() => const NotarisPage());
+              break;
+            case 2:
+              Get.offAll(() => PpatPage());
+              break;
+            case 3:
+              Get.offAll(() => CalculatorPage());
+              break;
+            case 4:
+              Get.offAll(() => const ProfilePage());
+              break;
+          }
+        },
+      ),
       body: Column(
         children: [
           _buildTopNav(),
@@ -30,6 +61,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // ... sisa kode tetap sama
+}
   // ─── TOP NAV ────────────────────────────────────────────────────────────────
 
   Widget _buildTopNav() {
@@ -41,7 +74,6 @@ class HomePage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              // Logo
               Container(
                 width: 32,
                 height: 32,
@@ -52,10 +84,9 @@ class HomePage extends StatelessWidget {
                 child: const Icon(Icons.gavel, color: Colors.white, size: 18),
               ),
               const SizedBox(width: 10),
-              // Title + subtitle
-              Column(
+              const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     'Notaris & PPAT',
                     style: TextStyle(
@@ -76,7 +107,6 @@ class HomePage extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              // Notification button
               Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -102,7 +132,10 @@ class HomePage extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFFEF4444),
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+                        border: Border.all(
+                          color: const Color(0xFFF1F5F9),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -139,7 +172,6 @@ class HomePage extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // Decorative circles
           Positioned(
             right: -20,
             bottom: -20,
@@ -158,13 +190,12 @@ class HomePage extends StatelessWidget {
             child: Container(
               width: 80,
               height: 80,
-              decoration: BoxDecoration(
-                color: const Color(0x3360A5FA),
+              decoration: const BoxDecoration(
+                color: Color(0x3360A5FA),
                 shape: BoxShape.circle,
               ),
             ),
           ),
-          // Content
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -200,13 +231,16 @@ class HomePage extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.20),
                       borderRadius: BorderRadius.circular(9999),
                     ),
-                    child: Row(
-                      children: const [
+                    child: const Row(
+                      children: [
                         Icon(Icons.trending_up, color: Colors.white, size: 14),
                         SizedBox(width: 4),
                         Text(
@@ -266,14 +300,14 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 15),
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 1.4,
+          childAspectRatio: 1.55,
           children: const [
             _StatCard(
               icon: Icons.description_outlined,
@@ -352,7 +386,6 @@ class HomePage extends StatelessWidget {
           subtitle: 'Bulanan, Triwulan & Tahunan',
         ),
         const SizedBox(height: 16),
-        // Logout — special danger style
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
@@ -402,7 +435,7 @@ class HomePage extends StatelessWidget {
       ],
     );
   }
-}
+
 
 // ─── STAT CARD WIDGET ─────────────────────────────────────────────────────────
 
@@ -424,10 +457,10 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0x0C2B8CEE)),
         boxShadow: const [
           BoxShadow(
@@ -439,22 +472,23 @@ class _StatCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 29,
+            height: 29,
             decoration: BoxDecoration(
               color: iconBg,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: Icon(icon, color: iconColor, size: 18),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             value,
             style: const TextStyle(
               color: Color(0xFF1E293B),
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -463,7 +497,7 @@ class _StatCard extends StatelessWidget {
             label,
             style: const TextStyle(
               color: Color(0xFF64748B),
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -472,6 +506,7 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+
 
 // ─── SERVICE ITEM WIDGET ──────────────────────────────────────────────────────
 

@@ -1,28 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Routes/routes.dart';
-import 'package:notaris_app/widget/Text_Field_widget.dart';
 
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class OtpPages extends StatefulWidget {
+  const OtpPages({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<OtpPages> createState() => _OtpPagesState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  bool _obscurePassword = true;
+class _OtpPagesState extends State<OtpPages> {
+  final int _otpLength = 6;
+  late List<TextEditingController> _controllers;
+  late List<FocusNode> _focusNodes;
 
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(_otpLength, (_) => TextEditingController());
+    _focusNodes = List.generate(_otpLength, (_) => FocusNode());
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    for (var c in _controllers) c.dispose();
+    for (var f in _focusNodes) f.dispose();
     super.dispose();
   }
+
+  void _onOtpChanged(String value, int index) {
+    if (value.length == 1 && index < _otpLength - 1) {
+      _focusNodes[index + 1].requestFocus();
+    } else if (value.isEmpty && index > 0) {
+      _focusNodes[index - 1].requestFocus();
+    }
+  }
+
+  String get _otpValue =>
+      _controllers.map((c) => c.text).join();
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +54,12 @@ class _LoginPageState extends State<LoginPage> {
               _buildLogo(),
               const SizedBox(height: 8),
               _buildHeader(),
+              const SizedBox(height: 32),
+              _buildOtpFields(),
+              const SizedBox(height: 32),
+              _buildVerifyButton(),
               const SizedBox(height: 24),
-              _buildForm(),
+              _buildResendRow(),
               const SizedBox(height: 40),
               _buildDivider(),
               const SizedBox(height: 20),
@@ -92,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         SizedBox(height: 8),
         Text(
-          'Selamat Datang',
+          'Verifikasi OTP',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Color(0xFFB13D37),
@@ -102,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         SizedBox(height: 6),
         Text(
-          'Silahkan Masuk Akun Menejemen anda',
+          'Masukkan kode OTP yang telah dikirim\nke email atau nomor HP anda',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.black87,
@@ -114,96 +134,101 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // ─── FORM ────────────────────────────────────────────────────────────────────
+  // ─── OTP FIELDS ─────────────────────────────────────────────────────────────
 
-  Widget _buildForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildOtpFields() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(_otpLength, (index) {
+        return SizedBox(
+          width: 48,
+          height: 56,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9F9F9),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFF9A9595)),
+            ),
+            child: TextField(
+              controller: _controllers[index],
+              focusNode: _focusNodes[index],
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              maxLength: 1,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0D141B),
+              ),
+              decoration: const InputDecoration(
+                counterText: '',
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 14),
+              ),
+              onChanged: (value) => _onOtpChanged(value, index),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  // ─── VERIFY BUTTON ──────────────────────────────────────────────────────────
+
+  Widget _buildVerifyButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          if (_otpValue.length == _otpLength) {
+            Get.offAllNamed(AppRoutes.homepage);
+          }
+        },
+        icon: const Text(
+          'Verifikasi',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        label: const Icon(Icons.verified_outlined, color: Colors.white, size: 20),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF913632),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 2,
+        ),
+      ),
+    );
+  }
+
+  // ─── RESEND ROW ─────────────────────────────────────────────────────────────
+
+  Widget _buildResendRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Email field
-        TextfieldsWidget(
-          label: 'Email / Username',
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          prefixIcon: const Icon(
-            Icons.mail_outline,
-            color: Color(0xFF94A3B8),
+        const Text(
+          'Tidak menerima kode? ',
+          style: TextStyle(
+            color: Color(0xFF64748B),
+            fontSize: 13,
           ),
         ),
-
-        // Password label row (lupa password di atas field)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Password',
-              style: TextStyle(
-                color: Color(0xFFB13D37),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {},
-              child: const Text(
-                'Lupa Password?',
-                style: TextStyle(
-                  color: Color(0xFFB13D37),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-
-        // Password field
-        TextfieldsWidget(
-          label: 'Password',
-          controller: _passwordController,
-          obscureText: _obscurePassword,
-          prefixIcon: const Icon(
-            Icons.lock_outline,
-            color: Color(0xFF94A3B8),
-          ),
-          suffixIcon: GestureDetector(
-            onTap: () => setState(() => _obscurePassword = !_obscurePassword),
-            child: Icon(
-              _obscurePassword
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
-              color: const Color(0xFF94A3B8),
-              size: 20,
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // Login button
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              Get.offAllNamed(AppRoutes.otppage);
-            },
-            icon: const Text(
-              'Log In',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            label: const Icon(Icons.login, color: Colors.white, size: 20),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF913632),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 2,
+        GestureDetector(
+          onTap: () {
+            // TODO: trigger resend OTP
+          },
+          child: const Text(
+            'Kirim Ulang',
+            style: TextStyle(
+              color: Color(0xFFB13D37),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),

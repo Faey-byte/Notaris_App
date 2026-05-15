@@ -18,9 +18,6 @@ class CalculatorController extends GetxController {
   void onInit() {
     super.onInit();
 
-    nilaiController.addListener(hitungOtomatis);
-    npoptkpController.addListener(hitungOtomatis);
-
     ever(selectedType, (_) => hitungOtomatis());
   }
 
@@ -52,9 +49,27 @@ class CalculatorController extends GetxController {
   }
 
   void hitungFinal() {
-    hitungOtomatis();
-    isCalculated.value = true;
+  if (nilaiController.text.isEmpty) {
+    Get.snackbar(
+      "Error",
+      "Nilai belum diisi",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+    return;
   }
+
+  if (isBPHTB && npoptkpController.text.isEmpty) {
+    Get.snackbar(
+      "Error",
+      "NPOPTKP belum diisi",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+    return;
+  }
+
+  hitungOtomatis();
+  isCalculated.value = true;
+}
 
   String formatRupiah(double value) {
     return "Rp ${formatter.format(value)}";

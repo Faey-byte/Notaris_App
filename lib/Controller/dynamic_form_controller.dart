@@ -19,56 +19,70 @@ class DynamicFormController extends GetxController {
   DynamicFormController(this.jenis);
 
   var fields = <DynamicField>[].obs;
-
   var controllers = <String, TextEditingController>{};
 
   @override
   void onInit() {
     super.onInit();
+    print("JENIS MASUK: $jenis");
     generateForm();
   }
 
   void generateForm() {
-    if (jenis == "Jual Beli") {
-      fields.value = [
-        DynamicField(
-          label: "Nama Klien / Nama Perusahaan",
-          type: "text",
-          placeholder: "Masukkan nama klien atau perusahaan",
-        ),
-        DynamicField(label: "Sertifikat Asli", type: "upload"),
-        DynamicField(label: "KTP Pemilik Sertipikat", type: "upload"),
-        DynamicField(label: "KK Pemilik Sertipikat", type: "upload"),
-        DynamicField(label: "Surat Nikah", type: "upload"),
-        DynamicField(label: "PBB Tahun Berjalan", type: "upload"),
-        DynamicField(label: "Foto Objek", type: "upload"),
-        DynamicField(label: "Titik Koordinat", type: "coordinate"),
-        DynamicField(label: "KTP Pembeli", type: "upload"),
-        DynamicField(label: "Total Biaya Layanan", type: "number"),
-        DynamicField(
-          label: "Nama Staff",
-          type: "text",
-          placeholder: "Masukkan nama staff",
-        ),
-      ];
+    switch (jenis) {
+      case "AJB":
+        fields.value = [
+          DynamicField(
+            label: "Nama Klien / Nama Perusahaan",
+            type: "text",
+            placeholder: "Masukkan nama klien atau perusahaan",
+          ),
+          DynamicField(label: "Sertifikat Asli", type: "upload"),
+          DynamicField(label: "KTP Pemilik Sertifikat", type: "upload"),
+          DynamicField(label: "Bukti Kepemilikan", type: "upload"),
+        ];
+        break;
+
+      default:
+        fields.value = [
+          DynamicField(
+            label: "Data Default",
+            type: "text",
+            placeholder: "Belum ada form untuk jenis ini",
+          ),
+        ];
     }
 
-    for (var f in fields) {
-      if (f.type == "text" || f.type == "number") {
-        controllers[f.label] = TextEditingController();
+    print("FIELDS KEISI: ${fields.length}");
+
+    // init controller text
+    for (var field in fields) {
+      if (field.type == "text") {
+        controllers[field.label] = TextEditingController();
       }
     }
   }
 
-  void submit() {
-    final data = {};
+  void submitForm() {
+    for (var field in fields) {
+      if (field.type == "text") {
+        final value = controllers[field.label]?.text ?? "";
 
-    for (var f in fields) {
-      if (controllers.containsKey(f.label)) {
-        data[f.label] = controllers[f.label]!.text;
+        if (value.isEmpty) {
+          Get.snackbar("Error", "${field.label} wajib diisi");
+          return;
+        }
       }
     }
 
-    print(data);
+    Get.snackbar("Sukses", "Berkas berhasil disimpan");
+  }
+
+  @override
+  void onClose() {
+    for (var c in controllers.values) {
+      c.dispose();
+    }
+    super.onClose();
   }
 }

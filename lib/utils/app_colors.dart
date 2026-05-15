@@ -21,4 +21,6 @@ class AppColors {
 
   static const Color statusRevisi = Color(0xFFF44336);
   static const Color statusRevisiBg = Color(0xFFFFEBEE);
+
+  
 }

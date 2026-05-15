@@ -21,6 +21,7 @@ class StatusModel {
 class PpatController extends GetxController {
   var search = "".obs;
   var selectedJenis = "Semua Berkas".obs;
+  var selectedStatus = "SEMUA".obs; // ✅ TAMBAHAN
 
   var berkasList = <BerkasModel>[].obs;
   var filteredList = <BerkasModel>[].obs;
@@ -45,6 +46,11 @@ class PpatController extends GetxController {
   ];
 
   final statusList = [
+    StatusModel(
+      label: "SEMUA",
+      color: AppColors.textSecondary,
+      bgColor: AppColors.border,
+    ),
     StatusModel(
       label: "PROSES",
       color: AppColors.statusProses,
@@ -106,6 +112,11 @@ class PpatController extends GetxController {
     applyFilter();
   }
 
+  void setStatus(String status) { // ✅ TAMBAHAN
+    selectedStatus.value = status;
+    applyFilter();
+  }
+
   void applyFilter() {
     filteredList.value = berkasList.where((item) {
       final matchSearch = item.nama.toLowerCase().contains(
@@ -116,7 +127,11 @@ class PpatController extends GetxController {
           ? true
           : item.jenis == selectedJenis.value;
 
-      return matchSearch && matchJenis;
+      final matchStatus = selectedStatus.value == "SEMUA"
+          ? true
+          : item.status == selectedStatus.value;
+
+      return matchSearch && matchJenis && matchStatus;
     }).toList();
   }
 

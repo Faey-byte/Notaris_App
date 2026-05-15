@@ -1,70 +1,298 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/signup_controller.dart';
-import 'package:notaris_app/Widget/Text_Field_Widget.dart';
-import 'package:notaris_app/utils/app_colors.dart';
 
 class SignupPage extends StatelessWidget {
   SignupPage({super.key});
 
-  final controller = Get.put(SignupController());
+  final controller =
+      Get.put(SignupController());
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 60),
+      backgroundColor: const Color(0xFFF6F6F6),
 
-            Text("Notaris & PPAT",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-
-            const SizedBox(height: 20),
-
-            TextfieldsWidget(
-              label: "Nama Lengkap",
-              controller: controller.nameC,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 28,
+              vertical: 24,
             ),
 
-            const SizedBox(height: 16),
+            child: Form(
+              key: controller.formKey,
 
-            CustomTextField(
-              hint: "nama@email.com",
-              icon: Icons.email,
-              controller: controller.emailC,
-            ),
+              child: Column(
+                children: [
 
-            const SizedBox(height: 16),
+                  const SizedBox(height: 50),
 
-            CustomTextField(
-              hint: "Password",
-              icon: Icons.lock,
-              isPassword: true,
-              controller: controller.passwordC,
-            ),
+                  Container(
+                    width: 80,
+                    height: 80,
 
-            const SizedBox(height: 16),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFCEEEE),
+                      shape: BoxShape.circle,
+                    ),
 
-            CustomTextField(
-              hint: "Nama Perusahaan",
-              icon: Icons.business,
-              controller: controller.companyC,
-            ),
+                    child: const Icon(
+                      Icons.person_add_alt_1_rounded,
+                      color: Color(0xFFB23B35),
+                      size: 36,
+                    ),
+                  ),
 
-            const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                minimumSize: const Size(double.infinity, 50),
+                  const Text(
+                    "Create Account",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    "Silahkan daftar akun terlebih dahulu",
+                    style: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  TextFormField(
+                    controller:
+                        controller.usernameC,
+
+                    decoration: InputDecoration(
+                      hintText: "Username",
+
+                      prefixIcon: const Icon(
+                        Icons.person_outline,
+                      ),
+
+                      filled: true,
+                      fillColor: Colors.white,
+
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(
+                          18,
+                        ),
+                      ),
+                    ),
+
+                    validator:
+                        controller.validateUsername,
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  TextFormField(
+                    controller:
+                        controller.emailC,
+
+                    keyboardType:
+                        TextInputType.emailAddress,
+
+                    decoration: InputDecoration(
+                      hintText: "Email",
+
+                      prefixIcon: const Icon(
+                        Icons.mail_outline,
+                      ),
+
+                      filled: true,
+                      fillColor: Colors.white,
+
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(
+                          18,
+                        ),
+                      ),
+                    ),
+
+                    validator:
+                        controller.validateEmail,
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  Obx(
+                    () => TextFormField(
+                      controller:
+                          controller.passC,
+
+                      obscureText:
+                          controller.obscure.value,
+
+                      decoration: InputDecoration(
+                        hintText: "Password",
+
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                        ),
+
+                        suffixIcon: IconButton(
+                          onPressed: controller
+                              .togglePassword,
+
+                          icon: Icon(
+                            controller.obscure
+                                    .value
+                                ? Icons
+                                    .visibility_off
+                                : Icons
+                                    .visibility,
+                          ),
+                        ),
+
+                        filled: true,
+                        fillColor: Colors.white,
+
+                        border:
+                            OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                            18,
+                          ),
+                        ),
+                      ),
+
+                      validator:
+                          controller.validatePassword,
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  TextFormField(
+                    controller:
+                        controller.companyC,
+
+                    decoration: InputDecoration(
+                      hintText: "Company Name",
+
+                      prefixIcon: const Icon(
+                        Icons.business_outlined,
+                      ),
+
+                      filled: true,
+                      fillColor: Colors.white,
+
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(
+                          18,
+                        ),
+                      ),
+                    ),
+
+                    validator:
+                        controller.validateCompany,
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Obx(
+                    () => SizedBox(
+                      width: double.infinity,
+                      height: 55,
+
+                      child: ElevatedButton(
+                        onPressed:
+                            controller
+                                    .isLoading
+                                    .value
+                                ? null
+                                : controller.signup,
+
+                        style:
+                            ElevatedButton
+                                .styleFrom(
+                          backgroundColor:
+                              const Color(
+                            0xFFB23B35,
+                          ),
+
+                          shape:
+                              RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius
+                                    .circular(
+                              18,
+                            ),
+                          ),
+                        ),
+
+                        child:
+                            controller
+                                    .isLoading
+                                    .value
+                                ? const CircularProgressIndicator(
+                                    color:
+                                        Colors
+                                            .white,
+                                  )
+                                : const Text(
+                                    "Sign Up",
+                                    style:
+                                        TextStyle(
+                                      fontSize:
+                                          18,
+                                      color:
+                                          Colors
+                                              .white,
+                                      fontWeight:
+                                          FontWeight
+                                              .bold,
+                                    ),
+                                  ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.center,
+
+                    children: [
+
+                      const Text(
+                        "Sudah punya akun?",
+                      ),
+
+                      TextButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(
+                            color:
+                                Color(0xFFB23B35),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              onPressed: controller.signup,
-              child: const Text("Daftar"),
             ),
-          ],
+          ),
         ),
       ),
     );

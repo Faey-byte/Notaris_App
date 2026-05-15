@@ -388,6 +388,7 @@ class HomePage extends StatelessWidget {
                     SizedBox(height: 2),
                     Text(
                       'Logout dari aplikasi',
+                      
                       style: TextStyle(
                         color: Color(0xFFF87171),
                         fontSize: 12,

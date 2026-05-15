@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Model/Ppat_Model.dart';
+import 'package:notaris_app/utils/app_colors.dart';
 
 class DokumenModel {
   final String nama;
@@ -21,13 +23,17 @@ class DetailBerkasController extends GetxController {
   var alamat = "".obs;
   var totalBiaya = "".obs;
   var namaStaff = "".obs;
+
   var statusPajak = "".obs;
+  var statusPekerjaan = "".obs;
 
   var dokumenList = <DokumenModel>[].obs;
 
   @override
   void onInit() {
     super.onInit();
+
+    statusPekerjaan.value = data.status;
     loadDummy();
   }
 
@@ -62,5 +68,53 @@ class DetailBerkasController extends GetxController {
         tanggal: "13 Nov 2023",
       ),
     ];
+  }
+
+  void updateStatusPekerjaan(String value) {
+    statusPekerjaan.value = value;
+  }
+
+  void updateStatusPajak(String value) {
+    statusPajak.value = value;
+  }
+
+  Color getStatusPekerjaanColor(String status) {
+    switch (status) {
+      case "SELESAI":
+        return AppColors.statusSelesai;
+      case "REVISI":
+        return Colors.red;
+      default:
+        return AppColors.statusProses;
+    }
+  }
+
+  Color getStatusPekerjaanBg(String status) {
+    switch (status) {
+      case "SELESAI":
+        return AppColors.statusSelesaiBg;
+      case "REVISI":
+        return Colors.red.withOpacity(0.1);
+      default:
+        return AppColors.statusProsesBg;
+    }
+  }
+
+  Color getStatusPajakColor(String status) {
+    switch (status) {
+      case "Lunas":
+        return AppColors.statusSelesai;
+      default:
+        return Colors.red;
+    }
+  }
+
+  Color getStatusPajakBg(String status) {
+    switch (status) {
+      case "Lunas":
+        return AppColors.statusSelesaiBg;
+      default:
+        return Colors.red.withOpacity(0.1);
+    }
   }
 }

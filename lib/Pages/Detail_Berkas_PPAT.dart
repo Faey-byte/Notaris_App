@@ -16,6 +16,67 @@ class DetailBerkasPage extends StatelessWidget {
   late final DetailBerkasController c =
       Get.put(DetailBerkasController(data));
 
+  void confirmChange({
+    required String title,
+    required String value,
+    required Function() onConfirm,
+  }) {
+    Get.defaultDialog(
+      title: "Konfirmasi",
+      middleText: "$title jadi \"$value\" ?",
+      textConfirm: "OK",
+      textCancel: "Batal",
+      confirmTextColor: Colors.white,
+      onConfirm: () {
+        onConfirm();
+        Get.back();
+      },
+    );
+  }
+
+  void showStatusPicker({
+    required String title,
+    required List<String> options,
+    required Function(String) onSelect,
+  }) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Wrap(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            ...options.map(
+              (e) => ListTile(
+                title: Text(e),
+                onTap: () {
+                  Get.back();
+
+                  confirmChange(
+                    title: title,
+                    value: e,
+                    onConfirm: () => onSelect(e),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,21 +140,49 @@ class DetailBerkasPage extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: StatusBox(
-                  title: "STATUS PEKERJAAN",
-                  value: data.status,
-                  textColor: AppColors.statusProses,
-                  bgColor: AppColors.statusProsesBg,
+                child: Obx(
+                  () => GestureDetector(
+                    onTap: () {
+                      showStatusPicker(
+                        title: "Status Pekerjaan",
+                        options: ["PROSES", "SELESAI", "REVISI"],
+                        onSelect: (val) =>
+                            c.updateStatusPekerjaan(val),
+                      );
+                    },
+                    child: StatusBox(
+                      title: "STATUS PEKERJAAN",
+                      value: c.statusPekerjaan.value,
+                      textColor: c.getStatusPekerjaanColor(
+                          c.statusPekerjaan.value),
+                      bgColor: c.getStatusPekerjaanBg(
+                          c.statusPekerjaan.value),
+                    ),
+                  ),
                 ),
               ),
+
               const SizedBox(width: 12),
+
               Expanded(
                 child: Obx(
-                  () => StatusBox(
-                    title: "STATUS PAJAK",
-                    value: c.statusPajak.value,
-                    textColor: AppColors.statusSelesai,
-                    bgColor: AppColors.statusSelesaiBg,
+                  () => GestureDetector(
+                    onTap: () {
+                      showStatusPicker(
+                        title: "Status Pajak",
+                        options: ["Lunas", "Belum Bayar"],
+                        onSelect: (val) =>
+                            c.updateStatusPajak(val),
+                      );
+                    },
+                    child: StatusBox(
+                      title: "STATUS PAJAK",
+                      value: c.statusPajak.value,
+                      textColor:
+                          c.getStatusPajakColor(c.statusPajak.value),
+                      bgColor:
+                          c.getStatusPajakBg(c.statusPajak.value),
+                    ),
                   ),
                 ),
               ),

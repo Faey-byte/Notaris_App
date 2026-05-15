@@ -1,35 +1,88 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final baseUrl = "https://virtserver.swaggerhub.com/MikhaelJhon/notary/1.0.0";
 
-  Future<bool> signup({
-    required String name,
+  static const String baseUrl =
+      "https://ball-catalyst-images-remove.trycloudflare.com/api/v1";
+
+  static Future<Map<String, dynamic>> login({
     required String email,
     required String password,
-    required String company,
   }) async {
-    final url = Uri.parse("$baseUrl/api/v1/signup");
+
+    final url = Uri.parse("$baseUrl/signin");
 
     final response = await http.post(
       url,
+
       headers: {
         "Content-Type": "application/json",
       },
+
       body: jsonEncode({
-        "username": name,
         "email": email,
         "password": password,
-        "companyName": company,
       }),
     );
 
+    print("LOGIN STATUS: ${response.statusCode}");
+    print("LOGIN BODY: ${response.body}");
+
+    final data = jsonDecode(response.body);
+
     if (response.statusCode == 200) {
-      return true;
+
+      return data;
+
     } else {
-      print(response.body);
-      return false;
+
+      throw Exception(
+        data["message"] ?? "Login gagal",
+      );
     }
   }
+
+  static Future<Map<String, dynamic>> signup({
+  required String username,
+  required String email,
+  required String password,
+  required String companyName,
+}) async {
+
+  final url = Uri.parse("$baseUrl/signup");
+
+  final response = await http.post(
+    url,
+
+    headers: {
+      "Content-Type": "application/json",
+    },
+
+    body: jsonEncode({
+      "username": username,
+      "email": email,
+      "password": password,
+      "companyName": companyName,
+    }),
+  );
+
+  print("SIGNUP STATUS: ${response.statusCode}");
+  print("SIGNUP BODY: ${response.body}");
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200 ||
+      response.statusCode == 201) {
+
+    return data;
+
+  } else {
+
+    throw Exception(
+      data["message"] ?? "Signup gagal",
+    );
+  }
+}
 }

@@ -9,7 +9,6 @@ class CalculatorController extends GetxController {
   final npoptkpController = TextEditingController();
   final besaranController = TextEditingController();
 
-  // 🔥 TAMBAHAN
   var hasilFinal = "".obs;
   var isCalculated = false.obs;
 
@@ -25,6 +24,14 @@ class CalculatorController extends GetxController {
     ever(selectedType, (_) => hitungOtomatis());
   }
 
+  void changeType(String type) {
+    selectedType.value = type;
+  }
+
+  bool get isBPHTB => selectedType.value == 'BPHTB';
+
+  bool isSelected(String type) => selectedType.value == type;
+
   double parseCurrency(String value) {
     return double.tryParse(
           value.replaceAll('.', '').replaceAll('Rp', '').trim(),
@@ -36,23 +43,14 @@ class CalculatorController extends GetxController {
     double nilai = parseCurrency(nilaiController.text);
     double npoptkp = parseCurrency(npoptkpController.text);
 
-    double hasil = 0;
+    double hasil = isBPHTB
+        ? ((nilai - npoptkp) > 0 ? (nilai - npoptkp) * 0.05 : 0)
+        : nilai * 0.025;
 
-    if (selectedType.value == 'BPHTB') {
-      double dasar = nilai - npoptkp;
-      hasil = dasar > 0 ? dasar * 0.05 : 0;
-    } else {
-      hasil = nilai * 0.025;
-    }
-
-    // isi field atas
     besaranController.text = formatRupiah(hasil);
-
-    // simpan untuk hasil bawah
     hasilFinal.value = formatRupiah(hasil);
   }
 
-  // 🔥 DIPANGGIL SAAT KLIK BUTTON
   void hitungFinal() {
     hitungOtomatis();
     isCalculated.value = true;

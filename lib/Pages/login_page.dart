@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:notaris_app/Routes/routes.dart';
 import 'package:notaris_app/widget/Text_Field_widget.dart';
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -131,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
 
-        // Password label row (lupa password di atas field)
+        // Password label row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -179,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
 
         // Login button
         SizedBox(
@@ -206,6 +205,35 @@ class _LoginPageState extends State<LoginPage> {
               elevation: 2,
             ),
           ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Daftar Sekarang
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Belum punya akun?',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            const SizedBox(width: 4),
+            GestureDetector(
+              onTap: () => Get.offAllNamed(AppRoutes.signuppage),
+              child: const Text(
+                'Daftar Sekarang',
+                style: TextStyle(
+                  color: Color(0xFF913632),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:notaris_app/Pages/Otp_Pages.dart';
 import 'package:notaris_app/Pages/login_page.dart';
+import 'package:notaris_app/Pages/signup_page.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Otp_Pages.dart';
 import 'package:notaris_app/Pages/Dynamic_Form_Page.dart';
@@ -8,6 +9,7 @@ import 'package:notaris_app/Pages/PPAT_page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
 import 'package:notaris_app/Pages/Profile_Page.dart';
 import 'package:notaris_app/Pages/Notaris_Page.dart'; // ← tambahan
+import 'package:notaris_app/Pages/signup_page.dart';
 import 'package:notaris_app/Routes/routes.dart';
 
 // pages.dart
@@ -18,6 +20,7 @@ class AppPages {
     GetPage(name: AppRoutes.loginpage,       page: () => const LoginPage()),
     GetPage(name: AppRoutes.otppage,         page: () => const OtpPages()),
     GetPage(name: AppRoutes.homepage,        page: () => const HomePage()), // ← ganti MainWrapper
+    GetPage(name: AppRoutes.signuppage,      page: () => SignupPage()), // ← ganti MainWrapper
     GetPage(name: AppRoutes.notaris,         page: () => const NotarisPage()),
     GetPage(name: AppRoutes.profilepage,     page: () => const ProfilePage()),
     GetPage(name: AppRoutes.calculator,      page: () => CalculatorPage()),

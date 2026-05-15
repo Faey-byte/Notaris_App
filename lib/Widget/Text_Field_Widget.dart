@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:notaris_app/Formatter/Currency_Formatter.dart';
+import 'package:notaris_app/utils/app_colors.dart';
 
 class TextfieldsWidget extends StatelessWidget {
   final String label;
@@ -14,6 +15,7 @@ class TextfieldsWidget extends StatelessWidget {
   final bool readOnly;
   final String? prefixText;
   final TextInputType keyboardType;
+  
 
   const TextfieldsWidget({
     super.key,
@@ -55,6 +57,40 @@ class TextfieldsWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide.none,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class CustomTextField extends StatelessWidget {
+  final String hint;
+  final IconData icon;
+  final bool isPassword;
+  final TextEditingController controller;
+
+  const CustomTextField({
+    super.key,
+    required this.hint,
+    required this.icon,
+    required this.controller,
+    this.isPassword = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon),
+        hintText: hint,
+        filled: true,
+        fillColor: AppColors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.border),
         ),
       ),
     );

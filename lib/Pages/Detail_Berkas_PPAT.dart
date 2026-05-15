@@ -13,8 +13,7 @@ class DetailBerkasPage extends StatelessWidget {
 
   DetailBerkasPage({super.key, required this.data});
 
-  late final DetailBerkasController c =
-      Get.put(DetailBerkasController(data));
+  late final DetailBerkasController c = Get.put(DetailBerkasController(data));
 
   void confirmChange({
     required String title,
@@ -50,10 +49,7 @@ class DetailBerkasPage extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 12),
 
@@ -111,9 +107,7 @@ class DetailBerkasPage extends StatelessWidget {
 
           Text(
             "#${data.no}",
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-            ),
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
 
           const SizedBox(height: 16),
@@ -146,17 +140,16 @@ class DetailBerkasPage extends StatelessWidget {
                       showStatusPicker(
                         title: "Status Pekerjaan",
                         options: ["PROSES", "SELESAI", "REVISI"],
-                        onSelect: (val) =>
-                            c.updateStatusPekerjaan(val),
+                        onSelect: (val) => c.updateStatusPekerjaan(val),
                       );
                     },
                     child: StatusBox(
                       title: "STATUS PEKERJAAN",
                       value: c.statusPekerjaan.value,
                       textColor: c.getStatusPekerjaanColor(
-                          c.statusPekerjaan.value),
-                      bgColor: c.getStatusPekerjaanBg(
-                          c.statusPekerjaan.value),
+                        c.statusPekerjaan.value,
+                      ),
+                      bgColor: c.getStatusPekerjaanBg(c.statusPekerjaan.value),
                     ),
                   ),
                 ),
@@ -171,17 +164,14 @@ class DetailBerkasPage extends StatelessWidget {
                       showStatusPicker(
                         title: "Status Pajak",
                         options: ["Lunas", "Belum Bayar"],
-                        onSelect: (val) =>
-                            c.updateStatusPajak(val),
+                        onSelect: (val) => c.updateStatusPajak(val),
                       );
                     },
                     child: StatusBox(
                       title: "STATUS PAJAK",
                       value: c.statusPajak.value,
-                      textColor:
-                          c.getStatusPajakColor(c.statusPajak.value),
-                      bgColor:
-                          c.getStatusPajakBg(c.statusPajak.value),
+                      textColor: c.getStatusPajakColor(c.statusPajak.value),
+                      bgColor: c.getStatusPajakBg(c.statusPajak.value),
                     ),
                   ),
                 ),
@@ -209,9 +199,7 @@ class DetailBerkasPage extends StatelessWidget {
                       Expanded(
                         child: Text(
                           c.alamat.value,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                          ),
+                          style: const TextStyle(color: AppColors.textPrimary),
                         ),
                       ),
                     ],
@@ -239,7 +227,7 @@ class DetailBerkasPage extends StatelessWidget {
                   color: AppColors.primary,
                   fontWeight: FontWeight.w500,
                 ),
-              )
+              ),
             ],
           ),
 
@@ -247,9 +235,7 @@ class DetailBerkasPage extends StatelessWidget {
 
           Obx(
             () => Column(
-              children: c.dokumenList
-                  .map((doc) => DocItem(doc))
-                  .toList(),
+              children: c.dokumenList.map((doc) => DocItem(doc)).toList(),
             ),
           ),
 

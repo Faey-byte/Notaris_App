@@ -19,13 +19,10 @@ class LoginPage extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 32,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 32),
 
             child: Column(
               children: [
-
                 const SizedBox(height: 60),
 
                 Container(
@@ -37,10 +34,7 @@ class LoginPage extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
 
-                  child: const Icon(
-                    Icons.gavel,
-                    color: AppColors.primary,
-                  ),
+                  child: const Icon(Icons.gavel, color: AppColors.primary),
                 ),
 
                 const SizedBox(height: 16),
@@ -69,10 +63,7 @@ class LoginPage extends StatelessWidget {
 
                 const Text(
                   "Silahkan masuk akun menejemen anda",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.black87),
                 ),
 
                 const SizedBox(height: 30),
@@ -82,9 +73,7 @@ class LoginPage extends StatelessWidget {
 
                   child: Text(
                     "Email/Username",
-                    style: TextStyle(
-                      color: AppColors.primary,
-                    ),
+                    style: TextStyle(color: AppColors.primary),
                   ),
                 ),
 
@@ -113,9 +102,7 @@ class LoginPage extends StatelessWidget {
 
                   child: Text(
                     "Password",
-                    style: TextStyle(
-                      color: AppColors.primary,
-                    ),
+                    style: TextStyle(color: AppColors.primary),
                   ),
                 ),
 
@@ -131,11 +118,9 @@ class LoginPage extends StatelessWidget {
 
                     showToggle: true,
 
-                    onToggle:
-                        controller.togglePassword,
+                    onToggle: controller.togglePassword,
 
-                    errorText:
-                        controller.passwordError.value,
+                    errorText: controller.passwordError.value,
                   ),
                 ),
 
@@ -145,8 +130,7 @@ class LoginPage extends StatelessWidget {
                   () => PrimaryButton(
                     text: "Log In",
 
-                    isLoading:
-                        controller.isLoading.value,
+                    isLoading: controller.isLoading.value,
 
                     onPressed: controller.login,
                   ),
@@ -156,14 +140,10 @@ class LoginPage extends StatelessWidget {
 
                 TextButton(
                   onPressed: () {
-                    Get.toNamed(
-                      AppRoutes.signuppage,
-                    );
+                    Get.toNamed(AppRoutes.signuppage);
                   },
 
-                  child: const Text(
-                    "Belum punya akun? Sign Up",
-                  ),
+                  child: const Text("Belum punya akun? Sign Up"),
                 ),
               ],
             ),

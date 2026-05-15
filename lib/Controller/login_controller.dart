@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Routes/routes.dart';
 
 class LoginController extends GetxController {
-
   var isLoading = false.obs;
 
   var obscure = true.obs;
@@ -22,43 +21,34 @@ class LoginController extends GetxController {
   }
 
   Future<void> login() async {
-
     emailError.value = null;
     passwordError.value = null;
 
     if (emailC.text.trim().isEmpty) {
-
       emailError.value = "Email wajib diisi";
 
       return;
     }
 
     if (!GetUtils.isEmail(emailC.text.trim())) {
-
-      emailError.value =
-          "Format email tidak valid";
+      emailError.value = "Format email tidak valid";
 
       return;
     }
 
     if (passC.text.trim().isEmpty) {
-
-      passwordError.value =
-          "Password wajib diisi";
+      passwordError.value = "Password wajib diisi";
 
       return;
     }
 
     if (passC.text.trim().length < 8) {
-
-      passwordError.value =
-          "Password minimal 8 karakter";
+      passwordError.value = "Password minimal 8 karakter";
 
       return;
     }
 
     try {
-
       isLoading.value = true;
 
       final data = await AuthService.login(
@@ -68,46 +58,26 @@ class LoginController extends GetxController {
 
       final token = data["token"];
 
-      final prefs =
-          await SharedPreferences.getInstance();
+      final prefs = await SharedPreferences.getInstance();
 
-      await prefs.setString(
-        "token",
-        token,
-      );
+      await prefs.setString("token", token);
 
-      await prefs.setString(
-        "email",
-        data["email"] ?? emailC.text,
-      );
+      await prefs.setString("email", data["email"] ?? emailC.text);
 
-      Get.snackbar(
-        "Success",
-        data["message"] ?? "Login berhasil",
-      );
+      Get.snackbar("Success", data["message"] ?? "Login berhasil");
 
-      Get.offAllNamed(
-        AppRoutes.homepage,
-      );
-
+      Get.offAllNamed(AppRoutes.homepage);
     } catch (e) {
-
-      Get.snackbar(
-        "Error",
-        e.toString(),
-      );
+      Get.snackbar("Error", e.toString());
 
       print(e);
-
     } finally {
-
       isLoading.value = false;
     }
   }
 
   @override
   void onClose() {
-
     emailC.dispose();
     passC.dispose();
 

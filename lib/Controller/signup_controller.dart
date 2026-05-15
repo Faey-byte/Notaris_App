@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
 
 class SignupController extends GetxController {
-
   var isLoading = false.obs;
 
   var obscure = true.obs;
@@ -20,7 +19,6 @@ class SignupController extends GetxController {
   }
 
   String? validateUsername(String? value) {
-
     if (value == null || value.isEmpty) {
       return "Username wajib diisi";
     }
@@ -33,7 +31,6 @@ class SignupController extends GetxController {
   }
 
   String? validateEmail(String? value) {
-
     if (value == null || value.isEmpty) {
       return "Email wajib diisi";
     }
@@ -50,7 +47,6 @@ class SignupController extends GetxController {
   }
 
   String? validatePassword(String? value) {
-
     if (value == null || value.isEmpty) {
       return "Password wajib diisi";
     }
@@ -63,7 +59,6 @@ class SignupController extends GetxController {
   }
 
   String? validateCompany(String? value) {
-
     if (value == null || value.isEmpty) {
       return "Company Name wajib diisi";
     }
@@ -72,13 +67,11 @@ class SignupController extends GetxController {
   }
 
   Future<void> signup() async {
-
     if (!formKey.currentState!.validate()) {
       return;
     }
 
     try {
-
       isLoading.value = true;
 
       final data = await AuthService.signup(
@@ -88,31 +81,20 @@ class SignupController extends GetxController {
         companyName: companyC.text.trim(),
       );
 
-      Get.snackbar(
-        "Success",
-        data["message"] ?? "Signup berhasil",
-      );
+      Get.snackbar("Success", data["message"] ?? "Signup berhasil");
 
       Get.back();
-
     } catch (e) {
-
-      Get.snackbar(
-        "Error",
-        e.toString(),
-      );
+      Get.snackbar("Error", e.toString());
 
       print(e);
-
     } finally {
-
       isLoading.value = false;
     }
   }
 
   @override
   void onClose() {
-
     usernameC.dispose();
     emailC.dispose();
     passC.dispose();

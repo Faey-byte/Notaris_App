@@ -18,164 +18,171 @@ class PpatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              PageHeaderWidget(
-                title: "Berkas PPAT",
-                icon: Icons.insert_drive_file_outlined,
-                buttonLabel: "Tambah",
-                onButtonPressed: controller.goToTambah,
-              ),
+        child: RefreshIndicator(
+          onRefresh: () => controller.fetchBerkasData(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              children: [
+                PageHeaderWidget(
+                  title: "Berkas PPAT",
+                  icon: Icons.insert_drive_file_outlined,
+                  buttonLabel: "Tambah",
+                  onButtonPressed: controller.goToTambah,
+                ),
 
-              Container(
-                color: AppColors.white,
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SearchBarWidget(
-                      hintText: "Cari nama klien...",
-                      onChanged: controller.setSearch,
-                    ),
+                Container(
+                  color: AppColors.white,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SearchBarWidget(
+                        hintText: "Cari nama klien...",
+                        onChanged: controller.setSearch,
+                      ),
 
-                    const SizedBox(height: 8),
+                      const SizedBox(height: 8),
 
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Obx(
-                        () => Row(
-                          children: controller.jenisList.map((jenis) {
-                            return JenisFilterChip(
-                              label: jenis,
-                              isSelected:
-                                  controller.selectedJenis.value == jenis,
-                              onTap: () => controller.setJenis(jenis),
-                            );
-                          }).toList(),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Obx(
+                          () => Row(
+                            children: controller.jenisList.map((jenis) {
+                              return JenisFilterChip(
+                                label: jenis,
+                                isSelected: controller.selectedJenis.value == jenis,
+                                onTap: () => controller.setJenis(jenis),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
-                    ),
 
-                    const SizedBox(height: 10),
+                      const SizedBox(height: 10),
 
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(right: 10),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.filter_list,
-                                  size: 16,
-                                  color: AppColors.textSecondary,
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  "STATUS",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(right: 10),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.filter_list,
+                                    size: 16,
                                     color: AppColors.textSecondary,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          ...controller.statusList.map(
-                            (s) => Obx(
-                              () => StatusChip(
-                                label: s.label,
-                                textColor: s.textColor,
-                                bgColor: s.bgColor,
-                                isSelected:
-                                    controller.selectedStatus.value == s.label,
-                                onTap: () => controller.setStatus(s.label),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    "STATUS",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
+
+                            ...controller.statusList.map(
+                              (s) => Obx(
+                                () => StatusChip(
+                                  label: s.label,
+                                  textColor: s.textColor,
+                                  bgColor: s.bgColor,
+                                  isSelected: controller.selectedStatus.value == s.label,
+                                  onTap: () => controller.setStatus(s.label),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "DAFTAR BERKAS TERKINI",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      Obx(
+                        () => Text(
+                          "${controller.filteredList.length} Berkas ditemukan",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  if (controller.filteredList.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.folder_off_outlined,
+                            size: 48,
+                            color: AppColors.border,
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            "Tidak ada data",
+                            style: TextStyle(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                    );
+                  }
 
-              const SizedBox(height: 10),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "DAFTAR BERKAS TERKINI",
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    Obx(
-                      () => Text(
-                        "${controller.filteredList.length} Berkas ditemukan",
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Obx(() {
-                if (controller.filteredList.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(40),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.folder_off_outlined,
-                          size: 48,
-                          color: AppColors.border,
-                        ),
-                        SizedBox(height: 12),
-                        Text(
-                          "Tidak ada data",
-                          style: TextStyle(color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                    itemCount: controller.filteredList.length,
+                    itemBuilder: (context, index) {
+                      final data = controller.filteredList[index];
+                      return BerkasCard(data: data);
+                    },
                   );
-                }
-
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                  itemCount: controller.filteredList.length,
-                  itemBuilder: (context, index) {
-                    final data = controller.filteredList[index];
-                    return BerkasCard(data: data);
-                  },
-                );
-              }),
-            ],
+                }),
+              ],
+            ),
           ),
         ),
       ),
-
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: 2,
         onTap: controller.onBottomNavTap,

@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:notaris_app/Model/Ppat_Model.dart';
 import 'package:notaris_app/Pages/Detail_Berkas_PPAT.dart';
 
 class BerkasCard extends StatelessWidget {
-  final dynamic data;
+  final BerkasModel data;
 
   const BerkasCard({super.key, required this.data});
 
   _StatusStyle _getStatusStyle(String status) {
-    switch (status) {
+    switch (status.toUpperCase()) {
+      case "PENDING":
+        return _StatusStyle(
+            "PENDING", const Color(0xFF757575), const Color(0xFFEEEEEE));
       case "PROSES":
         return _StatusStyle(
             "PROSES BPN", const Color(0xFFFF9800), const Color(0xFFFFF3E0));
@@ -20,7 +24,7 @@ class BerkasCard extends StatelessWidget {
             "REVISI PAJAK", const Color(0xFFF44336), const Color(0xFFFFEBEE));
       default:
         return _StatusStyle(
-            status, const Color(0xFF9E9E9E), const Color(0xFFF5F5F5));
+            status.toUpperCase(), const Color(0xFF9E9E9E), const Color(0xFFF5F5F5));
     }
   }
 
@@ -39,8 +43,6 @@ class BerkasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = _getStatusStyle(data.status);
-
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -59,7 +61,6 @@ class BerkasCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -76,15 +77,15 @@ class BerkasCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        "No. Berkas: ${data.no}",
-                        style: const TextStyle(
-                            fontSize: 13, color: Color(0xFF888888)),
-                      ),
                     ],
                   ),
                 ),
-                _StatusBadge(style: style),
+                
+
+                Obx(() {
+                  final style = _getStatusStyle(data.status);
+                  return _StatusBadge(style: style);
+                }),
               ],
             ),
 
@@ -101,12 +102,6 @@ class BerkasCard extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 13, color: Color(0xFF555555))),
                 const SizedBox(width: 16),
-                const Icon(Icons.calendar_today_outlined,
-                    size: 14, color: Color(0xFF888888)),
-                const SizedBox(width: 6),
-                Text(data.tanggal,
-                    style: const TextStyle(
-                        fontSize: 13, color: Color(0xFF555555))),
               ],
             ),
 
@@ -117,14 +112,21 @@ class BerkasCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _AvatarIcon(icon: Icons.person_outline),
-                    if (data.status == "PROSES") ...[
-                      const SizedBox(width: 4),
-                      _AvatarIcon(icon: Icons.person_outline),
-                    ],
+                    const _AvatarIcon(icon: Icons.person_outline),
+
+                    Obx(() {
+                      if (data.status.toUpperCase() == "PROSES") {
+                        return const Padding(
+                          padding: EdgeInsets.only(left: 4),
+                          child: _AvatarIcon(icon: Icons.person_outline),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
+                    
                     if (data.jenis == "APHT") ...[
                       const SizedBox(width: 4),
-                      _AvatarIcon(icon: Icons.business_outlined),
+                      const _AvatarIcon(icon: Icons.business_outlined),
                     ],
                   ],
                 ),
@@ -203,7 +205,7 @@ class _DetailButton extends StatelessWidget {
               fontSize: 13,
             ),
           ),
-          SizedBox(width: 2),
+          const SizedBox(width: 2),
           Icon(Icons.chevron_right, size: 18, color: Color(0xFF8B1A1A)),
         ],
       ),

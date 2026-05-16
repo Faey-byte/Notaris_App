@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class AuthService {
 
   static const String baseUrl =
-      "https://assignment-swaziland-installing-song.trycloudflare.com/api/v1";
+      "https://forums-lounge-streams-vegetables.trycloudflare.com/api/v1";
 
   static Future<Map<String, dynamic>> login({
     required String email,

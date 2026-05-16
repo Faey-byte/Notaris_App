@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Routes/routes.dart';
 
 class LoginController extends GetxController {
+
   var isLoading = false.obs;
 
   var obscure = true.obs;
@@ -21,63 +22,102 @@ class LoginController extends GetxController {
   }
 
   Future<void> login() async {
+
     emailError.value = null;
     passwordError.value = null;
 
     if (emailC.text.trim().isEmpty) {
-      emailError.value = "Email wajib diisi";
+
+      emailError.value =
+          "Email wajib diisi";
 
       return;
     }
 
-    if (!GetUtils.isEmail(emailC.text.trim())) {
-      emailError.value = "Format email tidak valid";
+    if (!GetUtils.isEmail(
+      emailC.text.trim(),
+    )) {
+
+      emailError.value =
+          "Format email tidak valid";
 
       return;
     }
 
     if (passC.text.trim().isEmpty) {
-      passwordError.value = "Password wajib diisi";
+
+      passwordError.value =
+          "Password wajib diisi";
 
       return;
     }
 
     if (passC.text.trim().length < 8) {
-      passwordError.value = "Password minimal 8 karakter";
+
+      passwordError.value =
+          "Password minimal 8 karakter";
 
       return;
     }
 
     try {
-      isLoading.value = true;
 
-      final data = await AuthService.login(
-        email: emailC.text.trim(),
-        password: passC.text.trim(),
-      );
+  isLoading.value = true;
 
-      final token = data["token"];
+  final data = await AuthService.login(
+    email: emailC.text.trim(),
+    password: passC.text.trim(),
+  );
 
-      final prefs = await SharedPreferences.getInstance();
+  print("DATA LOGIN:");
+  print(data);
 
-      await prefs.setString("token", token);
+  final token = data["token"];
 
-      await prefs.setString("email", data["email"] ?? emailC.text);
+  print("TOKEN DARI API:");
+  print(token);
 
-      Get.snackbar("Success", data["message"] ?? "Login berhasil");
+  final prefs =
+      await SharedPreferences.getInstance();
 
-      Get.offAllNamed(AppRoutes.homepage);
-    } catch (e) {
-      Get.snackbar("Error", e.toString());
+  await prefs.setString(
+    "token",
+    token,
+  );
 
-      print(e);
-    } finally {
-      isLoading.value = false;
-    }
+  await prefs.setString(
+    "email",
+    data["email"] ?? emailC.text,
+  );
+
+  Get.snackbar(
+    "Success",
+    data["message"] ?? "Login berhasil",
+  );
+
+  Get.offAllNamed(
+    AppRoutes.homepage,
+  );
+
+} catch (e) {
+
+  print("ERROR LOGIN:");
+  print(e);
+
+  Get.snackbar(
+    "Error",
+    e.toString(),
+  );
+
+} finally {
+
+  isLoading.value = false;
+}
   }
 
   @override
   void onClose() {
+
     emailC.dispose();
     passC.dispose();
 

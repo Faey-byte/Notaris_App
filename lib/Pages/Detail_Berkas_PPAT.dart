@@ -105,11 +105,6 @@ class DetailBerkasPage extends StatelessWidget {
 
           const SizedBox(height: 4),
 
-          Text(
-            "#${data.no}",
-            style: const TextStyle(color: AppColors.textSecondary),
-          ),
-
           const SizedBox(height: 16),
 
           InfoBox(

@@ -56,6 +56,7 @@ class DynamicFormController extends GetxController {
       {"label": "KK Pembeli", "type": "upload"},
       {"label": "Total biaya layanan", "type": "number"},
       {"label": "Nama Staff", "type": "text"},
+      {"label": "Public ID", "type": "text"},
     ],
     "APHB": [
       {"label": "Nama Client/Perusahaan", "type": "text"},
@@ -320,7 +321,7 @@ class DynamicFormController extends GetxController {
         File file = File(pickedFile.path);
 
         final response = await http.post(
-          Uri.parse('https://forums-lounge-streams-vegetables.trycloudflare.com/api/v1/make-url'),
+          Uri.parse('https://desktops-effectively-filename-attached.trycloudflare.com/api/v1/make-url'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'file_name': p.basename(file.path)}),
         );
@@ -381,7 +382,7 @@ class DynamicFormController extends GetxController {
         }
       ''';
 
-      final HttpLink httpLink = HttpLink('https://forums-lounge-streams-vegetables.trycloudflare.com/graphql');
+      final HttpLink httpLink = HttpLink('https://desktops-effectively-filename-attached.trycloudflare.com/graphql');
       final GraphQLClient client = GraphQLClient(link: httpLink, cache: GraphQLCache());
 
       final QueryResult result = await client.mutate(MutationOptions(

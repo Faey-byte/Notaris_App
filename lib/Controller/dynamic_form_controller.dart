@@ -12,10 +12,10 @@ class DynamicField {
   final String label;
   final String type;
   final String? placeholder;
-  
-  var fileValue = "".obs;   
-  var fileId = "".obs;      
-  var matchKey = "".obs;    
+
+  var fileValue = "".obs;
+  var fileId = "".obs;
+  var matchKey = "".obs;
   var isLoading = false.obs;
 
   DynamicField({required this.label, required this.type, this.placeholder});
@@ -27,8 +27,18 @@ class DynamicFormController extends GetxController {
 
   var fields = <DynamicField>[].obs;
   var controllers = <String, TextEditingController>{};
+
   final ImagePicker _picker = ImagePicker();
-  final DbHelper _dbHelper = DbHelper(); 
+  final DbHelper _dbHelper = DbHelper();
+
+  var lifeStatus = "".obs;
+
+  final List<String> lifeStatusOptions = [
+    "single",
+    "married",
+    "divorced",
+    "widowed",
+  ];
 
   @override
   void onInit() {
@@ -56,7 +66,6 @@ class DynamicFormController extends GetxController {
       {"label": "KK Pembeli", "type": "upload"},
       {"label": "Total biaya layanan", "type": "number"},
       {"label": "Nama Staff", "type": "text"},
-      {"label": "Public ID", "type": "text"},
     ],
     "APHB": [
       {"label": "Nama Client/Perusahaan", "type": "text"},
@@ -274,7 +283,11 @@ class DynamicFormController extends GetxController {
     ],
   };
 
-    var requirementList = ppatRequirements[jenis] ?? [{"label": "Data Default", "type": "text"}];
+     var requirementList =
+        ppatRequirements[jenis] ??
+        [
+          {"label": "Data Default", "type": "text"},
+        ];
 
     fields.value = requirementList.map((item) {
       return DynamicField(
@@ -293,10 +306,14 @@ class DynamicFormController extends GetxController {
 
   Future<void> loadSavedDraft() async {
     try {
-      List<Map<String, dynamic>> savedData = await _dbHelper.getDraftByJenis(jenis);
+      List<Map<String, dynamic>> savedData = await _dbHelper.getDraftByJenis(
+        jenis,
+      );
+
       if (savedData.isNotEmpty) {
         for (var data in savedData) {
           var field = fields.firstWhereOrNull((f) => f.label == data['label']);
+
           if (field != null) {
             if (field.type == "upload") {
               field.fileValue.value = data['url'] ?? "";
@@ -315,99 +332,149 @@ class DynamicFormController extends GetxController {
 
   Future<void> pickAndUploadFile(DynamicField field, ImageSource source) async {
     try {
-      final XFile? pickedFile = await _picker.pickImage(source: source, imageQuality: 80);
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+      );
+
       if (pickedFile != null) {
         field.isLoading.value = true;
+
         File file = File(pickedFile.path);
 
-        final response = await http.post(
-          Uri.parse('https://desktops-effectively-filename-attached.trycloudflare.com/api/v1/make-url'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'file_name': p.basename(file.path)}),
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse(
+            'https://desktops-effectively-filename-attached.trycloudflare.com/api/v1/make-url',
+          ),
         );
+
+        request.fields['ppat_type'] = jenis;
+
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'files',
+            file.path,
+            filename: p.basename(file.path),
+          ),
+        );
+
+        final streamedResponse = await request.send();
+        final response = await http.Response.fromStream(streamedResponse);
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-          field.fileValue.value = data['url'] ?? "";
-          field.fileId.value = data['id']?.toString() ?? "";
-          field.matchKey.value = data['matchkey'] ?? "";
+          final fileData = data['files'][0];
+
+          field.fileValue.value = fileData['url'] ?? "";
+          field.fileId.value = fileData['id']?.toString() ?? "";
+          field.matchKey.value = fileData['matchkey'] ?? "";
 
           await _dbHelper.saveDraft({
             'id_field': "${jenis}_${field.label}",
             'jenis_pekerjaan': jenis,
             'label': field.label,
-            'text_value': "",
             'file_id': field.fileId.value,
             'matchkey': field.matchKey.value,
             'url': field.fileValue.value,
           });
 
-          Get.snackbar("Sukses", "${field.label} berhasil disimpan ke draft");
+          Get.snackbar("Sukses", "${field.label} tersimpan");
         }
       }
     } catch (e) {
-      Get.snackbar("Error", "Gagal upload: $e");
+      Get.snackbar("Error", "Upload gagal: $e");
     } finally {
       field.isLoading.value = false;
     }
   }
 
   Future<void> submitForm() async {
-    Map<String, dynamic> variables = {
-      "input": {
-        "public_id": "CLIENT_${DateTime.now().millisecondsSinceEpoch}",
-        "jenis_pekerjaan": jenis,
-        "dokumen_syarat": fields.where((f) => f.type == "upload").map((f) => {
-          "label": f.label,
-          "file_id": f.fileId.value,
-          "matchkey": f.matchKey.value,
-          "url": f.fileValue.value
-        }).toList(),
-        "input_data": fields.where((f) => f.type == "text" || f.type == "number").map((f) => {
-          "label": f.label,
-          "value": controllers[f.label]?.text
-        }).toList(),
-      }
+    Map<String, dynamic> metadata = {
+      "files": fields
+          .where((f) => f.type == "upload")
+          .map((f) => {"name": f.label, "url": f.fileValue.value})
+          .toList(),
     };
 
-    Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
+    for (var f in fields) {
+      if (f.type == "number") {
+        metadata[f.label] =
+            int.tryParse(controllers[f.label]?.text ?? "0") ?? 0;
+      } else if (f.type == "text") {
+        metadata[f.label] = controllers[f.label]?.text ?? "";
+      }
+    }
+
+    final variables = {
+      "client_name": controllers["Nama Client/Perusahaan"]?.text ?? "",
+      "public_ids": ["CLIENT_${DateTime.now().millisecondsSinceEpoch}"],
+      "ppat_type": jenis,
+      "life_status": lifeStatus.value,
+      "metadata": metadata,
+    };
+
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
 
     try {
       const String mutation = r'''
-        mutation calculatePPAT($input: PPATInput!) {
-          calculatePPAT(input: $input) {
-            status
-            message
-          }
+      mutation UploadAsset(
+        $client_name: String!,
+        $public_ids: [String!]!,
+        $ppat_type: String!,
+        $metadata: JSON!,
+        $life_status: String!
+      ) {
+        uploadAsset(
+          client_name: $client_name,
+          public_ids: $public_ids,
+          ppat_type: $ppat_type,
+          metadata: $metadata,
+          life_status: $life_status
+        ) {
+          message
+          ppat_type
+          metadata
+          public_ids
+          is_existing
         }
-      ''';
+      }
+    ''';
 
-      final HttpLink httpLink = HttpLink('https://desktops-effectively-filename-attached.trycloudflare.com/graphql');
-      final GraphQLClient client = GraphQLClient(link: httpLink, cache: GraphQLCache());
+      final client = GraphQLClient(
+        link: HttpLink(
+          'https://desktops-effectively-filename-attached.trycloudflare.com/graphql',
+        ),
+        cache: GraphQLCache(),
+      );
 
-      final QueryResult result = await client.mutate(MutationOptions(
-        document: gql(mutation),
-        variables: variables,
-      ));
+      final result = await client.mutate(
+        MutationOptions(document: gql(mutation), variables: variables),
+      );
 
       Get.back();
 
       if (result.hasException) {
-        Get.snackbar("Error", "Gagal simpan ke pusat: ${result.exception.toString()}");
+        Get.snackbar("Error", result.exception.toString());
       } else {
         await _dbHelper.deleteDraftByJenis(jenis);
-        Get.snackbar("Sukses", "Berkas PPAT berhasil dikirim!");
-        Get.offAllNamed('/home'); 
+        Get.snackbar("Sukses", "Data berhasil dikirim!");
+        Get.offAllNamed('/home');
       }
     } catch (e) {
       Get.back();
-      Get.snackbar("Error", "Terjadi kesalahan sistem: $e");
+      Get.snackbar("Error", "$e");
     }
   }
 
   @override
   void onClose() {
-    for (var c in controllers.values) { c.dispose(); }
+    for (var c in controllers.values) {
+      c.dispose();
+    }
     super.onClose();
   }
 }

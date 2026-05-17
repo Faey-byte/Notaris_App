@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Routes/routes.dart';
 import 'package:notaris_app/Widget/Login/Login_Teks_Field.dart';
@@ -85,9 +84,9 @@ class _LoginPageState extends State<LoginPage> {
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: () => Get.offAllNamed(AppRoutes.homepage),
-            icon: const Icon(Icons.login, color: Colors.white, size: 20),
-            label: const Text('Log In',
+            icon: const Text('Log In',
                 style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+            label: const Icon(Icons.login, color: Colors.white, size: 20),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF913632),
               padding: const EdgeInsets.symmetric(vertical: 16),

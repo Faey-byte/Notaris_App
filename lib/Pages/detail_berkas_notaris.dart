@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:notaris_app/Controller/Notaris_Controller.dart';
 import 'package:notaris_app/Controller/detail_berkas_controller.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/doc_item.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/info_box.dart';

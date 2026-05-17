@@ -40,7 +40,7 @@ class CalculatorPage extends StatelessWidget {
                 color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.info, color: AppColors.primary),
                   SizedBox(width: 10),

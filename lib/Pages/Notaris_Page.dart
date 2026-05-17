@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Notaris_controller.dart';
+import 'package:notaris_app/Controller/Notaris_Controller.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Home_Page.dart';
 import 'package:notaris_app/Pages/ppat_page.dart';

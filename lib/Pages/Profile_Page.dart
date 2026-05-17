@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/get_core.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -46,7 +48,7 @@ class ProfilePage extends StatelessWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () {},
+            onTap: () => Get.toNamed('/HomePage'),
             child: const Icon(Icons.arrow_back, color: Color(0xFF1E293B), size: 22),
           ),
           const Expanded(
@@ -294,7 +296,7 @@ class ProfilePage extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {},
+        onPressed: () => Get.toNamed('/LoginPage'),
         icon: const Icon(Icons.logout, color: Color(0xFF913632), size: 18),
         label: const Text(
           'Keluar dari Aplikasi',

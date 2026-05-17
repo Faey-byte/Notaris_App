@@ -1,4 +1,7 @@
 import 'package:flutter/services.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get_navigation/src/snackbar/snackbar.dart';
 import 'package:intl/intl.dart';
 
 class CurrencyInputFormatter extends TextInputFormatter {
@@ -9,13 +12,25 @@ class CurrencyInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    String newText = newValue.text.replaceAll('.', '');
+    String newText = newValue.text.replaceAll('.', '').replaceAll(',', '');
 
     if (newText.isEmpty) {
-      return newValue.copyWith(text: '');
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
     }
 
-    int value = int.parse(newText);
+    int? value = int.tryParse(newText);
+
+    if (value == null) {
+      Get.snackbar(
+        "Input tidak valid",
+        "Hanya boleh angka",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return oldValue;
+    }
 
     String formatted = _formatter.format(value);
 

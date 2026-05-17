@@ -1,10 +1,12 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:notaris_app/Controller/auth_controller.dart';
 import 'Routes/routes.dart';
 import 'Routes/pages.dart';
 
 void main() {
+  Get.put(AuthController());
+
   runApp(const MyApp());
 }
 
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Notaris & PPAT',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.loginpage,  // mulai dari login
+      initialRoute: AppRoutes.loginpage,
       getPages: AppPages.pages,
     );
   }

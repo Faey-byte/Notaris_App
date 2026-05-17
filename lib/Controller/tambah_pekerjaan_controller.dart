@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:notaris_app/Model/jenis_pekerjaan_model.dart';
-import 'package:notaris_app/Pages/Dynamic_Form_Page.dart';
+import 'package:notaris_app/Pages/dynamic_form_page.dart';
 
 class TambahPekerjaanController extends GetxController {
   final List<JenisPekerjaanModel> allJenis = [

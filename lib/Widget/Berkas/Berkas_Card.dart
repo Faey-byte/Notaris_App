@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Pages/Detail_Berkas_PPAT.dart';
+import 'package:notaris_app/Pages/detail_berkas_ppat.dart';
 
 class BerkasCard extends StatelessWidget {
   final dynamic data;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter/rendering.dart';
 import 'package:notaris_app/Controller/Ppat_Controller.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Home_Page.dart';
@@ -47,6 +48,7 @@ class PpatPage extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 8),
+
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Obx(
@@ -92,10 +94,15 @@ class PpatPage extends StatelessWidget {
                           ),
 
                           ...controller.statusList.map(
-                            (s) => StatusChip(
-                              label: s.label,
-                              textColor: s.textColor,
-                              bgColor: s.bgColor,
+                            (s) => Obx(
+                              () => StatusChip(
+                                label: s.label,
+                                textColor: s.textColor,
+                                bgColor: s.bgColor,
+                                isSelected:
+                                    controller.selectedStatus.value == s.label,
+                                onTap: () => controller.setStatus(s.label),
+                              ),
                             ),
                           ),
                         ],
@@ -180,10 +187,10 @@ class PpatPage extends StatelessWidget {
        onTap: (index) {
           switch (index) {
             case 0:
-            Get.offAll(() => const HomePage());
+            Get.offAll(() =>  HomePage());
               break;
             case 1:
-              Get.offAll(() => const NotarisPage());
+              Get.offAll(() => NotarisPage());
               break;
             case 2:
               Get.offAll(() => PpatPage());

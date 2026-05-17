@@ -75,7 +75,7 @@ class CustomTextField extends StatelessWidget {
     required this.hint,
     required this.icon,
     required this.controller,
-    this.isPassword = false,
+    this.isPassword = false, required bool showToggle, required bool obscure, required void Function() onToggle, String? errorText,
   });
 
   @override

@@ -45,9 +45,9 @@ class AppBottomNavBar extends StatelessWidget {
           label: "Kalkulator",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.bar_chart_outlined),
-          activeIcon: Icon(Icons.bar_chart),
-          label: "Laporan",
+          icon: Icon(Icons.account_circle_sharp),
+          activeIcon: Icon(Icons.account_circle),
+          label: "Profile",
         ),
       ],
     );

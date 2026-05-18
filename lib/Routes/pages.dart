@@ -1,26 +1,30 @@
 import 'package:get/get.dart';
+import 'package:notaris_app/Pages/Splash_screen.dart';
+import 'package:notaris_app/Pages/Tambah_Berkas_Notaris.dart';
 import 'package:notaris_app/Pages/login_page.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
-import 'package:notaris_app/Pages/Dynamic_Form_Page.dart';
-import 'package:notaris_app/Pages/PPAT_page.dart';
+import 'package:notaris_app/Pages/dynamic_form_page.dart';
+import 'package:notaris_app/Pages/ppat_page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
 import 'package:notaris_app/Pages/Profile_Page.dart';
 import 'package:notaris_app/Pages/Notaris_Page.dart'; // ← tambahan
-import 'package:notaris_app/Pages/main_wrapper.dart';
 import 'package:notaris_app/Pages/signup_page.dart';
 import 'package:notaris_app/Routes/routes.dart';
 
+// pages.dart
+import 'package:notaris_app/Pages/Home_Page.dart'; // ← ganti import
+
 class AppPages {
   static final pages = [
-    GetPage(name: AppRoutes.loginpage,page: () => LoginPage()),
-    GetPage(name: AppRoutes.signuppage,page: () => SignupPage(),
-),
-    GetPage(name: AppRoutes.homepage,        page: () => const MainWrapper()),
-    GetPage(name: AppRoutes.notaris,         page: () => const NotarisPage()), // ← tambahan
+    GetPage(name: AppRoutes.loginpage,       page: () =>  LoginPage()),
+    GetPage(name: AppRoutes.signuppage,      page: () =>  SignupPage()),
+    GetPage(name: AppRoutes.homepage,        page: () =>  HomePage()),
+    GetPage(name: AppRoutes.tambahberkasnotaris,        page: () =>  TambahBerkasNotarisPage()),
+    GetPage(name: AppRoutes.splashpage,      page: () => const SplashScreen(), ),
+    GetPage(name: AppRoutes.notaris,         page: () => NotarisPage()), // ← tambahan
     GetPage(name: AppRoutes.profilepage,     page: () => const ProfilePage()),
-    GetPage(name: AppRoutes.calculator,      page: () =>  CalculatorPage()),
-    GetPage(
-      name: AppRoutes.dynamicForm,
+    GetPage(name: AppRoutes.calculator,      page: () => CalculatorPage()),
+    GetPage(name: AppRoutes.dynamicForm,
       page: () => DynamicFormPage(
         jenis: Get.parameters['jenis'] ?? 'default',
       ),

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Calculator_Controller.dart';
+import 'package:notaris_app/Pages/Home_Page.dart';
+import 'package:notaris_app/Pages/Notaris_Page.dart';
+import 'package:notaris_app/Pages/ppat_page.dart';
+import 'package:notaris_app/Pages/Profile_Page.dart';
+import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 import '../Widget/Text_Field_Widget.dart';
-import '../Widget/App_Bottom_Navbar.dart';
-import 'PPAT_page.dart';
 
 class CalculatorPage extends StatelessWidget {
   CalculatorPage({super.key});
@@ -35,7 +38,7 @@ class CalculatorPage extends StatelessWidget {
                 color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.info, color: AppColors.primary),
                   SizedBox(width: 10),
@@ -194,13 +197,27 @@ class CalculatorPage extends StatelessWidget {
       ),
 
       bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 3,
-        onTap: (index) {
-          if (index == 2) {
-            Get.offAll(() => PpatPage());
+  currentIndex: 3,
+  onTap: (index) {
+          switch (index) {
+            case 0:
+            Get.offAll(() =>  HomePage());
+              break;
+            case 1:
+              Get.offAll(() =>  NotarisPage());
+              break;
+            case 2:
+              Get.offAll(() => PpatPage());
+              break;
+            case 3:
+              Get.offAll(() => CalculatorPage());
+              break;
+            case 4:
+              Get.offAll(() => const ProfilePage());
+              break;
           }
         },
-      ),
+),
     );
   }
 }

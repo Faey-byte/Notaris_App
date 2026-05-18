@@ -64,7 +64,8 @@ class LoginController extends GetxController {
 
   isLoading.value = true;
 
-  final data = await AuthService.login(
+  final authService = AuthService();
+  final data = await authService.login(
     email: emailC.text.trim(),
     password: passC.text.trim(),
   );

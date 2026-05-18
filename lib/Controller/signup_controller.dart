@@ -81,16 +81,13 @@ class SignupController extends GetxController {
         companyName: companyC.text.trim(),
       );
 
-<<<<<<< HEAD
+
       Get.snackbar(
         "Success",
         data["message"] ?? "Signup berhasil",
       );
  
-=======
-      Get.snackbar("Success", data["message"] ?? "Signup berhasil");
 
->>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
       Get.back();
     } catch (e) {
       Get.snackbar("Error", e.toString());

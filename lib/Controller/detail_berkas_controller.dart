@@ -22,7 +22,11 @@ class DetailBerkasController extends GetxController {
 
   DetailBerkasController(this.data);
 
+<<<<<<< HEAD
   final String baseUrl = 'https://ought-drug-includes-yen.trycloudflare.com';
+=======
+  final String baseUrl = 'https://forums-lounge-streams-vegetables.trycloudflare.com';
+>>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
 
   var isLoading = false.obs;
   var alamat = "Memuat lokasi...".obs;

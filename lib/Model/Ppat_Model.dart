@@ -33,6 +33,7 @@
 // }
 
 class BerkasModel {
+
   final int id;
   final int clientId;
   final int caseId;
@@ -52,6 +53,8 @@ class BerkasModel {
     required this.amount,
     required this.lifeStatus,
     required this.description,
+
+
     required this.status,
     required this.createdAt,
     required this.updatedAt,
@@ -60,6 +63,7 @@ class BerkasModel {
   });
 
   factory BerkasModel.fromJson(Map<String, dynamic> json) {
+
     return BerkasModel(
       id: json['id'] ?? 0,
       clientId: json['client_id'] ?? 0,

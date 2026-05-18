@@ -247,6 +247,7 @@ class BerkasCard extends StatelessWidget {
       default:
         return _StatusStyle(
             status.toUpperCase(), const Color(0xFF9E9E9E), const Color(0xFFF5F5F5));
+            
     }
   }
 
@@ -265,8 +266,6 @@ class BerkasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = _getStatusStyle(data.status);
-
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -285,7 +284,6 @@ class BerkasCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -315,7 +313,12 @@ class BerkasCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                _StatusBadge(style: style),
+                
+
+                Obx(() {
+                  final style = _getStatusStyle(data.status);
+                  return _StatusBadge(style: style);
+                }),
               ],
             ),
 
@@ -436,7 +439,7 @@ class _DetailButton extends StatelessWidget {
               fontSize: 13,
             ),
           ),
-          SizedBox(width: 2),
+          const SizedBox(width: 2),
           Icon(Icons.chevron_right, size: 18, color: Color(0xFF8B1A1A)),
         ],
       ),

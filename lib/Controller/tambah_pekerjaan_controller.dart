@@ -31,12 +31,12 @@ class TambahPekerjaanController extends GetxController {
     ),
     JenisPekerjaanModel(
       title: "Tukar Menukar",
-      kode: "TUKAR",
+      kode: "Tukar Menukar",
       desc: "Pertukaran objek antar pihak",
     ),
     JenisPekerjaanModel(
       title: "Turun Waris",
-      kode: "WARIS",
+      kode: "Turun Waris",
       desc: "Pencatatan peralihan hak waris",
     ),
     JenisPekerjaanModel(
@@ -56,17 +56,17 @@ class TambahPekerjaanController extends GetxController {
     ),
     JenisPekerjaanModel(
       title: "Ralat Data",
-      kode: "RALAT",
+      kode: "Ralat Data",
       desc: "Perbaikan administrasi sertifikat",
     ),
     JenisPekerjaanModel(
       title: "Ganti Nama Kreditur",
-      kode: "CESSIE",
+      kode: "Ganti Nama Kreditur",
       desc: "Pengalihan piutang",
     ),
     JenisPekerjaanModel(
       title: "Ganti Blanko",
-      kode: "BLANKO",
+      kode: "Ganti Blanko",
       desc: "Penggantian formulir sertifikat",
     ),
     JenisPekerjaanModel(

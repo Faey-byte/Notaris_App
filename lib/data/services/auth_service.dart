@@ -6,7 +6,11 @@ import 'package:notaris_app/data/services/logging_service.dart';
 class AuthService {
 
   static const String baseUrl =
+<<<<<<< HEAD
       "https://should-achieved-pentium-bool.trycloudflare.com";
+=======
+      "https://desktops-effectively-filename-attached.trycloudflare.com/api/v1";
+>>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
 
   static Future<Map<String, dynamic>> login({
     required String email,

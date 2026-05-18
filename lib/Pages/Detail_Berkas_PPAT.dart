@@ -14,6 +14,7 @@ class DetailBerkasPage extends StatelessWidget {
   DetailBerkasPage({super.key, required this.data});
 
   late final DetailBerkasController c = Get.put(DetailBerkasController(data));
+  late final DetailBerkasController c = Get.put(DetailBerkasController(data));
 
   void confirmChange({
     required String title,
@@ -53,6 +54,7 @@ class DetailBerkasPage extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
             ),
             const SizedBox(height: 12),
+            const Divider(),
             const Divider(),
             ...options.map(
               (e) => ListTile(
@@ -125,156 +127,6 @@ class DetailBerkasPage extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      showStatusPicker(
-                        title: "Status Pekerjaan",
-                        options: ["PENDING", "PROSES", "SELESAI", "REVISI"],
-                        onSelect: (val) => c.updateStatusPekerjaan(val),
-                      );
-                    },
-                    child: StatusBox(
-                      title: "STATUS PEKERJAAN",
-                      value: c.statusPekerjaan.value,
-                      textColor: c.getStatusPekerjaanColor(c.statusPekerjaan.value),
-                      bgColor: c.getStatusPekerjaanBg(c.statusPekerjaan.value),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      showStatusPicker(
-                        title: "Status Pajak",
-                        options: ["Lunas", "Belum Bayar"],
-                        onSelect: (val) => c.updateStatusPajak(val),
-                      );
-                    },
-                    child: StatusBox(
-                      title: "STATUS PAJAK",
-                      value: c.statusPajak.value,
-                      textColor: c.getStatusPajakColor(c.statusPajak.value),
-                      bgColor: c.getStatusPajakBg(c.statusPajak.value),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            InfoBox(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const LabelText("LOKASI OBJEK"),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 16,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          c.alamat.value,
-                          style: const TextStyle(color: AppColors.textPrimary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  "Dokumen Persyaratan",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  "Lihat Semua",
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            c.dokumenList.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: Text("Tidak ada dokumen terlampir.", style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                  )
-                : Column(
-                    children: c.dokumenList.map((doc) => DocItem(doc)).toList(),
-                  ),
-            const SizedBox(height: 20),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "TOTAL BIAYA LAYANAN",
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      c.totalBiaya.value,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text(
-                      "NAMA STAFF",
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      c.namaStaff.value,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        );
-      }),
-    );
-  }
-}
+            )
+          ]);
+      });

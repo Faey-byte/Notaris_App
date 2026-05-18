@@ -213,6 +213,7 @@ class PpatPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
+<<<<<<< HEAD
         child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
             controller.onScrollNotification(notification);
@@ -225,16 +226,30 @@ class PpatPage extends StatelessWidget {
               // Header
               SliverToBoxAdapter(
                 child: PageHeaderWidget(
+=======
+        child: RefreshIndicator(
+          onRefresh: () => controller.fetchBerkasData(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              children: [
+                PageHeaderWidget(
+>>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
                   title: "Berkas PPAT",
                   icon: Icons.insert_drive_file_outlined,
                   buttonLabel: "Tambah",
                   onButtonPressed: controller.goToTambah,
                 ),
+<<<<<<< HEAD
               ),
 
               // Search + Filter
               SliverToBoxAdapter(
                 child: Container(
+=======
+
+                Container(
+>>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
                   color: AppColors.white,
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
                   child: Column(
@@ -244,6 +259,7 @@ class PpatPage extends StatelessWidget {
                         hintText: "Cari nama klien...",
                         onChanged: controller.setSearch,
                       ),
+<<<<<<< HEAD
                       const SizedBox(height: 8),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -258,6 +274,28 @@ class PpatPage extends StatelessWidget {
                         )),
                       ),
                       const SizedBox(height: 10),
+=======
+
+                      const SizedBox(height: 8),
+
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Obx(
+                          () => Row(
+                            children: controller.jenisList.map((jenis) {
+                              return JenisFilterChip(
+                                label: jenis,
+                                isSelected: controller.selectedJenis.value == jenis,
+                                onTap: () => controller.setJenis(jenis),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+>>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -266,6 +304,7 @@ class PpatPage extends StatelessWidget {
                               padding: EdgeInsets.only(right: 10),
                               child: Row(
                                 children: [
+<<<<<<< HEAD
                                   Icon(Icons.filter_list, size: 16, color: AppColors.textSecondary),
                                   SizedBox(width: 4),
                                   Text("STATUS",
@@ -281,12 +320,44 @@ class PpatPage extends StatelessWidget {
                               isSelected: controller.selectedStatus.value == s.label,
                               onTap: () => controller.setStatus(s.label),
                             ))),
+=======
+                                  Icon(
+                                    Icons.filter_list,
+                                    size: 16,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    "STATUS",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            ...controller.statusList.map(
+                              (s) => Obx(
+                                () => StatusChip(
+                                  label: s.label,
+                                  textColor: s.textColor,
+                                  bgColor: s.bgColor,
+                                  isSelected: controller.selectedStatus.value == s.label,
+                                  onTap: () => controller.setStatus(s.label),
+                                ),
+                              ),
+                            ),
+>>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
                           ],
                         ),
                       ),
                     ],
                   ),
                 ),
+<<<<<<< HEAD
               ),
 
               // Label daftar berkas
@@ -325,17 +396,76 @@ class PpatPage extends StatelessWidget {
               SliverToBoxAdapter(
                 child: Obx(() {
                   if (!controller.isLoading.value && controller.filteredList.isEmpty) {
+=======
+
+                const SizedBox(height: 10),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "DAFTAR BERKAS TERKINI",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      Obx(
+                        () => Text(
+                          "${controller.filteredList.length} Berkas ditemukan",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  if (controller.filteredList.isEmpty) {
+>>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
                     return const Padding(
                       padding: EdgeInsets.all(40),
                       child: Column(
                         children: [
+<<<<<<< HEAD
                           Icon(Icons.folder_off_outlined, size: 48, color: AppColors.border),
                           SizedBox(height: 12),
                           Text("Tidak ada data", style: TextStyle(color: AppColors.textSecondary)),
+=======
+                          Icon(
+                            Icons.folder_off_outlined,
+                            size: 48,
+                            color: AppColors.border,
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            "Tidak ada data",
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+>>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
                         ],
                       ),
                     );
                   }
+<<<<<<< HEAD
                   return const SizedBox.shrink();
                 }),
               ),
@@ -374,6 +504,22 @@ class PpatPage extends StatelessWidget {
               ),
 
             ],
+=======
+
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                    itemCount: controller.filteredList.length,
+                    itemBuilder: (context, index) {
+                      final data = controller.filteredList[index];
+                      return BerkasCard(data: data);
+                    },
+                  );
+                }),
+              ],
+            ),
+>>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
           ),
         ),
       ),

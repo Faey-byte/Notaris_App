@@ -5,6 +5,8 @@ import 'Routes/routes.dart';
 import 'Routes/pages.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized(); // wajib untuk async di awal
+
   Get.put(AuthController());
 
   runApp(const MyApp());
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Notaris & PPAT',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.loginpage,
+      initialRoute: AppRoutes.loginpage, // ← mulai dari splash
       getPages: AppPages.pages,
     );
   }

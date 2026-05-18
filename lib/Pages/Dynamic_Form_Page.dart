@@ -11,10 +11,7 @@ class DynamicFormPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(
-      DynamicFormController(jenis),
-      tag: jenis,
-    );
+    final controller = Get.put(DynamicFormController(jenis), tag: jenis);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -67,10 +64,7 @@ class DynamicFormPage extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   ...controller.fields.map(
-                    (f) => FieldBuilder(
-                      field: f,
-                      controller: controller,
-                    ),
+                    (f) => FieldBuilder(field: f, controller: controller),
                   ),
 
                   const SizedBox(height: 80),

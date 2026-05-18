@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:notaris_app/Model/Ppat_Model.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
@@ -6,25 +9,33 @@ import 'package:notaris_app/utils/app_colors.dart';
 
 class StatusModel {
   final String label;
-  final color;
-  final bgColor;
-
+  final dynamic color;
+  final dynamic bgColor;
   StatusModel({
     required this.label,
     required this.color,
     required this.bgColor,
   });
-
-  get textColor => color;
+  dynamic get textColor => color;
 }
 
 class PpatController extends GetxController {
   var search = "".obs;
   var selectedJenis = "Semua Berkas".obs;
-  var selectedStatus = "SEMUA".obs; // ✅ TAMBAHAN
+  var selectedStatus = "SEMUA".obs;
+  var isLoading = false.obs;
+  var isLoadingMore = false.obs;
+  var hasMore = true.obs;
+
+  int _currentPage = 1;
 
   var berkasList = <BerkasModel>[].obs;
   var filteredList = <BerkasModel>[].obs;
+
+  final String baseUrl =
+      'https://should-achieved-pentium-bool.trycloudflare.com';
+  final String _token =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOjEsImVtYWlsIjoibWlraGFlbGpob24yMkBnbWFpbC5jb20iLCJpYXQiOjE3NzkwNzYxMzksImV4cCI6MTc3OTE2MjUzOX0.rCGJ0YtQUaIpWbWjhemyAqpSpTpMcntvabVzPdCKWmY';
 
   final jenisList = [
     "Semua Berkas",
@@ -52,6 +63,11 @@ class PpatController extends GetxController {
       bgColor: AppColors.border,
     ),
     StatusModel(
+      label: "PENDING",
+      color: AppColors.statusProses,
+      bgColor: AppColors.statusProsesBg,
+    ),
+    StatusModel(
       label: "PROSES",
       color: AppColors.statusProses,
       bgColor: AppColors.statusProsesBg,
@@ -71,35 +87,107 @@ class PpatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadDummyData();
+    fetchBerkasData(isRefresh: true);
   }
 
-  void loadDummyData() {
-    berkasList.value = [
-      BerkasModel(
-        nama: "Budi Santoso",
-        no: "2024/AJB/001",
-        jenis: "AJB",
-        tanggal: "12 Jan 2024",
-        status: "PROSES",
-      ),
-      BerkasModel(
-        nama: "Siti Aminah",
-        no: "2024/HIB/002",
-        jenis: "Hibah",
-        tanggal: "10 Jan 2024",
-        status: "SELESAI",
-      ),
-      BerkasModel(
-        nama: "Andi Wijaya",
-        no: "2024/APHT/003",
-        jenis: "APHT",
-        tanggal: "08 Jan 2024",
-        status: "REVISI",
-      ),
-    ];
+  // Dipanggil dari UI via NotificationListener
+  void onScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      final metrics = notification.metrics;
+      final isNearBottom = metrics.pixels >= metrics.maxScrollExtent - 300;
+      if (isNearBottom &&
+          !isLoadingMore.value &&
+          hasMore.value &&
+          !isLoading.value) {
+        fetchBerkasData();
+      }
+    }
+  }
 
-    applyFilter();
+  Future<void> fetchBerkasData({bool isRefresh = false}) async {
+    if (isRefresh) {
+      _currentPage = 1;
+      berkasList.clear();
+      hasMore.value = true;
+      isLoading.value = true;
+    } else {
+      if (isLoadingMore.value || !hasMore.value) return;
+      isLoadingMore.value = true;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/v1/show-all-ppat?page=$_currentPage'),
+        headers: {
+          "Accept": "application/json",
+          "Authorization": "Bearer $_token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> decoded = json.decode(response.body);
+        final List dynamicList = decoded['data'] ?? [];
+
+        if (dynamicList.isEmpty) {
+          hasMore.value = false;
+        } else {
+          final newItems = dynamicList
+              .map((item) => BerkasModel.fromJson(item))
+              .toList();
+
+          berkasList.addAll(newItems);
+          _currentPage++;
+
+          if (dynamicList.length < 5) {
+            hasMore.value = false;
+          }
+        }
+
+        applyFilter();
+        if (isRefresh) fetchLiveGraphQLStatus();
+      } else {
+        Get.snackbar("Error", "Gagal memuat data: ${response.statusCode}");
+      }
+    } catch (e) {
+      Get.snackbar("Koneksi Bermasalah", "Gagal terhubung ke REST API.");
+    } finally {
+      isLoading.value = false;
+      isLoadingMore.value = false;
+    }
+  }
+
+  Future<void> fetchLiveGraphQLStatus() async {
+    if (berkasList.isEmpty) return;
+    try {
+      const String query = r'''
+        query getPpatRecords {
+          getPpatRecords { id status_pengerjaan }
+        }
+      ''';
+      final response = await http.post(
+        Uri.parse('$baseUrl/graphql'),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({"query": query}),
+      );
+      if (response.statusCode == 200) {
+        final resBody = json.decode(response.body);
+        final List? serverData = resBody['data']?['getPpatRecords'];
+        if (serverData != null) {
+          for (var item in serverData) {
+            final serverId = item['id']?.toString() ?? "";
+            final currentStatus = item['status_pengerjaan'] ?? "PENDING";
+            final index = berkasList.indexWhere((b) => b.id == serverId);
+            if (index != -1) {
+              (berkasList[index] as dynamic).status = currentStatus;
+            }
+          }
+          berkasList.refresh();
+          applyFilter();
+        }
+      }
+    } catch (e) {
+      print("Gagal sinkronisasi GraphQL: $e");
+    }
   }
 
   void setSearch(String value) {
@@ -112,40 +200,30 @@ class PpatController extends GetxController {
     applyFilter();
   }
 
-  void setStatus(String status) { // ✅ TAMBAHAN
+  void setStatus(String status) {
     selectedStatus.value = status;
     applyFilter();
   }
 
   void applyFilter() {
     filteredList.value = berkasList.where((item) {
-      final matchSearch = item.nama.toLowerCase().contains(
+      final matchSearch = item.client.name.toLowerCase().contains(
         search.value.toLowerCase(),
       );
-
       final matchJenis = selectedJenis.value == "Semua Berkas"
           ? true
-          : item.jenis == selectedJenis.value;
-
+          : item.caseData.caseName.toLowerCase() ==
+                selectedJenis.value.toLowerCase();
       final matchStatus = selectedStatus.value == "SEMUA"
           ? true
-          : item.status == selectedStatus.value;
-
+          : item.status.toUpperCase() == selectedStatus.value.toUpperCase();
       return matchSearch && matchJenis && matchStatus;
     }).toList();
   }
 
-  void goToTambah() {
-    Get.to(() => TambahPekerjaanPage());
-  }
+  void goToTambah() => Get.to(() => TambahPekerjaanPage());
 
   void onBottomNavTap(int index) {
-    switch (index) {
-      case 2:
-        break;
-      case 3:
-        Get.offAll(() => CalculatorPage());
-        break;
-    }
+    if (index == 3) Get.offAll(() => CalculatorPage());
   }
 }

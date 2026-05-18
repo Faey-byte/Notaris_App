@@ -28,12 +28,15 @@ class LoginController extends GetxController {
 
     if (emailC.text.trim().isEmpty) {
 
-      emailError.value = "Email wajib diisi";
+      emailError.value =
+          "Email wajib diisi";
 
       return;
     }
 
-    if (!GetUtils.isEmail(emailC.text.trim())) {
+    if (!GetUtils.isEmail(
+      emailC.text.trim(),
+    )) {
 
       emailError.value =
           "Format email tidak valid";
@@ -59,50 +62,57 @@ class LoginController extends GetxController {
 
     try {
 
-      isLoading.value = true;
+  isLoading.value = true;
 
-      final data = await AuthService.login(
-        email: emailC.text.trim(),
-        password: passC.text.trim(),
-      );
+  final data = await AuthService.login(
+    email: emailC.text.trim(),
+    password: passC.text.trim(),
+  );
 
-      final token = data["token"];
+  print("DATA LOGIN:");
+  print(data);
 
-      final prefs =
-          await SharedPreferences.getInstance();
+  final token = data["token"];
 
-      await prefs.setString(
-        "token",
-        token,
-      );
+  print("TOKEN DARI API:");
+  print(token);
 
-      await prefs.setString(
-        "email",
-        data["email"] ?? emailC.text,
-      );
+  final prefs =
+      await SharedPreferences.getInstance();
 
-      Get.snackbar(
-        "Success",
-        data["message"] ?? "Login berhasil",
-      );
+  await prefs.setString(
+    "token",
+    token,
+  );
 
-      Get.offAllNamed(
-        AppRoutes.homepage,
-      );
+  await prefs.setString(
+    "email",
+    data["email"] ?? emailC.text,
+  );
 
-    } catch (e) {
+  Get.snackbar(
+    "Success",
+    data["message"] ?? "Login berhasil",
+  );
 
-      Get.snackbar(
-        "Error",
-        e.toString(),
-      );
+  Get.offAllNamed(
+    AppRoutes.homepage,
+  );
 
-      print(e);
+} catch (e) {
 
-    } finally {
+  print("ERROR LOGIN:");
+  print(e);
 
-      isLoading.value = false;
-    }
+  Get.snackbar(
+    "Error",
+    e.toString(),
+  );
+
+} finally {
+
+  isLoading.value = false;
+}
   }
 
   @override

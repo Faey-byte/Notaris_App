@@ -8,8 +8,6 @@ import 'package:notaris_app/Pages/Profile_Page.dart';
 import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 import '../Widget/Text_Field_Widget.dart';
-import '../Widget/App_Bottom_Navbar.dart';
-import 'ppat_page.dart';
 
 class CalculatorPage extends StatelessWidget {
   CalculatorPage({super.key});

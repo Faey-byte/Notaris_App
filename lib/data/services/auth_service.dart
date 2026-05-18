@@ -1,18 +1,19 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:notaris_app/data/services/logging_service.dart';
 
 class AuthService {
 
   static const String baseUrl =
-      "https://ball-catalyst-images-remove.trycloudflare.com/api/v1";
+      "https://should-achieved-pentium-bool.trycloudflare.com";
 
   static Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
 
-    final url = Uri.parse("$baseUrl/signin");
+    final url = Uri.parse("$baseUrl/api/v1/signin");
 
     final response = await http.post(
       url,
@@ -33,9 +34,11 @@ class AuthService {
     final data = jsonDecode(response.body);
 
     if (response.statusCode == 200) {
-
+      await LoggingService.saveLoginData(
+        token: data['token'],
+        email: data['email'],
+      );
       return data;
-
     } else {
 
       throw Exception(
@@ -51,7 +54,7 @@ class AuthService {
   required String companyName,
 }) async {
 
-  final url = Uri.parse("$baseUrl/signup");
+  final url = Uri.parse("$baseUrl/api/v1/signin");
 
   final response = await http.post(
     url,

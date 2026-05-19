@@ -105,7 +105,7 @@ class _SplashBodyState extends State<_SplashBody>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: Stack(
         children: [
           // Warm radial glow di belakang logo
@@ -118,7 +118,7 @@ class _SplashBodyState extends State<_SplashBody>
                 gradient: RadialGradient(
                   colors: [
                     const Color(0xFFA63020).withOpacity(0.09),
-                    Colors.transparent,
+                    const Color.fromARGB(0, 255, 255, 255),
                   ],
                 ),
               ),

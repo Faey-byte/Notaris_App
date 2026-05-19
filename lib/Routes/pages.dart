@@ -7,29 +7,71 @@ import 'package:notaris_app/Pages/dynamic_form_page.dart';
 import 'package:notaris_app/Pages/ppat_page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
 import 'package:notaris_app/Pages/Profile_Page.dart';
-import 'package:notaris_app/Pages/Notaris_Page.dart'; // ← tambahan
+import 'package:notaris_app/Pages/Notaris_Page.dart';
 import 'package:notaris_app/Pages/signup_page.dart';
+import 'package:notaris_app/Pages/Home_Page.dart';
 import 'package:notaris_app/Routes/routes.dart';
-
-// pages.dart
-import 'package:notaris_app/Pages/Home_Page.dart'; // ← ganti import
+import 'package:notaris_app/Controller/Splash_screen_controller.dart'; // ← tambah ini
 
 class AppPages {
   static final pages = [
-    GetPage(name: AppRoutes.loginpage,       page: () =>  LoginPage()),
-    GetPage(name: AppRoutes.signuppage,      page: () =>  SignupPage()),
-    GetPage(name: AppRoutes.homepage,        page: () =>  HomePage()),
-    GetPage(name: AppRoutes.tambahberkasnotaris,        page: () =>  TambahBerkasNotarisPage()),
-    GetPage(name: AppRoutes.splashpage,      page: () => const SplashScreen(), ),
-    GetPage(name: AppRoutes.notaris,         page: () => NotarisPage()), // ← tambahan
-    GetPage(name: AppRoutes.profilepage,     page: () => const ProfilePage()),
-    GetPage(name: AppRoutes.calculator,      page: () => CalculatorPage()),
-    GetPage(name: AppRoutes.dynamicForm,
-      page: () => DynamicFormPage(
-        jenis: Get.parameters['jenis'] ?? 'default',
-      ),
+    GetPage(
+      name: AppRoutes.splashpage,
+      page: () => const SplashScreen(),
+      binding: BindingsBuilder(() {
+        // ← tambah binding
+        Get.put(SplashController());
+      }),
     ),
-    GetPage(name: AppRoutes.ppat,            page: () => PpatPage()),
+    GetPage(name: AppRoutes.loginpage, page: () => LoginPage()),
+    GetPage(name: AppRoutes.signuppage, page: () => SignupPage()),
+    GetPage(name: AppRoutes.homepage, page: () => HomePage()),
+    GetPage(
+      name: AppRoutes.tambahberkasnotaris,
+      page: () => TambahBerkasNotarisPage(),
+    ),
+    GetPage(name: AppRoutes.notaris, page: () => NotarisPage()),
+    GetPage(name: AppRoutes.profilepage, page: () => const ProfilePage()),
+    GetPage(name: AppRoutes.calculator, page: () => CalculatorPage()),
+    GetPage(
+      name: AppRoutes.dynamicForm,
+      page: () => DynamicFormPage(jenis: Get.parameters['jenis'] ?? 'default'),
+    ),
+    GetPage(name: AppRoutes.ppat, page: () => PpatPage()),
     GetPage(name: AppRoutes.tambahPekerjaan, page: () => TambahPekerjaanPage()),
   ];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0
+
+
+
+
+
+
+
+
+
+
+
+0

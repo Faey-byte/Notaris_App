@@ -527,6 +527,6 @@ class PpatPage extends StatelessWidget {
         currentIndex: 2,
         onTap: controller.onBottomNavTap,
       ),
-    );
+    )
   }
 }

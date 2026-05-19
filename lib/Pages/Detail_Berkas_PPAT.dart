@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/detail_berkas_controller.dart';
 import 'package:notaris_app/Model/Ppat_Model.dart';
-import 'package:notaris_app/Widget/Detail_Berkas/doc_item.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/info_box.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/label.dart';
-import 'package:notaris_app/Widget/Detail_Berkas/status_box.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class DetailBerkasPage extends StatelessWidget {

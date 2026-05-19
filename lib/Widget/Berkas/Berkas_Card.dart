@@ -439,7 +439,7 @@ class _DetailButton extends StatelessWidget {
               fontSize: 13,
             ),
           ),
-          const SizedBox(width: 2),
+          SizedBox(width: 2),
           Icon(Icons.chevron_right, size: 18, color: Color(0xFF8B1A1A)),
         ],
       ),

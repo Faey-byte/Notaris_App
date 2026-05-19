@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Notaris & PPAT',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.loginpage, // ← mulai dari splash
+      initialRoute: AppRoutes.splashpage, // ← mulai dari splash
       getPages: AppPages.pages,
     );
   }

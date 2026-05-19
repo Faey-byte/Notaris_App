@@ -5,7 +5,7 @@ import 'package:notaris_app/data/services/logging_service.dart';
 
 class AuthService {
   static const String baseUrl =
-      "https://teach-wiley-grid-reproduced.trycloudflare.com";
+      "https://sagem-unsigned-auto-games.trycloudflare.com";
 
   static Future<Map<String, dynamic>> login({
     required String email,

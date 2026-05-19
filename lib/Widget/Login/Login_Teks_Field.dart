@@ -42,7 +42,7 @@ class LoginTextField extends StatelessWidget {
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-              prefixIcon: Icon(prefixIcon,
+            prefixIcon: Icon(prefixIcon,
                 color: hasError ? const Color(0xFFE53E3E) : const Color(0xFF913632),
                 size: 20),
               suffixIcon: showToggle

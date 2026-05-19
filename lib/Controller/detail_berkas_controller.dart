@@ -23,7 +23,7 @@ class DetailBerkasController extends GetxController {
   DetailBerkasController(this.data);
 
 
-  final String baseUrl = 'https://ought-drug-includes-yen.trycloudflare.com';
+  final String baseUrl = 'https://teach-wiley-grid-reproduced.trycloudflare.com';
 
 
   var isLoading = false.obs;

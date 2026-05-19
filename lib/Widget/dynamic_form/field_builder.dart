@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:notaris_app/Controller/dynamic_form_controller.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
-enum ImageSource { camera, gallery }
 
 class FieldBuilder extends StatelessWidget {
   final DynamicField field;

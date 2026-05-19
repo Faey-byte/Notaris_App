@@ -11,8 +11,7 @@ class DetailBerkasPage extends StatelessWidget {
 
   DetailBerkasPage({super.key, required this.data});
 
-  late final DetailBerkasController c = Get.put(DetailBerkasController(data));
-  late final DetailBerkasController c = Get.put(DetailBerkasController(data));
+  late final DetailBerkasController c = Get.put(DetailBerkasController(data)); // hapus duplikat
 
   void confirmChange({
     required String title,
@@ -52,7 +51,6 @@ class DetailBerkasPage extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
             ),
             const SizedBox(height: 12),
-            const Divider(),
             const Divider(),
             ...options.map(
               (e) => ListTile(
@@ -109,7 +107,6 @@ class DetailBerkasPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
             InfoBox(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,6 +122,10 @@ class DetailBerkasPage extends StatelessWidget {
                   ),
                 ],
               ),
-            )
-          ]);
-      });
+            ),
+          ],
+        );
+      }),
+    );
+  }
+}

@@ -1,26 +1,23 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:notaris_app/Model/Ppat_Model.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
+import 'package:notaris_app/data/services/auth_service.dart';
+import 'package:notaris_app/data/services/logging_service.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class StatusModel {
   final String label;
   final dynamic color;
   final dynamic bgColor;
-
-
   StatusModel({
     required this.label,
     required this.color,
     required this.bgColor,
   });
-
   dynamic get textColor => color;
 }
 
@@ -29,30 +26,38 @@ class PpatController extends GetxController {
   var selectedJenis = "Semua Berkas".obs;
   var selectedStatus = "SEMUA".obs;
   var isLoading = false.obs;
-
   var isLoadingMore = false.obs;
   var hasMore = true.obs;
 
   int _currentPage = 1;
-
+  String _token = '';
 
   var berkasList = <BerkasModel>[].obs;
   var filteredList = <BerkasModel>[].obs;
 
   final String baseUrl =
-      'https://should-achieved-pentium-bool.trycloudflare.com';
-  final String _token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOjEsImVtYWlsIjoibWlraGFlbGpob24yMkBnbWFpbC5jb20iLCJpYXQiOjE3NzkwNzYxMzksImV4cCI6MTc3OTE2MjUzOX0.rCGJ0YtQUaIpWbWjhemyAqpSpTpMcntvabVzPdCKWmY';
-
+      'https://teach-wiley-grid-reproduced.trycloudflare.com';
 
   final jenisList = [
-    "Semua Berkas", "AJB", "APHB", "SKMHT", "APHT", "Hibah",
-    "Tukar Menukar", "Turun Waris", "APHW", "Validasi",
-    "ROYA", "Ralat", "Ganti Nama", "Ganti Blanko", "Lelang", "Wakaf",
+    "Semua Berkas",
+    "AJB",
+    "APHB",
+    "SKMHT",
+    "APHT",
+    "Hibah",
+    "Tukar Menukar",
+    "Turun Waris",
+    "APHW",
+    "Validasi",
+    "ROYA",
+    "Ralat",
+    "Ganti Nama",
+    "Ganti Blanko",
+    "Lelang",
+    "Wakaf",
   ];
 
   final statusList = [
-
     StatusModel(
       label: "SEMUA",
       color: AppColors.textSecondary,
@@ -78,17 +83,31 @@ class PpatController extends GetxController {
       color: AppColors.statusRevisi,
       bgColor: AppColors.statusRevisiBg,
     ),
-
   ];
 
   @override
   void onInit() {
     super.onInit();
+    _initToken();
+  }
 
+  Future<void> _initToken() async {
+    final savedToken = await LoggingService.getToken();
+
+    if (savedToken == null || savedToken.isEmpty) {
+      Get.offAllNamed('/login');
+      return;
+    }
+
+    _token = savedToken;
     fetchBerkasData(isRefresh: true);
   }
 
-  // Dipanggil dari UI via NotificationListener
+  Map<String, String> get _headers => {
+    "Accept": "application/json",
+    "Authorization": "Bearer $_token",
+  };
+
   void onScrollNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
       final metrics = notification.metrics;
@@ -116,10 +135,7 @@ class PpatController extends GetxController {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/v1/show-all-ppat?page=$_currentPage'),
-        headers: {
-          "Accept": "application/json",
-          "Authorization": "Bearer $_token",
-        },
+        headers: _headers,
       );
 
       if (response.statusCode == 200) {
@@ -143,6 +159,9 @@ class PpatController extends GetxController {
 
         applyFilter();
         if (isRefresh) fetchLiveGraphQLStatus();
+      } else if (response.statusCode == 401) {
+        await LoggingService.clearLoginData();
+        Get.offAllNamed('/login');
       } else {
         Get.snackbar("Error", "Gagal memuat data: ${response.statusCode}");
       }
@@ -151,26 +170,25 @@ class PpatController extends GetxController {
     } finally {
       isLoading.value = false;
       isLoadingMore.value = false;
-
     }
   }
 
   Future<void> fetchLiveGraphQLStatus() async {
     if (berkasList.isEmpty) return;
-
     try {
       const String query = r'''
         query getPpatRecords {
           getPpatRecords { id status_pengerjaan }
         }
       ''';
-
       final response = await http.post(
         Uri.parse('$baseUrl/graphql'),
-        headers: {"Content-Type": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $_token",
+        },
         body: json.encode({"query": query}),
       );
-
       if (response.statusCode == 200) {
         final resBody = json.decode(response.body);
         final List? serverData = resBody['data']?['getPpatRecords'];
@@ -181,7 +199,6 @@ class PpatController extends GetxController {
             final index = berkasList.indexWhere((b) => b.id == serverId);
             if (index != -1) {
               (berkasList[index] as dynamic).status = currentStatus;
-
             }
           }
           berkasList.refresh();
@@ -189,9 +206,7 @@ class PpatController extends GetxController {
         }
       }
     } catch (e) {
-
       print("Gagal sinkronisasi GraphQL: $e");
-
     }
   }
 
@@ -212,7 +227,6 @@ class PpatController extends GetxController {
 
   void applyFilter() {
     filteredList.value = berkasList.where((item) {
-
       final matchSearch = item.client.name.toLowerCase().contains(
         search.value.toLowerCase(),
       );
@@ -223,8 +237,6 @@ class PpatController extends GetxController {
       final matchStatus = selectedStatus.value == "SEMUA"
           ? true
           : item.status.toUpperCase() == selectedStatus.value.toUpperCase();
-
-
       return matchSearch && matchJenis && matchStatus;
     }).toList();
   }

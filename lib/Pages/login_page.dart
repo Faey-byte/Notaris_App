@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-<<<<<<< HEAD
+
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -41,143 +41,12 @@ class _LoginPageState extends State<LoginPage> {
               const LoginFooter(),
               const SizedBox(height: 32),
             ],
-=======
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
 
-            child: Column(
-              children: [
-                const SizedBox(height: 60),
-
-                Container(
-                  width: 72,
-                  height: 72,
-
-                  decoration: BoxDecoration(
-                    color: AppColors.primarySoft,
-                    shape: BoxShape.circle,
-                  ),
-
-                  child: const Icon(Icons.gavel, color: AppColors.primary),
-                ),
-
-                const SizedBox(height: 16),
-
-                const Text(
-                  'Notaris & PPAT',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                const Text(
-                  "Selamat Datang",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                const Text(
-                  "Silahkan masuk akun menejemen anda",
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
-                ),
-
-                const SizedBox(height: 30),
-
-                const Align(
-                  alignment: Alignment.centerLeft,
-
-                  child: Text(
-                    "Email/Username",
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                Obx(
-                  () => CustomTextField(
-                    controller: controller.emailC,
-                    hint: "Masukkan Email",
-                    icon: Icons.mail_outline,
-
-                    isPassword: false,
-                    showToggle: false,
-                    obscure: false,
-
-                    onToggle: () {},
-
-                    errorText: controller.emailError.value,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                const Align(
-                  alignment: Alignment.centerLeft,
-
-                  child: Text(
-                    "Password",
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                Obx(
-                  () => CustomTextField(
-                    controller: controller.passC,
-                    hint: "Masukkan Password",
-                    icon: Icons.lock_outline,
-
-                    obscure: controller.obscure.value,
-
-                    showToggle: true,
-
-                    onToggle: controller.togglePassword,
-
-                    errorText: controller.passwordError.value,
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                Obx(
-                  () => PrimaryButton(
-                    text: "Log In",
-
-                    isLoading: controller.isLoading.value,
-
-                    onPressed: controller.login,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                TextButton(
-                  onPressed: () {
-                    Get.toNamed(AppRoutes.signuppage);
-                  },
-
-                  child: const Text("Belum punya akun? Sign Up"),
-                ),
-              ],
-            ),
->>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
           ),
         ),
       ),
     );
   }
-<<<<<<< HEAD
 
   Widget _buildForm() {
     return Column(
@@ -232,6 +101,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-=======
-}
->>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111

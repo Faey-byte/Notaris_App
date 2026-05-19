@@ -19,20 +19,13 @@ class DynamicField {
 
   var isLoading = false.obs;
 
-<<<<<<< HEAD
+
   DynamicField({
     required this.label,
     required this.type,
     required this.placeholder,
   });
-=======
-  var fileValue = "".obs;
-  var fileId = "".obs;
-  var matchKey = "".obs;
-  var isLoading = false.obs;
 
-  DynamicField({required this.label, required this.type, this.placeholder});
->>>>>>> 51c62cdcb0ea11fd6782ec84e3544823243dd111
 }
 
 class DynamicFormController extends GetxController {
@@ -66,7 +59,7 @@ class DynamicFormController extends GetxController {
     loadSavedDraft();
   }
 
-<<<<<<< HEAD
+
   void _clearControllers() {
     for (var c in controllers.values) {
       c.dispose();
@@ -382,7 +375,7 @@ class DynamicFormController extends GetxController {
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
-          'https://ought-drug-includes-yen.trycloudflare.com/api/v1/make-url',
+          'https://teach-wiley-grid-reproduced.trycloudflare.com/api/v1/make-url',
         ),
       );
 
@@ -490,7 +483,7 @@ class DynamicFormController extends GetxController {
 
       final client = GraphQLClient(
         link: HttpLink(
-          'https://ought-drug-includes-yen.trycloudflare.com/graphql',
+          'https://teach-wiley-grid-reproduced.trycloudflare.com/graphql',
           defaultHeaders: {"Authorization": "Bearer $_token"},
 
         ),

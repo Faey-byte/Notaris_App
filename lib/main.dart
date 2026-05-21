@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/auth_controller.dart';
+import 'package:notaris_app/Pages/Home_Page.dart';
 import 'Routes/routes.dart';
 import 'Routes/pages.dart';
 

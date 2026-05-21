@@ -14,7 +14,7 @@ class DbHelper {
     String path = join(await getDatabasesPath(), 'notaris_notary.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // 🔥 Dinaikkan ke versi 2 karena ada perubahan struktur tabel
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE ppat_draft (
@@ -24,9 +24,23 @@ class DbHelper {
             text_value TEXT,
             file_id TEXT,
             matchkey TEXT,
-            url TEXT
+            url TEXT,
+            local_path TEXT -- 🔥 Kolom baru ditambahkan di sini saat instalasi awal
           )
         ''');
+      },
+      // 🔥 Ditambahkan onUpgrade agar pengguna lama otomatis mendapatkan kolom baru tanpa hapus data
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          try {
+            await db.execute('''
+              ALTER TABLE ppat_draft ADD COLUMN local_path TEXT;
+            ''');
+          } catch (e) {
+            // Mengantisipasi jika kolom ternyata sudah terlanjur dibuat sebelumnya
+            print("Info: Kolom local_path mungkin sudah ada. $e");
+          }
+        }
       },
     );
   }
@@ -48,12 +62,13 @@ class DbHelper {
       whereArgs: [jenis],
     );
   }
+
   Future<void> deleteDraftByJenis(String jenis) async {
-  final dbClient = await db;
-  await dbClient.delete(
-    'ppat_draft',
-    where: 'jenis_pekerjaan = ?',
-    whereArgs: [jenis],
-  );
-}
+    final dbClient = await db;
+    await dbClient.delete(
+      'ppat_draft',
+      where: 'jenis_pekerjaan = ?',
+      whereArgs: [jenis],
+    );
+  }
 }

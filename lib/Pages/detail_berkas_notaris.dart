@@ -226,11 +226,11 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
                         children: [
-                          DocItem(_makeDok('Sertifikat_Asli_Scan.jpg', '13 Nov 2023', true)),
-                          DocItem(_makeDok('KTP Pemilik.pdf', '12 Nov 2023', false)),
-                          DocItem(_makeDok('Akta Notaris.pdf', '13 Nov 2023', false)),
-                          DocItem(_makeDok('PBB Tahun Berjalan.pdf', '13 Nov 2023', false)),
-                          DocItem(_makeDok('Foto Objek.jpg', '13 Nov 2023', true)),
+                          // DocItem(_makeDok('Sertifikat_Asli_Scan.jpg', '13 Nov 2023', true)),
+                          // DocItem(_makeDok('KTP Pemilik.pdf', '12 Nov 2023', false)),
+                          // DocItem(_makeDok('Akta Notaris.pdf', '13 Nov 2023', false)),
+                          // DocItem(_makeDok('PBB Tahun Berjalan.pdf', '13 Nov 2023', false)),
+                          // DocItem(_makeDok('Foto Objek.jpg', '13 Nov 2023', true)),
                         ],
                       ),
                     ),
@@ -265,7 +265,7 @@ class DetailBerkasNotarisPage extends StatelessWidget {
   }
 
   // ✅ helper buat DokumenModel — sesuaiin sama field di DocItem
-  _makeDok(String nama, String tanggal, bool isImage) {
-    return DokumenModel(nama: nama, tanggal: tanggal, isImage: isImage);
-  }
+  // DokumenModel _makeDok(String nama, String tanggal, bool isImage) {
+  //   return DokumenModel(nama: nama, tanggal: tanggal, isImage: isImage);
+  // }
 }

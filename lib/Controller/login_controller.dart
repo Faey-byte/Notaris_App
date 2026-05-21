@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import '../Routes/routes.dart';
 
 class LoginController extends GetxController {
@@ -38,13 +39,26 @@ class LoginController extends GetxController {
     try {
       isLoading.value = true;
 
-      // ✅ static method, tidak perlu instance
+      // 1. Panggil API Login
       final data = await AuthService.login(
         email: emailC.text.trim(),
         password: passC.text.trim(),
       );
 
       print("DATA LOGIN: $data");
+
+      // 2. Ambil token dari respons API
+      // Sesuaikan path-nya jika token dibungkus di dalam data['data']['token'] dll.
+      String? token = data["token"]; 
+
+      if (token != null && token.isNotEmpty) {
+        // 3. Inisialisasi SharedPreferences dan simpan token dengan key 'auth_token'
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+        print("TOKEN BERHASIL DISIMPAN KE SHAREDPREFERENCES: $token");
+      } else {
+        print("PERINGATAN: Token tidak ditemukan dalam respons login backend.");
+      }
 
       Get.snackbar("Success", data["message"] ?? "Login berhasil");
       Get.offAllNamed(AppRoutes.homepage);

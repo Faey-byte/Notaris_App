@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:notaris_app/Model/Ppat_Model.dart';
 import 'package:notaris_app/Pages/Detail_Berkas_PPAT.dart';
+import 'package:notaris_app/Controller/Ppat_Controller.dart';
 
 class BerkasCard extends StatelessWidget {
   final BerkasModel data;
@@ -127,7 +128,18 @@ class BerkasCard extends StatelessWidget {
                   ],
                 ),
                 _DetailButton(
-                  onTap: () => Get.to(() => DetailBerkasPage(data: data)),
+                  onTap: () {
+                    Get.to(() => DetailBerkasPage(data: data))?.then((value) {
+                      try {
+                        // Mencari PpatController yang aktif di memori GetX
+                        final ppatController = Get.find<PpatController>();
+
+                        ppatController.onInit();
+                      } catch (e) {
+                        print("Gagal me-refresh halaman daftar berkas utama: $e");
+                      }
+                    });
+                  },
                 ),
               ],
             ),
@@ -187,7 +199,7 @@ class _DetailButton extends StatelessWidget {
         children: [
           Text("Detail",
             style: TextStyle(color: Color(0xFF8B1A1A), fontWeight: FontWeight.w600, fontSize: 13)),
-          SizedBox(width: 2),
+          const SizedBox(width: 2),
           Icon(Icons.chevron_right, size: 18, color: Color(0xFF8B1A1A)),
         ],
       ),

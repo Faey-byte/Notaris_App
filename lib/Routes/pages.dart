@@ -26,52 +26,12 @@ class AppPages {
     GetPage(name: AppRoutes.loginpage, page: () => LoginPage()),
     GetPage(name: AppRoutes.signuppage, page: () => SignupPage()),
     GetPage(name: AppRoutes.homepage, page: () => HomePage()),
-    GetPage(
-      name: AppRoutes.tambahberkasnotaris,
-      page: () => TambahBerkasNotarisPage(),
-    ),
+    GetPage(name: AppRoutes.tambahberkasnotaris,page: () => TambahBerkasNotarisPage(),),
     GetPage(name: AppRoutes.notaris, page: () => NotarisPage()),
     GetPage(name: AppRoutes.profilepage, page: () => const ProfilePage()),
     GetPage(name: AppRoutes.calculator, page: () => CalculatorPage()),
-    GetPage(
-      name: AppRoutes.dynamicForm,
-      page: () => DynamicFormPage(jenis: Get.parameters['jenis'] ?? 'default'),
-    ),
+    GetPage(name: AppRoutes.dynamicForm,page: () => DynamicFormPage(jenis: Get.parameters['jenis'] ?? 'default'),),
     GetPage(name: AppRoutes.ppat, page: () => PpatPage()),
     GetPage(name: AppRoutes.tambahPekerjaan, page: () => TambahPekerjaanPage()),
   ];
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-0
-
-
-
-
-
-
-
-
-
-
-
-0

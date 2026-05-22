@@ -3,16 +3,19 @@ import 'package:get/get.dart';
 import 'package:notaris_app/Controller/detail_berkas_controller.dart';
 import 'package:notaris_app/Model/Ppat_Model.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/doc_item.dart';
+import 'package:notaris_app/Widget/Detail_Berkas/detail_info_card.dart';
+import 'package:notaris_app/Widget/Detail_Berkas/detail_dropdown_card.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class DetailBerkasPage extends StatelessWidget {
   final BerkasModel data;
 
-  DetailBerkasPage({super.key, required this.data});
+  const DetailBerkasPage({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(DetailBerkasController(data));
+    final controller = Get.put(DetailBerkasController());
+    controller.initData(data);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -49,7 +52,7 @@ class DetailBerkasPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      controller.data.client.name,
+                      controller.fallbackName,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -58,7 +61,7 @@ class DetailBerkasPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "#${controller.publicId.value.isNotEmpty ? controller.publicId.value : 'Tanpa ID'}",
+                      "#${controller.publicId.value}",
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
@@ -66,100 +69,60 @@ class DetailBerkasPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
 
-                    _buildSectionCard(
+                    DetailInfoCard(
                       title: "JENIS PEKERJAAN",
-                      child: Text(
-                        controller.data.caseData.caseName.replaceAll('_', ' ').toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
+                      content: data.caseData.caseName
+                          .replaceAll('_', ' ')
+                          .toUpperCase(),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
                     Row(
                       children: [
                         Expanded(
-                          child: _buildSectionCard(
+                          child: DetailDropdownCard(
                             title: "STATUS PENGERJAAN",
-                            child: PopupMenuButton<String>(
-                              onSelected: controller.updateStatusPekerjaan,
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(value: "PENDING", child: Text("PENDING")),
-                                const PopupMenuItem(value: "PROSES", child: Text("PROSES")),
-                                const PopupMenuItem(value: "REVISI", child: Text("REVISI")),
-                                const PopupMenuItem(value: "SELESAI", child: Text("SELESAI")),
-                              ],
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    controller.statusPekerjaan.value.toUpperCase(),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: controller.getStatusPekerjaanColor(controller.statusPekerjaan.value),
-                                    ),
-                                  ),
-                                  const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
-                                ],
-                              ),
+                            currentValue: controller.statusPengerjaan.value,
+                            items: const [
+                              "PENDING",
+                              "PROSES",
+                              "REVISI",
+                              "SELESAI",
+                            ],
+                            onChanged: (val) =>
+                                controller.updateStatusPekerjaan(val!),
+                            backgroundColor: controller.getStatusPekerjaanBg(
+                              controller.statusPengerjaan.value,
+                            ),
+                            textColor: controller.getStatusPekerjaanColor(
+                              controller.statusPengerjaan.value,
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
-
                         Expanded(
-                          child: _buildSectionCard(
+                          child: DetailDropdownCard(
                             title: "STATUS PAJAK",
-                            child: PopupMenuButton<String>(
-                              onSelected: controller.updateStatusPajak,
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(value: "Belum Bayar", child: Text("Belum Bayar")),
-                                const PopupMenuItem(value: "Lunas", child: Text("Lunas")),
-                              ],
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    controller.statusPajak.value,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: controller.getStatusPajakColor(controller.statusPajak.value),
-                                    ),
-                                  ),
-                                  const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
-                                ],
-                              ),
+                            currentValue: controller.statusPajak.value,
+                            items: const ["Belum Bayar", "Lunas"],
+                            onChanged: (val) =>
+                                controller.updateStatusPajak(val!),
+                            backgroundColor: controller.getStatusPajakBg(
+                              controller.statusPajak.value,
+                            ),
+                            textColor: controller.getStatusPajakColor(
+                              controller.statusPajak.value,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
-                    _buildSectionCard(
+                    DetailInfoCard(
                       title: "LOKASI OBJEK",
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.location_on, color: AppColors.textSecondary, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              controller.alamat.value,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      content: controller.alamat.value,
+                      icon: Icons.location_on,
                     ),
                     const SizedBox(height: 24),
 
@@ -175,12 +138,13 @@ class DetailBerkasPage extends StatelessWidget {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {
-
-                          },
+                          onPressed: () {},
                           child: const Text(
                             "Lihat Semua",
-                            style: TextStyle(color: Colors.red, fontSize: 13),
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ],
@@ -194,7 +158,10 @@ class DetailBerkasPage extends StatelessWidget {
                             alignment: Alignment.center,
                             child: const Text(
                               "Tidak ada berkas fisik terunggah",
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
                             ),
                           )
                         : ListView.builder(
@@ -202,7 +169,9 @@ class DetailBerkasPage extends StatelessWidget {
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: controller.dokumenList.length,
                             itemBuilder: (context, index) {
-                              return DocItem(doc: controller.dokumenList[index]);
+                              return DocItem(
+                                doc: controller.dokumenList[index],
+                              );
                             },
                           ),
                   ],
@@ -227,7 +196,6 @@ class DetailBerkasPage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -238,7 +206,6 @@ class DetailBerkasPage extends StatelessWidget {
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textSecondary,
-                            letterSpacing: 0.5,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -252,7 +219,6 @@ class DetailBerkasPage extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
@@ -263,7 +229,6 @@ class DetailBerkasPage extends StatelessWidget {
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textSecondary,
-                            letterSpacing: 0.5,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -284,34 +249,6 @@ class DetailBerkasPage extends StatelessWidget {
           ],
         );
       }),
-    );
-  }
-
-  Widget _buildSectionCard({required String title, required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textSecondary,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          child,
-        ],
-      ),
     );
   }
 }

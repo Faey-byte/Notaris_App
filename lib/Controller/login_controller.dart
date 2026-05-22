@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart';
 import '../Routes/routes.dart';
 
 class LoginController extends GetxController {
@@ -39,7 +39,6 @@ class LoginController extends GetxController {
     try {
       isLoading.value = true;
 
-      // 1. Panggil API Login
       final data = await AuthService.login(
         email: emailC.text.trim(),
         password: passC.text.trim(),
@@ -47,12 +46,11 @@ class LoginController extends GetxController {
 
       print("DATA LOGIN: $data");
 
-      // 2. Ambil token dari respons API
-      // Sesuaikan path-nya jika token dibungkus di dalam data['data']['token'] dll.
+
       String? token = data["token"]; 
 
       if (token != null && token.isNotEmpty) {
-        // 3. Inisialisasi SharedPreferences dan simpan token dengan key 'auth_token'
+
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
         print("TOKEN BERHASIL DISIMPAN KE SHAREDPREFERENCES: $token");
@@ -73,8 +71,8 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    emailC.dispose();
-    passC.dispose();
+    // Biarkan GetX mengelola siklus hidup memori controller secara otomatis.
+    // Menghapus manual dispose di sini mencegah error "used after being disposed".
     super.onClose();
   }
 }

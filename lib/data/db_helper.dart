@@ -14,7 +14,7 @@ class DbHelper {
     String path = join(await getDatabasesPath(), 'notaris_notary.db');
     return await openDatabase(
       path,
-      version: 2, // 🔥 Dinaikkan ke versi 2 karena ada perubahan struktur tabel
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE ppat_draft (
@@ -29,7 +29,6 @@ class DbHelper {
           )
         ''');
       },
-      // 🔥 Ditambahkan onUpgrade agar pengguna lama otomatis mendapatkan kolom baru tanpa hapus data
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           try {
@@ -37,7 +36,6 @@ class DbHelper {
               ALTER TABLE ppat_draft ADD COLUMN local_path TEXT;
             ''');
           } catch (e) {
-            // Mengantisipasi jika kolom ternyata sudah terlanjur dibuat sebelumnya
             print("Info: Kolom local_path mungkin sudah ada. $e");
           }
         }

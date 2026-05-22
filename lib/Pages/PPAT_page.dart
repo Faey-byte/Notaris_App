@@ -111,7 +111,6 @@ class PpatPage extends StatelessWidget {
                 ),
               ),
 
-              // Loading awal
               SliverToBoxAdapter(
                 child: Obx(() {
                   if (controller.isLoading.value) {
@@ -124,7 +123,6 @@ class PpatPage extends StatelessWidget {
                 }),
               ),
 
-              // Empty state
               SliverToBoxAdapter(
                 child: Obx(() {
                   if (!controller.isLoading.value && controller.filteredList.isEmpty) {
@@ -143,7 +141,6 @@ class PpatPage extends StatelessWidget {
                 }),
               ),
 
-              // List berkas
               Obx(() => SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                 sliver: SliverList(
@@ -154,7 +151,6 @@ class PpatPage extends StatelessWidget {
                 ),
               )),
 
-              // Loading more + end indicator
               SliverToBoxAdapter(
                 child: Obx(() {
                   if (controller.isLoadingMore.value) {

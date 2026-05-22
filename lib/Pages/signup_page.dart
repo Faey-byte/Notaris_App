@@ -43,7 +43,7 @@ class SignupPage extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   const Text(
-                    "Create Account",
+                    "Daftar Akun Baru",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -64,7 +64,7 @@ class SignupPage extends StatelessWidget {
                     controller: controller.usernameC,
 
                     decoration: InputDecoration(
-                      hintText: "Username",
+                      hintText: "Masukkan Username",
 
                       prefixIcon: const Icon(Icons.person_outline),
 
@@ -87,7 +87,7 @@ class SignupPage extends StatelessWidget {
                     keyboardType: TextInputType.emailAddress,
 
                     decoration: InputDecoration(
-                      hintText: "Email",
+                      hintText: "Masukkan Email",
 
                       prefixIcon: const Icon(Icons.mail_outline),
 
@@ -111,7 +111,7 @@ class SignupPage extends StatelessWidget {
                       obscureText: controller.obscure.value,
 
                       decoration: InputDecoration(
-                        hintText: "Password",
+                        hintText: "Masukkan Password",
 
                         prefixIcon: const Icon(Icons.lock_outline),
 
@@ -143,7 +143,7 @@ class SignupPage extends StatelessWidget {
                     controller: controller.companyC,
 
                     decoration: InputDecoration(
-                      hintText: "Company Name",
+                      hintText: " Masukkan Nama Perusahaan",
 
                       prefixIcon: const Icon(Icons.business_outlined),
 
@@ -183,7 +183,7 @@ class SignupPage extends StatelessWidget {
                                 color: Colors.white,
                               )
                             : const Text(
-                                "Sign Up",
+                                "Daftar",
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.white,
@@ -208,7 +208,7 @@ class SignupPage extends StatelessWidget {
                         },
 
                         child: const Text(
-                          "Login",
+                          "Masuk",
                           style: TextStyle(color: Color(0xFFB23B35)),
                         ),
                       ),

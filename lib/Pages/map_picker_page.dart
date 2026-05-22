@@ -6,7 +6,6 @@ class MapPickerPage extends StatefulWidget {
   final double initialLat;
   final double initialLng;
 
-  // Constructor menerima data koordinat default langsung dari controller tanpa passing arguments rute
   const MapPickerPage({
     Key? key,
     required this.initialLat,
@@ -24,10 +23,9 @@ class _MapPickerPageState extends State<MapPickerPage> {
   @override
   void initState() {
     super.initState();
-    // Jika koordinat dari luar bernilai 0.0, fallback otomatis ke Jakarta Pusat agar tidak null/error
     double lat = widget.initialLat == 0.0 ? -6.175392 : widget.initialLat;
     double lng = widget.initialLng == 0.0 ? 106.827153 : widget.initialLng;
-    
+
     _selectedLocation = LatLng(lat, lng);
   }
 
@@ -36,12 +34,11 @@ class _MapPickerPageState extends State<MapPickerPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Pilih Lokasi Objek"),
-        backgroundColor: const Color(0xFF801E1D), // Menyesuaikan tema merah aplikasi notaris
+        backgroundColor: const Color(0xFF801E1D),
         foregroundColor: Colors.white,
       ),
       body: Stack(
         children: [
-          // Widget Google Maps Utama
           GoogleMap(
             initialCameraPosition: CameraPosition(
               target: _selectedLocation,
@@ -54,7 +51,6 @@ class _MapPickerPageState extends State<MapPickerPage> {
               setState(() {
                 _selectedLocation = location;
               });
-              // Efek kamera bergeser smooth ke titik baru yang diklik manual
               _mapController?.animateCamera(CameraUpdate.newLatLng(location));
             },
             markers: {
@@ -66,7 +62,6 @@ class _MapPickerPageState extends State<MapPickerPage> {
             },
           ),
 
-          // Tombol floating konfirmasi simpan koordinat di bagian bawah layar peta
           Positioned(
             bottom: 24,
             left: 16,
@@ -80,7 +75,6 @@ class _MapPickerPageState extends State<MapPickerPage> {
                 ),
               ),
               onPressed: () {
-                // Mengembalikan data bertipe LatLng dengan aman ke controller asal tanpa memicu crash null
                 Get.back(result: _selectedLocation);
               },
               child: const Text(

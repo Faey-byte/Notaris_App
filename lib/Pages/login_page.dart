@@ -9,7 +9,7 @@ import '../utils/app_colors.dart';
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
 
-  final controller = Get.put(LoginController());
+  final LoginController controller = Get.put(LoginController());
 
   @override
   Widget build(BuildContext context) {
@@ -109,19 +109,33 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 Obx(
-                  () => CustomTextField(
+                  () => TextFormField(
                     controller: controller.passC,
-                    hint: "Masukkan Password",
-                    icon: Icons.lock_outline,
 
-                    obscure: controller.obscure.value,
+                    obscureText: controller.obscure.value,
 
-                    showToggle: true,
+                    decoration: InputDecoration(
+                      hintText: "Masukkan Password",
 
-                    onToggle: controller.togglePassword,
-      
+                      prefixIcon: const Icon(Icons.lock_outline),
 
-                    errorText: controller.passwordError.value,
+                      suffixIcon: IconButton(
+                        onPressed: controller.togglePassword,
+
+                        icon: Icon(
+                          controller.obscure.value
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                      ),
+
+                      filled: true,
+                      fillColor: Colors.white,
+
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
                 ),
 
@@ -144,7 +158,7 @@ class LoginPage extends StatelessWidget {
                     Get.toNamed(AppRoutes.signuppage);
                   },
 
-                  child: const Text("Belum punya akun? Sign Up"),
+                  child: const Text("Belum punya akun? Daftar "),
                 ),
               ],
             ),

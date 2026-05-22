@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:notaris_app/Pages/Otp_Pages.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
 
 class SignupController extends GetxController {
@@ -74,24 +76,20 @@ class SignupController extends GetxController {
     try {
       isLoading.value = true;
 
+      final userEmail = emailC.text.trim();
+
       final data = await AuthService.signup(
         username: usernameC.text.trim(),
-        email: emailC.text.trim(),
+        email: userEmail,
         password: passC.text.trim(),
         companyName: companyC.text.trim(),
       );
 
+      Get.snackbar("Success", data["message"] ?? "Signup berhasil");
 
-      Get.snackbar(
-        "Success",
-        data["message"] ?? "Signup berhasil",
-      );
- 
-
-      Get.back();
+      Get.to(() => const OtpPages(), arguments: userEmail);
     } catch (e) {
       Get.snackbar("Error", e.toString());
-
       print(e);
     } finally {
       isLoading.value = false;
@@ -100,10 +98,10 @@ class SignupController extends GetxController {
 
   @override
   void onClose() {
-    usernameC.dispose();
-    emailC.dispose();
-    passC.dispose();
-    companyC.dispose();
+    // usernameC.dispose();
+    // emailC.dispose();
+    // passC.dispose();
+    // companyC.dispose();
 
     super.onClose();
   }

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Calculator_Controller.dart';
+import 'package:notaris_app/Model/rekap_laporan_model.dart';
 import 'package:notaris_app/Pages/Home_Page.dart';
 import 'package:notaris_app/Pages/Notaris_Page.dart';
 import 'package:notaris_app/Pages/ppat_page.dart';
 import 'package:notaris_app/Pages/Profile_Page.dart';
+import 'package:notaris_app/Pages/rekap_laporan_page.dart';
 import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
+import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 import '../Widget/Text_Field_Widget.dart';
 
@@ -197,11 +200,11 @@ class CalculatorPage extends StatelessWidget {
       ),
 
       bottomNavigationBar: AppBottomNavBar(
-  currentIndex: 3,
-  onTap: (index) {
+        currentIndex: 3,
+        onTap: (index) {
           switch (index) {
             case 0:
-            Get.offAll(() =>  HomePage());
+              Get.offAll(() =>  HomePage());
               break;
             case 1:
               Get.offAll(() =>  NotarisPage());
@@ -213,11 +216,25 @@ class CalculatorPage extends StatelessWidget {
               Get.offAll(() => CalculatorPage());
               break;
             case 4:
-              Get.offAll(() => const ProfilePage());
+              Get.offAll(() => RekapLaporanPage(
+                    data: RekapLaporanModel(
+                      totalBerkas: 0,
+                      totalSelesai: 0,
+                      totalProses: 0,
+                      pemasukan: 0.0,
+                      chartData: [],
+                    ),
+                    tanggalAwal: "01-05-2026",
+                    tanggalAkhir: "23-05-2026",
+                    jenisLayanan: JenisLayanan.values.first,
+                    onJenisLayananChanged: (layanan) {},
+                    currentIndex: 4,
+                    onBack: () => Get.back(),
+                  ));
               break;
           }
         },
-),
+      ),
     );
   }
 }

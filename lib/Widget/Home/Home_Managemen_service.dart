@@ -14,7 +14,7 @@ class HomeManagementServices extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Management Services',
+          'Layanan Manajemen',
           style: TextStyle(
             color: Color(0xFF0F172A),
             fontSize: 17,
@@ -54,8 +54,10 @@ class HomeManagementServices extends StatelessWidget {
           onTap: () => Get.toNamed('/rekap'),
         ),
         const SizedBox(height: 16),
+        
+        // Tombol Logout Utama
         GestureDetector(
-          onTap: controller.logout,
+          onTap: controller.logout, // Memanggil dialog konfirmasi logout
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -88,7 +90,7 @@ class HomeManagementServices extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         'Logout dari aplikasi',
                         style: TextStyle(

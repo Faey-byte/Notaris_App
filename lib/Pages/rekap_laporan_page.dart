@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:notaris_app/Model/rekap_laporan_model.dart';
+import 'package:notaris_app/Pages/Home_Page.dart';
+import 'package:notaris_app/Pages/Notaris_Page.dart';
+import 'package:notaris_app/Pages/Ppat_Page.dart';
+import 'package:notaris_app/Pages/Calculator_Page.dart';
+import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
 import 'package:notaris_app/Widget/Laporan/export_pdf_button.dart';
 import 'package:notaris_app/Widget/Laporan/filter_laporan_card.dart';
 import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
@@ -17,6 +24,8 @@ class RekapLaporanPage extends StatelessWidget {
   final VoidCallback? onTanggalAkhirTap;
   final VoidCallback? onExportPdf;
   final VoidCallback? onBack;
+  final int currentIndex;
+  final ValueChanged<int>? onNavTap;
 
   const RekapLaporanPage({
     super.key,
@@ -25,6 +34,8 @@ class RekapLaporanPage extends StatelessWidget {
     required this.tanggalAkhir,
     required this.jenisLayanan,
     required this.onJenisLayananChanged,
+    required this.currentIndex,
+    this.onNavTap,
     this.onTanggalAwalTap,
     this.onTanggalAkhirTap,
     this.onExportPdf,
@@ -37,6 +48,27 @@ class RekapLaporanPage extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
       body: _buildBody(),
+      bottomNavigationBar: AppBottomNavBar(
+        currentIndex: 4,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Get.offAll(() => HomePage());
+              break;
+            case 1:
+              Get.offAll(() => NotarisPage());
+              break;
+            case 2:
+              Get.offAll(() => PpatPage());
+              break;
+            case 3:
+              Get.offAll(() => CalculatorPage());
+              break;
+            case 4:
+              break;
+          }
+        },
+      ),
     );
   }
 
@@ -131,6 +163,5 @@ class RekapLaporanPage extends StatelessWidget {
       return 'Rp ${k.toStringAsFixed(0)}K';
     }
     return 'Rp ${value.toStringAsFixed(0)}';
-    
   }
 }

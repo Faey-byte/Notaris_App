@@ -4,14 +4,19 @@ import 'package:notaris_app/Pages/Tambah_Berkas_Notaris.dart';
 import 'package:notaris_app/Pages/login_page.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/dynamic_form_page.dart';
-import 'package:notaris_app/Pages/ppat_page.dart';
+import 'package:notaris_app/Pages/Ppat_Page.dart'; // Memastikan case-sensitive folder aman
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
 import 'package:notaris_app/Pages/Profile_Page.dart';
 import 'package:notaris_app/Pages/Notaris_Page.dart';
 import 'package:notaris_app/Pages/signup_page.dart';
 import 'package:notaris_app/Pages/Home_Page.dart';
+import 'package:notaris_app/Pages/rekap_laporan_page.dart';
 import 'package:notaris_app/Routes/routes.dart';
 import 'package:notaris_app/Controller/Splash_screen_controller.dart';
+
+// KUNCI PERBAIKAN 1: Import Model & Widget Laporan agar tidak "Undefined class"
+import 'package:notaris_app/Model/rekap_laporan_model.dart';
+import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart'; 
 
 class AppPages {
   static final pages = [
@@ -38,5 +43,28 @@ class AppPages {
     ),
     GetPage(name: AppRoutes.ppat, page: () => PpatPage()),
     GetPage(name: AppRoutes.tambahPekerjaan, page: () => TambahPekerjaanPage()),
+    
+    GetPage(
+      name: AppRoutes.rekap,
+      page: () {
+        final RekapLaporanModel dataLaporan = Get.arguments ?? RekapLaporanModel(
+          totalBerkas: 0,
+          totalSelesai: 0,
+          totalProses: 0,
+          pemasukan: 0.0,
+          chartData: [],
+        );
+
+        return RekapLaporanPage(
+          data: dataLaporan,
+          tanggalAwal: "01-05-2026",
+          tanggalAkhir: "23-05-2026",
+          jenisLayanan: JenisLayanan.values.first, 
+          onJenisLayananChanged: (layanan) {},
+          currentIndex: 4, 
+          onBack: () => Get.back(),
+        );
+      },
+    ),
   ];
 }

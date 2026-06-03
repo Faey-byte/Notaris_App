@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Home_Controller.dart';
-
+import 'package:notaris_app/Model/rekap_laporan_model.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Notaris_Page.dart';
 import 'package:notaris_app/Pages/ppat_page.dart';
 import 'package:notaris_app/Pages/Profile_Page.dart';
+import 'package:notaris_app/Pages/rekap_laporan_page.dart';
 import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
 import 'package:notaris_app/Widget/Home/Home_Income_Card.dart';
 import 'package:notaris_app/Widget/Home/Home_Managemen_service.dart';
 import 'package:notaris_app/Widget/Home/Home_Quick_Overview.dart';
 import 'package:notaris_app/Widget/Home/Home_Top_Nav.dart';
+import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
@@ -39,7 +41,21 @@ class HomePage extends StatelessWidget {
               Get.offAll(() => CalculatorPage());
               break;
             case 4:
-              Get.offAll(() => const ProfilePage());
+              Get.offAll(() => RekapLaporanPage(
+                    data: RekapLaporanModel(
+                      totalBerkas: 0,
+                      totalSelesai: 0,
+                      totalProses: 0,
+                      pemasukan: 0.0,
+                      chartData: [],
+                    ),
+                    tanggalAwal: "01-05-2026",
+                    tanggalAkhir: "23-05-2026",
+                    jenisLayanan: JenisLayanan.values.first,
+                    onJenisLayananChanged: (layanan) {},
+                    currentIndex: 4,
+                    onBack: () => Get.back(),
+                  ));
               break;
           }
         },

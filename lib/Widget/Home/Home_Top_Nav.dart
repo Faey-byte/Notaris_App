@@ -40,7 +40,7 @@ class HomeTopNav extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'System Management Portal',
+                    'Manajemen Sistem',
                     style: TextStyle(
                       color: Color(0xFF64748B),
                       fontSize: 11,

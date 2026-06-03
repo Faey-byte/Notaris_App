@@ -21,7 +21,7 @@ class DetailBerkasPage extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.white,
-        elevation: 0,
+        elevation: 1,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
@@ -119,10 +119,21 @@ class DetailBerkasPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
 
-                    DetailInfoCard(
-                      title: "LOKASI OBJEK",
-                      content: controller.alamat.value,
-                      icon: Icons.location_on,
+                    Obx(
+                      () => DetailInfoCard(
+                        title: "LOKASI OBJEK",
+                        content: controller.alamat.value,
+                        icon: Icons.location_on,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    Obx(
+                      () => DetailInfoCard(
+                        title: "STAFF PENANGGUNG JAWAB",
+                        content: controller.namaStaff.value,
+                        icon: Icons.person_outline,
+                      ),
                     ),
                     const SizedBox(height: 24),
 
@@ -209,12 +220,14 @@ class DetailBerkasPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          controller.totalBiaya.value,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                        Obx(
+                          () => Text(
+                            controller.totalBiaya.value,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                         ),
                       ],
@@ -232,12 +245,14 @@ class DetailBerkasPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          controller.namaStaff.value,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                        Obx(
+                          () => Text(
+                            controller.namaStaff.value,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                         ),
                       ],

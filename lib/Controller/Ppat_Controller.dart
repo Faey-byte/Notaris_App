@@ -36,7 +36,7 @@ class PpatController extends GetxController {
   var filteredList = <BerkasModel>[].obs;
 
   final String baseUrl =
-      'https://clause-structure-ran-scholarships.trycloudflare.com';
+      'https://virtually-persian-nevertheless-properties.trycloudflare.com';
 
   final jenisList = [
     "Semua Berkas",

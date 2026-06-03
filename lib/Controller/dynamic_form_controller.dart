@@ -56,7 +56,7 @@ class DynamicFormController extends GetxController {
   ];
 
   final String baseUrl =
-      'https://clause-structure-ran-scholarships.trycloudflare.com';
+      'https://virtually-persian-nevertheless-properties.trycloudflare.com';
 
   @override
   void onInit() {
@@ -654,6 +654,8 @@ class DynamicFormController extends GetxController {
       "ppat_type": jenis,
       "life_status": "married",
       "metadata": metadata,
+      "staff_name": controllers["Nama Staff"]?.text ?? "Staff Notaris",
+      "institude_id": 1,
     };
 
     try {
@@ -664,13 +666,17 @@ class DynamicFormController extends GetxController {
           $ppat_type: String!,
           $metadata: JSON!,
           $life_status: String!
+          $staff_name: String!
+          $institude_id: Int!
         ) {
           uploadAsset(
             client_name: $client_name,
             public_ids: $public_ids,
             ppat_type: $ppat_type,
             metadata: $metadata,
-            life_status: $life_status
+            life_status: $life_status,
+            staff_name: $staff_name,
+            institude_id: $institude_id
           ) {
             message
             ppat_type

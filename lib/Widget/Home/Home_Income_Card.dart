@@ -62,7 +62,7 @@ class HomeIncomeCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Total Bulanan Income',
+                      'Total Pemasukan Bulanan',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.80),
                         fontSize: 13,
@@ -119,7 +119,7 @@ class HomeIncomeCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'VS LAST MONTH',
+                      'Bulan Lalu',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.60),
                         fontSize: 10,

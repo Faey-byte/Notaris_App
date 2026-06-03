@@ -5,7 +5,7 @@ import 'package:notaris_app/data/services/logging_service.dart';
 
 class AuthService {
   static const String baseUrl =
-      "https://clause-structure-ran-scholarships.trycloudflare.com/api/v1";
+      "https://virtually-persian-nevertheless-properties.trycloudflare.com/api/v1";
 
   static Future<Map<String, dynamic>> login({
     required String email,

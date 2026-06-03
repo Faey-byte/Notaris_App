@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:notaris_app/Controller/detail_berkas_controller.dart'; // FIX: Mengimpor DokumenModel dari Controller
+// Import controller agar widget mengenali class DokumenModel
+import 'package:notaris_app/Controller/detail_berkas_controller.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class DocItem extends StatelessWidget {
+  // Pastikan tipe data di bawah ini adalah DokumenModel, bukan yang lain
   final DokumenModel doc;
 
   const DocItem({super.key, required this.doc});
@@ -23,6 +25,7 @@ class DocItem extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
+              // Sekarang doc.isImage tidak akan eror lagi
               color: doc.isImage ? AppColors.statusSelesaiBg : AppColors.statusProsesBg,
               borderRadius: BorderRadius.circular(10),
             ),
@@ -48,6 +51,7 @@ class DocItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
+                  // Sekarang doc.tanggal tidak akan eror lagi
                   "Diunggah ${doc.tanggal}",
                   style: const TextStyle(
                     fontSize: 11,

@@ -97,7 +97,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       onTanggalAwalTap: _onTanggalAwalTap,
       onTanggalAkhirTap: _onTanggalAkhirTap,
       onExportPdf: _onExportPdf,
-      onBack: () => Navigator.pop(context),
+      onBack: () => Navigator.pop(context), currentIndex: 0,
     );
   }
 }

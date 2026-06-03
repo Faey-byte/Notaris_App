@@ -1,271 +1,259 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Notaris_Controller.dart';
 import 'package:notaris_app/Controller/detail_berkas_controller.dart';
+import 'package:notaris_app/Model/Ppat_Model.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/doc_item.dart';
-import 'package:notaris_app/Widget/Detail_Berkas/info_box.dart';
-import 'package:notaris_app/Widget/Detail_Berkas/label.dart';
+import 'package:notaris_app/Widget/Detail_Berkas/detail_info_card.dart';
+import 'package:notaris_app/Widget/Detail_Berkas/detail_dropdown_card.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
-class DetailBerkasNotarisPage extends StatelessWidget {
-  final AktaItem item;
-  const DetailBerkasNotarisPage({super.key, required this.item});
+class DetailBerkasPage extends StatelessWidget {
+  final BerkasModel data;
+
+  const DetailBerkasPage({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(DetailBerkasController());
+    controller.initData(data);
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ─── HEADER ───
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Get.back(), // ✅ back ke notaris page
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.arrow_back, color: Color(0xFF334155), size: 20),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Detail Berkas',
-                    style: TextStyle(
-                      color: Color(0xFF111827),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      appBar: AppBar(
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => Get.back(),
+        ),
+        title: const Text(
+          "Detail Berkas",
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: false,
+      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
+        }
 
-            // ─── CONTENT ───
+        return Column(
+          children: [
             Expanded(
               child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ─── NAMA + NOMOR ───
-                    Container(
-                      width: double.infinity,
-                      color: Colors.white,
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.nama,
-                            style: const TextStyle(
-                              color: Color(0xFF111827),
-                              fontSize: 26,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'No. Akta: ${item.no}',
-                            style: const TextStyle(
-                              color: Color(0xFF6B7280),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // ─── status badge ───
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: _getBgColor(item.status),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              item.status,
-                              style: TextStyle(
-                                color: _getFgColor(item.status),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
+                    Text(
+                      controller.fallbackName,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-
-                    const SizedBox(height: 8),
-
-                    // ─── INFO BOXES ───
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: [
-                          // ✅ pake InfoBox + LabelText
-                          InfoBox(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                LabelText('JENIS PEKERJAAN'),
-                                const SizedBox(height: 4),
-                                Text(
-                                  item.jenis,
-                                  style: const TextStyle(
-                                    color: Color(0xFF111827),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          InfoBox(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                LabelText('TANGGAL'),
-                                const SizedBox(height: 4),
-                                Text(
-                                  item.tanggal,
-                                  style: const TextStyle(
-                                    color: Color(0xFF111827),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          // ─── biaya + staff ───
-                          InfoBox(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    LabelText('TOTAL BIAYA LAYANAN'),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      'Rp 4.500.000',
-                                      style: TextStyle(
-                                        color: Color(0xFF111827),
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    LabelText('NAMA STAFF'),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      'Andini Putri',
-                                      style: TextStyle(
-                                        color: Color(0xFF111827),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 4),
+                    Text(
+                      "#${controller.publicId.value}",
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
                       ),
                     ),
+                    const SizedBox(height: 20),
 
-                    const SizedBox(height: 16),
-
-                    // ─── DOKUMEN ───
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Dokumen Persyaratan',
-                            style: TextStyle(
-                              color: Color(0xFF111827),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {},
-                            child: const Text(
-                              'Lihat Semua',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    DetailInfoCard(
+                      title: "JENIS PEKERJAAN",
+                      content: data.caseData.caseName
+                          .replaceAll('_', ' ')
+                          .toUpperCase(),
                     ),
-
                     const SizedBox(height: 12),
 
-                    // ✅ pake DocItem yang udah ada
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: [
-                          // DocItem(_makeDok('Sertifikat_Asli_Scan.jpg', '13 Nov 2023', true)),
-                          // DocItem(_makeDok('KTP Pemilik.pdf', '12 Nov 2023', false)),
-                          // DocItem(_makeDok('Akta Notaris.pdf', '13 Nov 2023', false)),
-                          // DocItem(_makeDok('PBB Tahun Berjalan.pdf', '13 Nov 2023', false)),
-                          // DocItem(_makeDok('Foto Objek.jpg', '13 Nov 2023', true)),
-                        ],
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DetailDropdownCard(
+                            title: "STATUS PENGERJAAN",
+                            currentValue: controller.statusPengerjaan.value,
+                            items: const [
+                              "PENDING",
+                              "PROSES",
+                              "REVISI",
+                              "SELESAI",
+                            ],
+                            onChanged: (val) =>
+                                controller.updateStatusPekerjaan(val!),
+                            backgroundColor: controller.getStatusPekerjaanBg(
+                              controller.statusPengerjaan.value,
+                            ),
+                            textColor: controller.getStatusPekerjaanColor(
+                              controller.statusPengerjaan.value,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DetailDropdownCard(
+                            title: "STATUS PAJAK",
+                            currentValue: controller.statusPajak.value,
+                            items: const ["Belum Bayar", "Lunas"],
+                            onChanged: (val) =>
+                                controller.updateStatusPajak(val!),
+                            backgroundColor: controller.getStatusPajakBg(
+                              controller.statusPajak.value,
+                            ),
+                            textColor: controller.getStatusPajakColor(
+                              controller.statusPajak.value,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 12),
 
-                    const SizedBox(height: 32),
+                    // Dibungkus Obx agar pembaruan data Lokasi Objek dari API langsung di-render
+                    Obx(() => DetailInfoCard(
+                      title: "LOKASI OBJEK",
+                      content: controller.alamat.value,
+                      icon: Icons.location_on,
+                    )),
+                    const SizedBox(height: 24),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Dokumen Persyaratan",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text(
+                            "Lihat Semua",
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Render List Dokumen Terunggah secara Reaktif
+                    controller.dokumenList.isEmpty
+                        ? Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 32),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              "Tidak ada berkas fisik terunggah",
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: controller.dokumenList.length,
+                            itemBuilder: (context, index) {
+                              return DocItem(
+                                doc: controller.dokumenList[index],
+                              );
+                            },
+                          ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Bottom Nav Container Total Biaya & Nama Staff
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "TOTAL BIAYA LAYANAN",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        // Dibungkus Obx agar nominal berubah real-time saat API selesai dimuat
+                        Obx(() => Text(
+                          controller.totalBiaya.value,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        )),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "NAMA STAFF",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        // Dibungkus Obx agar nama staff penanggungjawab berkas langsung diperbarui
+                        Obx(() => Text(
+                          controller.namaStaff.value,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        )),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
-
-  Color _getBgColor(String status) {
-    switch (status) {
-      case 'SELESAI': return const Color(0xFFDCFCE7);
-      case 'PROSES':  return const Color(0xFFFEF3C7);
-      case 'REVISI':  return const Color(0xFFDBEAFE);
-      default:        return const Color(0xFFF1F5F9);
-    }
-  }
-
-  Color _getFgColor(String status) {
-    switch (status) {
-      case 'SELESAI': return const Color(0xFF15803D);
-      case 'PROSES':  return const Color(0xFFB45309);
-      case 'REVISI':  return const Color(0xFF1D4ED8);
-      default:        return const Color(0xFF64748B);
-    }
-  }
-
-  // ✅ helper buat DokumenModel — sesuaiin sama field di DocItem
-  // DokumenModel _makeDok(String nama, String tanggal, bool isImage) {
-  //   return DokumenModel(nama: nama, tanggal: tanggal, isImage: isImage);
-  // }
 }

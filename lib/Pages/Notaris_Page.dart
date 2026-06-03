@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Notaris_Controller.dart';
+import 'package:notaris_app/Model/rekap_laporan_model.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Home_Page.dart';
 import 'package:notaris_app/Pages/ppat_page.dart';
 import 'package:notaris_app/Pages/Profile_Page.dart';
 import 'package:notaris_app/Pages/Tambah_Berkas_Notaris.dart';
+import 'package:notaris_app/Pages/rekap_laporan_page.dart';
 import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
+import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
 import 'package:notaris_app/Widget/Notaris/Notaris_Card.dart';
 import 'package:notaris_app/Widget/Berkas/Page_Header_Widget.dart';
 import 'package:notaris_app/Widget/Berkas/Search_Bar_Widget.dart';
@@ -24,14 +27,38 @@ class NotarisPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 1,
+        currentIndex: 2,
         onTap: (index) {
           switch (index) {
-            case 0: Get.offAll(() => HomePage()); break;
-            case 1: break;
-            case 2: Get.offAll(() => PpatPage()); break;
-            case 3: Get.offAll(() => CalculatorPage()); break;
-            case 4: Get.offAll(() => const ProfilePage()); break;
+            case 0:
+              Get.offAll(() =>  HomePage());
+              break;
+            case 1:
+              Get.offAll(() =>  NotarisPage());
+              break;
+            case 2:
+              Get.offAll(() => PpatPage());
+              break;
+            case 3:
+              Get.offAll(() => CalculatorPage());
+              break;
+            case 4:
+              Get.offAll(() => RekapLaporanPage(
+                    data: RekapLaporanModel(
+                      totalBerkas: 0,
+                      totalSelesai: 0,
+                      totalProses: 0,
+                      pemasukan: 0.0,
+                      chartData: [],
+                    ),
+                    tanggalAwal: "01-05-2026",
+                    tanggalAkhir: "23-05-2026",
+                    jenisLayanan: JenisLayanan.values.first,
+                    onJenisLayananChanged: (layanan) {},
+                    currentIndex: 4,
+                    onBack: () => Get.back(),
+                  ));
+              break;
           }
         },
       ),

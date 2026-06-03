@@ -75,4 +75,28 @@ class LoginController extends GetxController {
     // Menghapus manual dispose di sini mencegah error "used after being disposed".
     super.onClose();
   }
+
+  Future<void> sesilogin(String email, String password) async {
+    try {
+      isLoading.value = true;
+      
+      // ... Logika hit API login kamu di sini ...
+      // Misal respon API sukses dan mengembalikan data token:
+      String tokenDariApi = "ini_contoh_token_jwt_12345"; 
+
+      // KUNCI SESI: Simpan token ke SharedPreferences
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', tokenDariApi);
+
+      Get.snackbar("Sukses", "Selamat datang kembali!");
+      
+      // Tendang ke HomePage dan hapus history login
+      Get.offAllNamed(AppRoutes.homepage);
+      
+    } catch (e) {
+      Get.snackbar("Error", "Login gagal: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

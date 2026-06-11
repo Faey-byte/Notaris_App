@@ -47,7 +47,7 @@ class AppBottomNavBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: Icon(Icons.account_circle_sharp),
           activeIcon: Icon(Icons.account_circle),
-          label: "Profile",
+          label: "Laporan",
         ),
       ],
     );

@@ -1,11 +1,19 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:notaris_app/Controller/dynamic_form_controller.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class UploadFieldWidget extends StatelessWidget {
   final DynamicField field;
+  final DynamicFormController controller;
 
-  const UploadFieldWidget(this.field, {super.key});
+  const UploadFieldWidget(
+    this.field, {
+    super.key,
+    required this.controller,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,19 +28,24 @@ class UploadFieldWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(field.label),
+          Text(
+            field.label,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
 
-          Container(
-            height: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: const Center(
-              child: Icon(Icons.insert_drive_file),
-            ),
-          ),
+          Obx(() {
+            return Container(
+              height: 160,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+                color: Colors.grey[50],
+              ),
+              child: _buildPreviewContent(),
+            );
+          }),
 
           const SizedBox(height: 10),
 
@@ -40,7 +53,7 @@ class UploadFieldWidget extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => controller.pickAndUploadFile(field, ImageSource.camera),
                   icon: const Icon(Icons.camera_alt),
                   label: const Text("Ambil"),
                 ),
@@ -48,13 +61,98 @@ class UploadFieldWidget extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => controller.pickAndUploadFile(field, ImageSource.gallery),
                   icon: const Icon(Icons.image),
                   label: const Text("Galeri"),
                 ),
               ),
             ],
           )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewContent() {
+    // 1. JIKA ADA FILE LOKAL: Langsung render gambar lokal fisik di HP (Solusi Utama)
+    if (field.localFilePath.value.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(11),
+        child: Stack(
+          children: [
+            Image.file(
+              File(field.localFilePath.value),
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+            // Jika proses upload ke Cloudinary masih berjalan di background, beri indikator loading kecil di pojok gambar
+            if (field.isLoading.value)
+              Container(
+                color: Colors.black45,
+                child: const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    // 2. KONDISI CADANGAN: Jika path lokal kosong tapi URL server sudah tersimpan (misal dari draf database lokal)
+    if (field.fileValue.value.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(11),
+        child: Image.network(
+          field.fileValue.value,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            // Jika link Cloudinary raw-nya menolak di-render sebagai gambar, tampilkan fallback ikon dokumen sukses
+            return _buildDocumentFallback();
+          },
+        ),
+      );
+    }
+
+    // 3. JIKA SEDANG UPLOAD AWAL DAN BELUM ADA BERKAS SAMA SEKALI
+    if (field.isLoading.value) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    // 4. TAMPILAN AWAL SEBELUM MEMILIH BERKAS
+    return const Center(
+      child: Icon(
+        Icons.insert_drive_file,
+        size: 40,
+        color: Colors.grey,
+      ),
+    );
+  }
+
+  Widget _buildDocumentFallback() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.verified, color: Colors.green, size: 48),
+          const SizedBox(height: 8),
+          Text(
+            "Berkas Tersimpan Aman",
+            style: TextStyle(
+              fontSize: 13, 
+              color: Colors.grey[800], 
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            "Terunggah di Cloud Server",
+            style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+          ),
         ],
       ),
     );

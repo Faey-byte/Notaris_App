@@ -9,5 +9,6 @@ class AppRoutes {
   static const String dynamicForm = '/DynamicForm/:jenis';
   static const String ppat = '/PPAT';
   static const String tambahPekerjaan = '/TambahPekerjaan';
-  static const String notaris = '/Notaris'; // ← tambahan
+  static const String notaris = '/Notaris';
+  static const String rekap = '/LaporanPage';
 }

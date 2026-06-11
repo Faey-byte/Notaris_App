@@ -136,5 +136,3 @@ class TambahPekerjaanPage extends StatelessWidget {
     );
   }
 }
-
-

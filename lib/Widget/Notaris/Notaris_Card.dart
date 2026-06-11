@@ -30,7 +30,7 @@ class NotarisCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(                                          // ✅ tambahan
-      onTap: () => Get.to(() => DetailBerkasNotarisPage(item: item)),// ✅ tambahan
+      // onTap: () => Get.to(() => DetailBerkasNotarisPage(item: item)),// ✅ tambahan
       child: Container(
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 10),

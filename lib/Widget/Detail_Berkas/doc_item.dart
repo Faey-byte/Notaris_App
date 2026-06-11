@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+// Import controller agar widget mengenali class DokumenModel
 import 'package:notaris_app/Controller/detail_berkas_controller.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class DocItem extends StatelessWidget {
+  // Pastikan tipe data di bawah ini adalah DokumenModel, bukan yang lain
   final DokumenModel doc;
 
-  const DocItem(this.doc, {super.key});
+  const DocItem({super.key, required this.doc});
 
   @override
   Widget build(BuildContext context) {
@@ -23,21 +25,16 @@ class DocItem extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: doc.isImage
-                  ? AppColors.primarySoft
-                  : AppColors.greySoft,
+              // Sekarang doc.isImage tidak akan eror lagi
+              color: doc.isImage ? AppColors.statusSelesaiBg : AppColors.statusProsesBg,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              doc.isImage
-                  ? Icons.image_outlined
-                  : Icons.description_outlined,
-              color: doc.isImage
-                  ? AppColors.primary
-                  : AppColors.textSecondary,
+              doc.isImage ? Icons.image_outlined : Icons.description_outlined,
+              color: doc.isImage ? AppColors.statusSelesai : AppColors.statusProses,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,23 +42,29 @@ class DocItem extends StatelessWidget {
                 Text(
                   doc.nama,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
+                  // Sekarang doc.tanggal tidak akan eror lagi
                   "Diunggah ${doc.tanggal}",
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: AppColors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.more_vert,
-              color: AppColors.textSecondary),
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+            onPressed: () {},
+          ),
         ],
       ),
     );

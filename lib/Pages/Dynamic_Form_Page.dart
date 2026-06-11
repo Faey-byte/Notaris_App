@@ -15,7 +15,6 @@ class DynamicFormPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-
       appBar: AppBar(
         backgroundColor: AppColors.white,
         elevation: 0,
@@ -28,7 +27,6 @@ class DynamicFormPage extends StatelessWidget {
           ),
         ),
       ),
-
       body: Obx(() {
         if (controller.fields.isEmpty) {
           return const Center(child: Text("Form belum tersedia"));
@@ -48,9 +46,7 @@ class DynamicFormPage extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   const Text(
                     "DOKUMEN PERSYARATAN",
                     style: TextStyle(
@@ -60,18 +56,16 @@ class DynamicFormPage extends StatelessWidget {
                       letterSpacing: 1,
                     ),
                   ),
-
                   const SizedBox(height: 12),
 
-                  ...controller.fields.map(
-                    (f) => FieldBuilder(field: f, controller: controller),
-                  ),
+                  ...controller.fields.map((f) {
+                    return FieldBuilder(field: f, controller: controller);
+                  }),
 
                   const SizedBox(height: 80),
                 ],
               ),
             ),
-
             Container(
               padding: const EdgeInsets.all(16),
               color: AppColors.white,

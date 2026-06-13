@@ -56,6 +56,9 @@ class UploadFieldWidget extends StatelessWidget {
                   onPressed: () => controller.pickAndUploadFile(field, ImageSource.camera),
                   icon: const Icon(Icons.camera_alt),
                   label: const Text("Ambil"),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -64,6 +67,9 @@ class UploadFieldWidget extends StatelessWidget {
                   onPressed: () => controller.pickAndUploadFile(field, ImageSource.gallery),
                   icon: const Icon(Icons.image),
                   label: const Text("Galeri"),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                  ),
                 ),
               ),
             ],

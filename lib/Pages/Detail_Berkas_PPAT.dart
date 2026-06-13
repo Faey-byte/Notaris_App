@@ -127,16 +127,7 @@ class DetailBerkasPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-
-                    Obx(
-                      () => DetailInfoCard(
-                        title: "STAFF PENANGGUNG JAWAB",
-                        content: controller.namaStaff.value,
-                        icon: Icons.person_outline,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
+                    
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

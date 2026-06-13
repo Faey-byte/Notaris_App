@@ -5,9 +5,19 @@ import 'package:notaris_app/Pages/Home_Page.dart';
 import 'Routes/routes.dart';
 import 'Routes/pages.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:notaris_app/data/db_helper.dart'; 
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized(); // wajib untuk async di awal
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); 
+
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    print("Info: Gagal memuat file .env: $e");
+  }
+
+  print("🔄 Menghubungkan ke SQLite untuk pengecekan data...");
+  await DbHelper().cekSeluruhDataDraft();
 
   Get.put(AuthController());
 
@@ -22,13 +32,8 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Notaris & PPAT',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.splashpage, // ← mulai dari splash
+      initialRoute: AppRoutes.splashpage,
       getPages: AppPages.pages,
     );
   }
-  
-  Future<void> main() async {
-  await dotenv.load(fileName: ".env");
-  runApp(MyApp());
-}
 }

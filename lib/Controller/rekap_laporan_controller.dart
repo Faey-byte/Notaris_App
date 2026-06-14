@@ -15,7 +15,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
   DateTime _tanggalAwal = DateTime(2021, 4, 11);
   DateTime _tanggalAkhir = DateTime(2022, 4, 30);
 
-  RekapLaporanModel _notarisData = const RekapLaporanModel(
+  final RekapLaporanModel _notarisData = const RekapLaporanModel(
     totalBerkas: 124,
     totalSelesai: 98,
     totalProses: 26,
@@ -30,7 +30,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     ],
   );
 
-  RekapLaporanModel _ppatData = const RekapLaporanModel(
+  final RekapLaporanModel _ppatData = const RekapLaporanModel(
     totalBerkas: 182,
     totalSelesai: 79,
     totalProses: 103,

@@ -27,7 +27,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
     double lng = widget.initialLng == 0.0 ? 106.827153 : widget.initialLng;
 
     _selectedLocation = LatLng(lat, lng);
-  }
+  } 
 
   @override
   Widget build(BuildContext context) {

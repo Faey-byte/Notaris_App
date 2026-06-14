@@ -25,7 +25,7 @@ class DokumenModel {
 
 class DetailBerkasController extends GetxController {
   final String baseUrl =
-      'https://virtually-persian-nevertheless-properties.trycloudflare.com/api/v1';
+      'htt        ps://virtually-persian-nevertheless-properties.trycloudflare.com/api/v1';
 
   var isLoading = false.obs;
 

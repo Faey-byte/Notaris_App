@@ -1,6 +1,8 @@
+// login_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
+import 'package:notaris_app/Controller/Notification_Controller.dart'; // ← tambah import ini
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Routes/routes.dart';
 
@@ -46,16 +48,24 @@ class LoginController extends GetxController {
 
       print("DATA LOGIN: $data");
 
-
-      String? token = data["token"]; 
+      String? token = data["token"];
+      String? userId = data["id"]?.toString(); // ← ambil userId dari response
 
       if (token != null && token.isNotEmpty) {
-
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
-        print("TOKEN BERHASIL DISIMPAN KE SHAREDPREFERENCES: $token");
-      } else {
-        print("PERINGATAN: Token tidak ditemukan dalam respons login backend.");
+
+        // Simpan userId juga untuk WS
+        if (userId != null) {
+          await prefs.setString('user_id', userId);
+        }
+
+        print("TOKEN BERHASIL DISIMPAN: $token");
+      }
+
+      // ← Mulai listening notif WS setelah login berhasil
+      if (userId != null) {
+        Get.find<NotificationController>().startListening(userId);
       }
 
       Get.snackbar("Success", data["message"] ?? "Login berhasil");
@@ -71,32 +81,6 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    // Biarkan GetX mengelola siklus hidup memori controller secara otomatis.
-    // Menghapus manual dispose di sini mencegah error "used after being disposed".
     super.onClose();
-  }
-
-  Future<void> sesilogin(String email, String password) async {
-    try {
-      isLoading.value = true;
-      
-      // ... Logika hit API login kamu di sini ...
-      // Misal respon API sukses dan mengembalikan data token:
-      String tokenDariApi = "ini_contoh_token_jwt_12345"; 
-
-      // KUNCI SESI: Simpan token ke SharedPreferences
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('auth_token', tokenDariApi);
-
-      Get.snackbar("Sukses", "Selamat datang kembali!");
-      
-      // Tendang ke HomePage dan hapus history login
-      Get.offAllNamed(AppRoutes.homepage);
-      
-    } catch (e) {
-      Get.snackbar("Error", "Login gagal: $e");
-    } finally {
-      isLoading.value = false;
-    }
   }
 }

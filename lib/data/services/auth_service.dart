@@ -2,10 +2,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:notaris_app/data/services/logging_service.dart';
-
+import 'package:notaris_app/config/base_url.dart';
 class AuthService {
-  static const String baseUrl =
-      "https://virtually-persian-nevertheless-properties.trycloudflare.com/api/v1";
+  static const String baseUrl = "${ApiConfig.baseUrl}/api/v1";
 
   static Future<Map<String, dynamic>> login({
     required String email,

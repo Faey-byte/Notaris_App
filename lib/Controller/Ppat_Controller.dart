@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:notaris_app/Model/Ppat_Model.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
+import 'package:notaris_app/config/base_url.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
 import 'package:notaris_app/data/services/logging_service.dart';
 import 'package:notaris_app/utils/app_colors.dart';
@@ -35,8 +36,7 @@ class PpatController extends GetxController {
   var berkasList = <BerkasModel>[].obs;
   var filteredList = <BerkasModel>[].obs;
 
-  final String baseUrl =
-      'https://virtually-persian-nevertheless-properties.trycloudflare.com';
+  static const String baseUrl = "${ApiConfig.baseUrl}";
 
   final jenisList = [
     "Semua Berkas",

@@ -258,7 +258,7 @@ class DetailBerkasController extends GetxController {
 
       final uri = Uri.parse('$baseUrl/read-ppat').replace(
         queryParameters: {
-          'ppat_type': ppatType,
+          'ppat_type': 'WAKAF',
           'url': documentUrl,
           'id': fileId,
         },
@@ -282,21 +282,47 @@ print("PPAT TYPE: $ppatType");
         debugPrint(
             "[DOCUMENT] ✅ Image received: ${imageBytes.lengthInBytes} bytes");
 
+        // ✅ FIX: Dialog dibenahi agar tinggi menyesuaikan gambar
+        // (tidak ada lagi area putih kosong di bawah foto)
         Get.dialog(
           Dialog(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppBar(
-                  title: Text(documentName),
-                  automaticallyImplyLeading: true,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
+            backgroundColor: Colors.transparent,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(Get.context!).size.height * 0.85,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Image.memory(imageBytes),
-                  ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppBar(
+                      title: Text(documentName),
+                      automaticallyImplyLeading: false,
+                      leading: IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => Get.back(),
+                      ),
+                    ),
+                    Flexible(
+                      child: InteractiveViewer(
+                        child: Image.memory(
+                          imageBytes,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -415,7 +441,7 @@ print("PPAT TYPE: $ppatType");
 
       final uri = Uri.parse('$baseUrl/read-ppat').replace(
         queryParameters: {
-          'ppat_type': ppatType,
+          'ppat_type': 'WAKAF',
           'url': url,
           'id': fileId,
         },

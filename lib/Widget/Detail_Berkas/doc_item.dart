@@ -104,7 +104,7 @@ class DocItem extends StatelessWidget {
         documentName: doc.queryHint,
         documentUrl: doc.url,
         clientId: clientId,
-        ppatType: doc.ppatType,
+        ppatType: doc.ppatType, 
       );
     } catch (e) {
       debugPrint("[DOC] ❌ Exception: $e");

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Home_Controller.dart';
-import 'package:notaris_app/Controller/Notification_Controller.dart';
 import 'package:notaris_app/Model/rekap_laporan_model.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Notaris_Page.dart';
@@ -18,7 +17,6 @@ import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
 class HomePage extends StatelessWidget {
   HomePage({super.key});
    final controller = Get.put(HomeController());
-   final notifController = Get.find<NotificationController>();
   @override
   Widget build(BuildContext context) {
     // Pastikan controller ter-register

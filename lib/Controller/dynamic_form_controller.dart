@@ -1,4 +1,4 @@
-  import 'dart:convert';
+import 'dart:convert';
   import 'dart:io';
   import 'package:flutter/material.dart';
   import 'package:get/get.dart';
@@ -487,7 +487,7 @@
             filename: p.basename(file.path),
           ),
         );
-
+  
         final streamed = await request.send();
         final response = await http.Response.fromStream(streamed);
 
@@ -629,7 +629,58 @@
       }
     }
 
+    // ============================================================
+    // ✅ VALIDASI SEMUA FIELD (Length Logic)
+    // - text/number  : controller.text.length == 0 -> kosong
+    // - upload       : fileValue.value.length == 0 -> belum upload
+    // - coordinate   : latitude & longitude masih 0.0 -> belum dipilih
+    // Jika ada yang kosong, tampilkan snackbar dan return false
+    // ============================================================
+    bool validateFields() {
+      for (var field in fields) {
+        if (field.type == "text" || field.type == "number") {
+          final value = controllers[field.label]?.text ?? "";
+          if (value.length == 0) {
+            Get.snackbar(
+              "Peringatan",
+              "Tidak bisa lanjut, karena kolom kosong",
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+            return false;
+          }
+        } else if (field.type == "upload") {
+          if (field.fileValue.value.length == 0) {
+            Get.snackbar(
+              "Peringatan",
+              "Tidak bisa lanjut, karena kolom kosong",
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+            return false;
+          }
+        } else if (field.type == "coordinate") {
+          if (field.latitude.value == 0.0 && field.longitude.value == 0.0) {
+            Get.snackbar(
+              "Peringatan",
+              "Tidak bisa lanjut, karena kolom kosong",
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
     Future<void> submitForm() async {
+      // ✅ Validasi semua field sebelum lanjut submit
+      if (!validateFields()) return;
+
       try {
         final files = fields
             .where((f) => f.type == "upload" && f.fileValue.value.isNotEmpty)

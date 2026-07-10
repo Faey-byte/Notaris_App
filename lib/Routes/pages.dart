@@ -41,28 +41,25 @@ class AppPages {
     ),
     GetPage(name: AppRoutes.ppat, page: () => PpatPage()),
     GetPage(name: AppRoutes.tambahPekerjaan, page: () => TambahPekerjaanPage()),
-    
-    GetPage(
-      name: AppRoutes.rekap,
-      page: () {
-        final RekapLaporanModel dataLaporan = Get.arguments ?? RekapLaporanModel(
-          totalBerkas: 0,
-          totalSelesai: 0,
-          totalProses: 0,
-          pemasukan: 0.0,
-          chartData: [],
-        );
-
-        return RekapLaporanPage(
-          data: dataLaporan,
-          tanggalAwal: "01-05-2026",
-          tanggalAkhir: "23-05-2026",
-          jenisLayanan: JenisLayanan.values.first, 
-          onJenisLayananChanged: (layanan) {},
-          currentIndex: 4, 
-          onBack: () => Get.back(),
-        );
-      },
-    ),
   ];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

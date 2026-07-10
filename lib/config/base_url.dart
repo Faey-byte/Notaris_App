@@ -1,3 +1,3 @@
 class ApiConfig {
-  static const String baseUrl = "https://moving-customize-detect-fighter.trycloudflare.com";
+  static const String baseUrl = "https://rio-bridal-constraint-joined.trycloudflare.com";
 } 

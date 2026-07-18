@@ -27,7 +27,7 @@ class NotarisPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 2,
+        currentIndex: 1,
         onTap: (index) {
           switch (index) {
             case 0:

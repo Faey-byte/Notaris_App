@@ -8,6 +8,7 @@ import 'package:notaris_app/Pages/Ppat_Page.dart'; // Memastikan case-sensitive 
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
 import 'package:notaris_app/Pages/Profile_Page.dart';
 import 'package:notaris_app/Pages/Notaris_Page.dart';
+import 'package:notaris_app/Pages/notification_page.dart';
 import 'package:notaris_app/Pages/signup_page.dart';
 import 'package:notaris_app/Pages/Home_Page.dart';
 import 'package:notaris_app/Pages/rekap_laporan_page.dart';
@@ -40,6 +41,7 @@ class AppPages {
       page: () => DynamicFormPage(jenis: Get.parameters['jenis'] ?? 'default'),
     ),
     GetPage(name: AppRoutes.ppat, page: () => PpatPage()),
+    GetPage(name: AppRoutes.notificationPage, page: () => NotificationPage()),
     GetPage(name: AppRoutes.tambahPekerjaan, page: () => TambahPekerjaanPage()),
   ];
 }

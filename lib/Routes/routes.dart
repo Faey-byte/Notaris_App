@@ -11,4 +11,5 @@ class AppRoutes {
   static const String tambahPekerjaan = '/TambahPekerjaan';
   static const String notaris = '/Notaris';
   static const String rekap = '/LaporanPage';
+  static const String notificationPage = '/notification';
 }

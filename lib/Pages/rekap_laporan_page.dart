@@ -13,6 +13,7 @@ import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
 import 'package:notaris_app/Widget/Laporan/stat_grid_widget.dart';
 import 'package:notaris_app/Widget/Laporan/visualisasi_data_chart.dart';
 import 'package:notaris_app/utils/app_colors.dart';
+import 'package:notaris_app/Controller/rekap_laporan_controller.dart';
 
 class RekapLaporanPage extends StatelessWidget {
   final RekapLaporanModel data;
@@ -65,7 +66,8 @@ class RekapLaporanPage extends StatelessWidget {
               Get.offAll(() => CalculatorPage());
               break;
             case 4:
-              break;
+              Get.offAll(() => const RekapLaporanController());
+  break;
           }
         },
       ),

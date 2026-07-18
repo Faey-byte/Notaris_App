@@ -16,8 +16,9 @@ void main() async {
     print("Info: Gagal memuat file .env: $e");
   }
 
-  print("🔄 Menghubungkan ke SQLite untuk pengecekan data...");
-  await DbHelper().cekSeluruhDataDraft();
+  print("reload info data notaris");
+  await DbHelper().cekSeluruhDataNotaris();
+
 
   Get.put(AuthController());
 

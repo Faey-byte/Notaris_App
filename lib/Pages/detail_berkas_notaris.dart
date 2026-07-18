@@ -1,21 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/detail_berkas_controller.dart';
-import 'package:notaris_app/Model/Ppat_Model.dart';
+import 'package:notaris_app/Controller/detail_berkas_notaris_controller.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/doc_item.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/detail_info_card.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/detail_dropdown_card.dart';
+import 'package:notaris_app/Widget/Detail_Berkas/notaris_doc_item.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
-class DetailBerkasPage extends StatelessWidget {
-  final BerkasModel data;
+class DetailBerkasNotarisPage extends StatelessWidget {
+  final String clientName;
+  final String? publicId;      // opsional, kalau nanti sudah kesimpen
+  final String? localBerkasId; // opsional, buat fallback total biaya
 
-  const DetailBerkasPage({super.key, required this.data});
+  const DetailBerkasNotarisPage({
+    super.key,
+    required this.clientName,
+    this.publicId,
+    this.localBerkasId,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(DetailBerkasController());
-    controller.initData(data);
+    final controller = Get.put(DetailBerkasNotarisController());
+    controller.initData(
+      clientName: clientName,
+      publicIdParam: publicId,
+      localBerkasId: localBerkasId,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -27,7 +38,7 @@ class DetailBerkasPage extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
         title: const Text(
-          "Detail Berkas",
+          "Detail Berkas Notaris",
           style: TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -52,7 +63,7 @@ class DetailBerkasPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      controller.fallbackName,
+                      controller.fallbackName.value,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -71,60 +82,28 @@ class DetailBerkasPage extends StatelessWidget {
 
                     DetailInfoCard(
                       title: "JENIS PEKERJAAN",
-                      content: data.caseData.caseName
-                          .replaceAll('_', ' ')
-                          .toUpperCase(),
+                      content: controller.jenisPekerjaan.value,
                     ),
                     const SizedBox(height: 12),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DetailDropdownCard(
-                            title: "STATUS PENGERJAAN",
-                            currentValue: controller.statusPengerjaan.value,
-                            items: const [
-                              "PENDING",
-                              "PROSES",
-                              "REVISI",
-                              "SELESAI",
-                            ],
-                            onChanged: (val) =>
-                                controller.updateStatusPekerjaan(val!),
-                            backgroundColor: controller.getStatusPekerjaanBg(
-                              controller.statusPengerjaan.value,
-                            ),
-                            textColor: controller.getStatusPekerjaanColor(
-                              controller.statusPengerjaan.value,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: DetailDropdownCard(
-                            title: "STATUS PAJAK",
-                            currentValue: controller.statusPajak.value,
-                            items: const ["Belum Bayar", "Lunas"],
-                            onChanged: (val) =>
-                                controller.updateStatusPajak(val!),
-                            backgroundColor: controller.getStatusPajakBg(
-                              controller.statusPajak.value,
-                            ),
-                            textColor: controller.getStatusPajakColor(
-                              controller.statusPajak.value,
-                            ),
-                          ),
-                        ),
+                    DetailDropdownCard(
+                      title: "STATUS PENGERJAAN",
+                      currentValue: controller.statusPengerjaan.value,
+                      items: const [
+                        "PENDING",
+                        "PROSES",
+                        "REVISI",
+                        "SELESAI",
                       ],
+                      onChanged: (val) =>
+                          controller.updateStatusPekerjaan(val!),
+                      backgroundColor: controller.getStatusPekerjaanBg(
+                        controller.statusPengerjaan.value,
+                      ),
+                      textColor: controller.getStatusPekerjaanColor(
+                        controller.statusPengerjaan.value,
+                      ),
                     ),
-                    const SizedBox(height: 12),
-
-                    // Dibungkus Obx agar pembaruan data Lokasi Objek dari API langsung di-render
-                    Obx(() => DetailInfoCard(
-                      title: "LOKASI OBJEK",
-                      content: controller.alamat.value,
-                      icon: Icons.location_on,
-                    )),
                     const SizedBox(height: 24),
 
                     Row(
@@ -138,21 +117,10 @@ class DetailBerkasPage extends StatelessWidget {
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            "Lihat Semua",
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
 
-                    // Render List Dokumen Terunggah secara Reaktif
                     controller.dokumenList.isEmpty
                         ? Container(
                             width: double.infinity,
@@ -171,17 +139,15 @@ class DetailBerkasPage extends StatelessWidget {
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: controller.dokumenList.length,
                             itemBuilder: (context, index) {
-                              return DocItem(
-                                doc: controller.dokumenList[index],
-                              );
-                            },
+  final doc = controller.dokumenList[index];
+  return NotarisDocItem(doc: doc); // ✅
+},
                           ),
                   ],
                 ),
               ),
             ),
 
-            // Bottom Nav Container Total Biaya & Nama Staff
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
@@ -212,7 +178,6 @@ class DetailBerkasPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        // Dibungkus Obx agar nominal berubah real-time saat API selesai dimuat
                         Obx(() => Text(
                           controller.totalBiaya.value,
                           style: const TextStyle(
@@ -236,7 +201,6 @@ class DetailBerkasPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        // Dibungkus Obx agar nama staff penanggungjawab berkas langsung diperbarui
                         Obx(() => Text(
                           controller.namaStaff.value,
                           style: const TextStyle(

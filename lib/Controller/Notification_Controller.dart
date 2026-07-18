@@ -8,23 +8,22 @@ class NotificationController extends GetxController {
   final unreadCount = 0.obs;
   final isConnected = false.obs;
 
-  // Panggil ini saat user sudah login
+  get isLoading => null;
+
   void startListening(String userId) {
     _wsService.connect(userId);
     isConnected.value = true;
 
     _wsService.notifications.listen((notif) {
-      notifications.insert(0, notif); // terbaru di atas
+      notifications.insert(0, notif);
       unreadCount.value++;
 
-      // Tampilkan snackbar otomatis saat notif masuk
       Get.snackbar(
         '🔔 Notifikasi Baru',
         notif.message,
         duration: const Duration(seconds: 3),
         snackPosition: SnackPosition.TOP,
         onTap: (_) {
-          // Navigasi ke halaman PPAT kalau di-tap
           if (notif.ppatId != null) {
             Get.toNamed('/ppat', arguments: notif.ppatId);
           }

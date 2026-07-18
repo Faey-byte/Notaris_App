@@ -14,7 +14,7 @@ class DbHelper {
     String path = join(await getDatabasesPath(), 'notaris_notary.db');
     return await openDatabase(
       path,
-      version: 4, // ✅ Naik ke versi 4: fix tipe publicID INTEGER → TEXT
+      version: 5, // ✅ Naik ke versi 5: tambah tabel notaris_draft
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE ppat_draft (
@@ -28,6 +28,19 @@ class DbHelper {
             local_path TEXT,
             client_id TEXT,
             publicID TEXT
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE notaris_draft (
+            id_field TEXT PRIMARY KEY,
+            berkas_id TEXT,
+            jenis_pekerjaan TEXT,
+            label TEXT,
+            text_value TEXT,
+            url TEXT,
+            matchkey TEXT,
+            local_path TEXT
           )
         ''');
       },
@@ -48,8 +61,6 @@ class DbHelper {
           } catch (_) {}
         }
         if (oldVersion < 4) {
-          // SQLite tidak support ALTER COLUMN tipe data secara langsung.
-          // Solusi: recreate table dengan tipe publicID yang benar (TEXT).
           try {
             await db.execute('''
               CREATE TABLE ppat_draft_new (
@@ -88,12 +99,28 @@ class DbHelper {
             // Jika gagal (misal tabel lama tidak ada), biarkan saja
           }
         }
+        if (oldVersion < 5) {
+          try {
+            await db.execute('''
+              CREATE TABLE IF NOT EXISTS notaris_draft (
+                id_field TEXT PRIMARY KEY,
+                berkas_id TEXT,
+                jenis_pekerjaan TEXT,
+                label TEXT,
+                text_value TEXT,
+                url TEXT,
+                matchkey TEXT,
+                local_path TEXT
+              )
+            ''');
+          } catch (_) {}
+        }
       },
     );
   }
 
   // ============================================================
-  // CRUD DASAR
+  // CRUD PPAT (tetap seperti semula)
   // ============================================================
 
   Future<void> saveDraft(Map<String, dynamic> data) async {
@@ -123,13 +150,6 @@ class DbHelper {
     );
   }
 
-  // ============================================================
-  // QUERY BERDASARKAN CLIENT_ID
-  // Dipakai sebagai &publicID di URL fetchDetailBerkas
-  // ============================================================
-
-  /// Ambil file_id pertama yang ditemukan berdasarkan jenis_pekerjaan.
-  /// Dipakai sebagai &publicID di URL fetchDetailBerkas.
   Future<String?> getFileIdByJenis(String jenis) async {
     final dbClient = await db;
     final result = await dbClient.query(
@@ -139,13 +159,10 @@ class DbHelper {
       whereArgs: [jenis],
       limit: 1,
     );
-
     if (result.isEmpty) return null;
     return result.first['file_id'] as String?;
   }
 
-  /// Ambil semua row berdasarkan client_id.
-  /// Untuk keperluan detail berkas di DetailBerkasController.
   Future<List<Map<String, dynamic>>> getDraftByClientId(
     String clientId,
   ) async {
@@ -157,8 +174,6 @@ class DbHelper {
     );
   }
 
-  /// Ambil file_id berdasarkan client_id.
-  /// Dipakai sebagai parameter &id di fetchReadPpat.
   Future<String?> getFileIdByClientId(String clientId) async {
     final dbClient = await db;
     final result = await dbClient.query(
@@ -168,13 +183,57 @@ class DbHelper {
       whereArgs: [clientId],
       limit: 1,
     );
-
     if (result.isEmpty) return null;
     return result.first['file_id'] as String?;
   }
 
   // ============================================================
-  // DEBUG: Cetak seluruh isi database ke console
+  // CRUD NOTARIS (BARU) — tanpa GraphQL, tanpa dynamic form
+  // berkas_id dipakai sebagai pengganti peran client_id di PPAT
+  // ============================================================
+
+  Future<void> saveNotarisDraft(Map<String, dynamic> data) async {
+    final dbClient = await db;
+    await dbClient.insert(
+      'notaris_draft',
+      data,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getNotarisDraftByBerkasId(
+    String berkasId,
+  ) async {
+    final dbClient = await db;
+    return await dbClient.query(
+      'notaris_draft',
+      where: 'berkas_id = ?',
+      whereArgs: [berkasId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getNotarisDraftByJenis(
+    String jenis,
+  ) async {
+    final dbClient = await db;
+    return await dbClient.query(
+      'notaris_draft',
+      where: 'jenis_pekerjaan = ?',
+      whereArgs: [jenis],
+    );
+  }
+
+  Future<void> deleteNotarisDraftByBerkasId(String berkasId) async {
+    final dbClient = await db;
+    await dbClient.delete(
+      'notaris_draft',
+      where: 'berkas_id = ?',
+      whereArgs: [berkasId],
+    );
+  }
+
+  // ============================================================
+  // DEBUG
   // ============================================================
 
   Future<void> cekSeluruhDataDraft() async {
@@ -183,33 +242,46 @@ class DbHelper {
       final List<Map<String, dynamic>> hasil = await dbClient.query(
         'ppat_draft',
       );
-
-      print("📊 === TOTAL DATA DI SQLITE: ${hasil.length} BARIS ===");
-
-      if (hasil.isEmpty) {
-        print("⚠️ DATABASE KOSONG");
-      } else {
-        for (int i = 0; i < hasil.length; i++) {
-          // Cetak semua field dalam SATU print agar tidak disela log Android
-          print(
-            "--------------------------------------------------\n"
-            "Baris ke-${i + 1}:\n"
-            "🔹 id_field        : ${hasil[i]['id_field']}\n"
-            "🔹 label           : ${hasil[i]['label']}\n"
-            "🔹 jenis_pekerjaan : ${hasil[i]['jenis_pekerjaan']}\n"
-            "🔹 file_id         : ${hasil[i]['file_id']}\n"
-            "🔹 matchkey        : ${hasil[i]['matchkey']}\n"
-            "🔹 url             : ${hasil[i]['url']}\n"
-            "🔹 text_value      : ${hasil[i]['text_value']}\n"
-            "🔹 local_path      : ${hasil[i]['local_path']}\n"
-            "🔹 client_id       : ${hasil[i]['client_id']}\n"
-            "🔹 publicID        : ${hasil[i]['publicID']}\n"
-            "--------------------------------------------------",
-          );
-        }
+      print("📊 === TOTAL DATA PPAT DI SQLITE: ${hasil.length} BARIS ===");
+      for (int i = 0; i < hasil.length; i++) {
+        print(
+          "--------------------------------------------------\n"
+          "Baris ke-${i + 1}: ${hasil[i]}\n"
+          "--------------------------------------------------",
+        );
       }
     } catch (e) {
-      print("❌ Gagal membaca database: $e");
+      print("❌ Gagal membaca database ppat_draft: $e");
     }
+  }
+
+  Future<void> cekSeluruhDataNotaris() async {
+    try {
+      final dbClient = await db;
+      final List<Map<String, dynamic>> hasil = await dbClient.query(
+        'notaris_draft',
+      );
+      print("📊 === TOTAL DATA NOTARIS DI SQLITE: ${hasil.length} BARIS ===");
+      for (int i = 0; i < hasil.length; i++) {
+        print(
+          "--------------------------------------------------\n"
+          "Baris ke-${i + 1}: ${hasil[i]}\n"
+          "--------------------------------------------------",
+        );
+      }
+    } catch (e) {
+      print("❌ Gagal membaca database notaris_draft: $e");
+    }
+  }
+
+  // ============================================================
+  // AMBIL SEMUA DATA NOTARIS (buat list page)
+  // ============================================================
+  Future<List<Map<String, dynamic>>> getAllNotarisDraft() async {
+    final dbClient = await db;
+    return await dbClient.query(
+      'notaris_draft',
+      orderBy: 'berkas_id DESC', // terbaru duluan (berkas_id = NOTARIS_<timestamp>)
+    );
   }
 }

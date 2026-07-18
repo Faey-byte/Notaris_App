@@ -36,9 +36,6 @@ import 'dart:convert';
     });
   }
 
-  // ============================================================================
-  // 🌍 GLOBAL STATE UNTUK MENYIMPAN MATCHKEY & FILE DATA SEMENTARA
-  // ============================================================================
   class PendingUploadData {
     final String label;
     final String fileId;
@@ -73,21 +70,13 @@ import 'dart:convert';
     var controllers = <String, TextEditingController>{};
 
     final ImagePicker _picker = ImagePicker();
-    late final DbHelper dbHelper; // ✅ PUBLIC AGAR BISA DIAKSES DARI WIDGET
+    late final DbHelper dbHelper;
 
     var lifeStatus = "".obs;
     var _token = "".obs;
 
-    // ========================================================================
-    // 🌐 GLOBAL STATE: Menyimpan semua pending upload data sementara
-    // ========================================================================
     var pendingUploads = <String, PendingUploadData>{}.obs;
 
-    // ========================================================================
-    // 🌐 GLOBAL STATE: File data dari REST API /make-url yang sudah ter-upload
-    // Format: { "label": { "id": "...", "matchkey": "...", "url": "..." } }
-    // Ini akan digunakan saat submitForm() dipanggil
-    // ========================================================================
     var uploadedFilesData = <String, Map<String, String>>{}.obs;
 
     final List<String> lifeStatusOptions = [
@@ -101,12 +90,11 @@ import 'dart:convert';
 
     @override
     void onInit() {
-      dbHelper = DbHelper(); // ✅ INITIALIZE DI SINI
+      dbHelper = DbHelper();
       super.onInit();
 
         print("🔥 [CONTROLLER] jenis masuk: '$jenis'");
 
-    // ❌ HARD STOP kalau kosong
     if (jenis.isEmpty) {
       throw Exception("❌ jenis / ppat_type kosong dari halaman sebelumnya!");
     }
@@ -208,7 +196,7 @@ import 'dart:convert';
           {"label": "Total biaya layanan", "type": "number"},
           {"label": "Nama Staff", "type": "text"},
         ],
-        "Hibah": [
+        "HIBAH": [
           {"label": "Nama Client/Perusahaan", "type": "text"},
           {"label": "Sertipikat Asli", "type": "upload"},
           {"label": "KTP Pemilik Sertipikat (suami istri)", "type": "upload"},
@@ -341,7 +329,7 @@ import 'dart:convert';
           {"label": "Total biaya layanan", "type": "number"},
           {"label": "Nama Staff", "type": "text"},
         ],
-        "Lelang": [
+        "LELANG": [
           {"label": "Nama Client/Perusahaan", "type": "text"},
           {"label": "Sertipikat asli", "type": "upload"},
           {"label": "KTP Pemilik sertipikat", "type": "upload"},
@@ -534,14 +522,10 @@ import 'dart:convert';
           final extractedUrl = targetFileData['url'] ?? "";
           final extractedFileId = targetFileData['id']?.toString() ?? "";
 
-          // ✨ PERBAIKAN: Ambil matchkey dari response
           final extractedMatchKey = targetFileData['matchkey'] ?? "";
 
-          // ✨ Normalisasi label dokumen
           final normalizedLabel = field.label.trim();
 
-          // ✨ PERBAIKAN: Simpan file data ke global state sementara
-          // Nanti akan digunakan saat submitForm() untuk disimpan ke database
           uploadedFilesData[normalizedLabel] = {
             'id': extractedFileId,
             'matchkey': extractedMatchKey,
@@ -555,7 +539,6 @@ import 'dart:convert';
           print("URL          : $extractedUrl");
           print("=========================================\n");
 
-          // ✨ Update UI field dengan URL (untuk preview)
           field.fileValue.value = extractedUrl;
           field.fileId.value = extractedFileId;
           field.matchKey.value = extractedMatchKey;
@@ -629,13 +612,6 @@ import 'dart:convert';
       }
     }
 
-    // ============================================================
-    // ✅ VALIDASI SEMUA FIELD (Length Logic)
-    // - text/number  : controller.text.length == 0 -> kosong
-    // - upload       : fileValue.value.length == 0 -> belum upload
-    // - coordinate   : latitude & longitude masih 0.0 -> belum dipilih
-    // Jika ada yang kosong, tampilkan snackbar dan return false
-    // ============================================================
     bool validateFields() {
       for (var field in fields) {
         if (field.type == "text" || field.type == "number") {
@@ -678,7 +654,6 @@ import 'dart:convert';
     }
 
     Future<void> submitForm() async {
-      // ✅ Validasi semua field sebelum lanjut submit
       if (!validateFields()) return;
 
       try {
@@ -762,19 +737,18 @@ import 'dart:convert';
           throw Exception("Response GraphQL tidak valid");
         }
 
-        // ✨ PERBAIKAN: Ambil public_ids dari response GraphQL
         final List<dynamic>? publicIds = responseData['public_ids'];
         if (publicIds == null || publicIds.isEmpty) {
           throw Exception("public_ids tidak ditemukan di response GraphQL");
         }
 
-        final String clientId = publicIds.first.toString(); // ✨ Ambil elemen pertama
+        final String clientId = publicIds.first.toString();
         final String message = responseData['message'] ?? "";
         final String ppatType = responseData['ppat_type'] ?? jenis;
 
         print("🎉 === GRAPHQL RESPONSE BERHASIL ===");
         print("Message       : $message");
-        print("ClientID      : $clientId"); // ✨ Dari public_ids[0]
+        print("ClientID      : $clientId");
         print("PPAT Type     : $ppatType");
         print("Public IDs    : $publicIds");
         print("====================================\n");
@@ -785,7 +759,6 @@ import 'dart:convert';
 
         print("💾 === PROSES SIMPAN KE DATABASE ===");
 
-        // ✨ PERBAIKAN: Gunakan uploadedFilesData yang sudah dikumpulkan dari REST API
         for (var entry in uploadedFilesData.entries) {
           final label = entry.key.trim();
           final fileData = entry.value;
@@ -794,19 +767,18 @@ import 'dart:convert';
           final matchKey = fileData['matchkey'] ?? "";
           final url = fileData['url'] ?? "";
 
-          // Ambil nama file dari URL Cloudinary
           final String fileNameOnly = url.isNotEmpty ? url.split('/').last : "";
 
           final draftRow = {
             'id_field': "${jenis}_$label",
             'jenis_pekerjaan': jenis,
             'label': label,
-            'file_id': fileId,                      // ✅ Dari REST API
-            'matchkey': matchKey.trim(),             // ✅ Dari REST API
-            'url': url,                              // ✅ Dari REST API
-            'text_value': fileNameOnly,              // Nama file untuk preview
+            'file_id': fileId,
+            'matchkey': matchKey.trim(),
+            'url': url,
+            'text_value': fileNameOnly,
             'local_path': null,
-            'client_id': clientId,                   // ✅ Dari GraphQL response
+            'client_id': clientId,
           };
 
           await dbHelper.saveDraft(draftRow);
@@ -825,7 +797,7 @@ import 'dart:convert';
             'jenis_pekerjaan': jenis,
             'label': coordinateField.label,
             'text_value': "$targetLat,$targetLng",
-            'client_id': clientId, // ✨ Gunakan clientId dari public_ids
+            'client_id': clientId,
           };
           await dbHelper.saveDraft(coordinateRow);
           print("✅ Saved: Coordinate");
@@ -839,14 +811,12 @@ import 'dart:convert';
               !["Nama Staff", "Total biaya layanan"].contains(field.label)) {
             final controller = controllers[field.label];
             if (controller != null && controller.text.isNotEmpty) {
-              // ✨ PERBAIKAN: Text fields hanya perlu field-field penting
               final textRow = {
                 'id_field': "${jenis}_${field.label}",
                 'jenis_pekerjaan': jenis,
                 'label': field.label,
                 'text_value': controller.text,
                 'client_id': clientId,
-                // File-related fields akan otomatis null di database
               };
               await dbHelper.saveDraft(textRow);
               print("✅ Saved: ${field.label}");
@@ -860,7 +830,6 @@ import 'dart:convert';
         print("====================================");
         print("🎊 SEMUA DATA BERHASIL DISIMPAN!\n");
 
-        // ✨ PERBAIKAN: Clear global state setelah selesai
         uploadedFilesData.clear();
         pendingUploads.clear();
         

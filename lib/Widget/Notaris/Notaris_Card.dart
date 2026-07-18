@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:notaris_app/Controller/Notaris_Controller.dart';
-
-import 'package:notaris_app/Pages/Detail_Berkas_Notaris.dart'; // sesuaikan path-nya
+import 'package:notaris_app/Pages/detail_berkas_notaris.dart'; 
 
 class NotarisCard extends StatelessWidget {
   final AktaItem item;
@@ -12,8 +10,10 @@ class NotarisCard extends StatelessWidget {
   Color _getBgColor() {
     switch (item.status) {
       case 'SELESAI': return const Color(0xFFDCFCE7);
+      case 'PENDING':
       case 'PROSES':  return const Color(0xFFFEF3C7);
       case 'REVISI':  return const Color(0xFFDBEAFE);
+      case 'DITOLAK': return const Color(0xFFFEE2E2);
       default:        return const Color(0xFFF1F5F9);
     }
   }
@@ -21,16 +21,28 @@ class NotarisCard extends StatelessWidget {
   Color _getFgColor() {
     switch (item.status) {
       case 'SELESAI': return const Color(0xFF15803D);
+      case 'PENDING':
       case 'PROSES':  return const Color(0xFFB45309);
       case 'REVISI':  return const Color(0xFF1D4ED8);
+      case 'DITOLAK': return const Color(0xFFDC2626);
       default:        return const Color(0xFF64748B);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(                                          // ✅ tambahan
-      // onTap: () => Get.to(() => DetailBerkasNotarisPage(item: item)),// ✅ tambahan
+    final NotarisController controller = Get.find<NotarisController>();
+
+    return GestureDetector(
+      onTap: () async {
+        // Menggunakan await agar kode di bawahnya tereksekusi pasca halaman detail di-close
+        await Get.to(() => DetailBerkasNotarisPage(
+          clientName: item.nama,        
+          localBerkasId: item.berkasId,
+        ));
+        // Memicu refresh pembacaan SQLite + SharedPreferences terupdate
+        controller.loadFromLocal();
+      },
       child: Container(
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 10),

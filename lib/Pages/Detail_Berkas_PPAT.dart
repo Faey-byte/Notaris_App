@@ -80,22 +80,33 @@ class DetailBerkasPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: DetailDropdownCard(
-                            title: "STATUS PENGERJAAN",
-                            currentValue: controller.statusPengerjaan.value,
-                            items: const [
-                              "PENDING",
-                              "PROSES",
-                              "REVISI",
-                              "SELESAI",
-                            ],
-                            onChanged: (val) =>
-                                controller.updateStatusPekerjaan(val!),
-                            backgroundColor: controller.getStatusPekerjaanBg(
-                              controller.statusPengerjaan.value,
-                            ),
-                            textColor: controller.getStatusPekerjaanColor(
-                              controller.statusPengerjaan.value,
+                          child: Obx(
+                            () => AbsorbPointer(
+                              absorbing: controller.isUpdatingStatus.value,
+                              child: Opacity(
+                                opacity:
+                                    controller.isUpdatingStatus.value ? 0.6 : 1,
+                                child: DetailDropdownCard(
+                                  title: "STATUS PENGERJAAN",
+                                  currentValue: controller.statusPengerjaan.value,
+                                  // Label Indonesia di UI, otomatis dipetakan ke
+                                  // action bahasa Inggris backend di controller.
+                                  items: const [
+                                    "PENDING",
+                                    "REVISI",
+                                    "SELESAI",
+                                    "DITOLAK",
+                                  ],
+                                  onChanged: (val) =>
+                                      controller.updateStatusPengerjaan(val!),
+                                  backgroundColor: controller.getStatusPekerjaanBg(
+                                    controller.statusPengerjaan.value,
+                                  ),
+                                  textColor: controller.getStatusPekerjaanColor(
+                                    controller.statusPengerjaan.value,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -127,7 +138,7 @@ class DetailBerkasPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

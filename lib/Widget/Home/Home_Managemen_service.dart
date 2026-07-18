@@ -51,7 +51,7 @@ class HomeManagementServices extends StatelessWidget {
           iconBg: const Color(0xFFF59E0B),
           title: 'Rekap Laporan',
           subtitle: 'Bulanan, Triwulan & Tahunan',
-          onTap: () => Get.toNamed('/rekap'),
+          onTap: () => Get.toNamed('/LaporanPage'),
         ),
         const SizedBox(height: 16),
         

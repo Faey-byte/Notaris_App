@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:notaris_app/Controller/Form_Notaris_controller.dart';  
 import 'package:notaris_app/utils/app_colors.dart';
 
 class TambahBerkasNotarisPage extends StatelessWidget {
@@ -7,6 +10,14 @@ class TambahBerkasNotarisPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 🔄 Pastikan controller selalu fresh tiap kali halaman ini dibuka,
+    // biar gak ada state lama (jenisPekerjaan, docFields, dll) yang nyangkut
+    // dari sesi/pengisian berkas sebelumnya.
+    if (Get.isRegistered<NotarisFormController>()) {
+      Get.delete<NotarisFormController>(force: true);
+    }
+    final NotarisFormController c = Get.put(NotarisFormController());
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -19,7 +30,7 @@ class TambahBerkasNotarisPage extends StatelessWidget {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Get.back(), // ✅ back ke notaris page
+                    onTap: () => Get.back(),
                     child: Container(
                       width: 40,
                       height: 40,
@@ -46,12 +57,11 @@ class TambahBerkasNotarisPage extends StatelessWidget {
 
             // ─── CONTENT ───
             Expanded(
-              child: SingleChildScrollView(  // ✅ bisa scroll
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ─── FORM CARD ───
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
@@ -66,40 +76,34 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ─── JENIS PEKERJAAN ───
                           _buildLabel('Jenis Pekerjaan'),
                           const SizedBox(height: 8),
-                          _buildDropdown('Pilih Jenis Pekerjaan'),
+                          _buildJenisPekerjaanDropdown(c),
                           const SizedBox(height: 20),
 
-                          // ─── NAMA KLIEN ───
                           _buildLabel('Nama Klien / Nama Perusahaan'),
                           const SizedBox(height: 8),
-                          _buildTextField('Masukkan nama lengkap'),
+                          _buildTextField(c.namaKlienCtrl, 'Masukkan nama lengkap'),
                           const SizedBox(height: 20),
 
-                          // ─── NOMOR AKTA ───
                           _buildLabel('Nomor Akta'),
                           const SizedBox(height: 8),
-                          _buildTextField('Masukkan nomor akta'),
+                          _buildTextField(c.nomorAktaCtrl, 'Masukkan nomor akta'),
                           const SizedBox(height: 20),
 
-                          // ─── TOTAL BIAYA ───
                           _buildLabel('Total Biaya Layanan'),
                           const SizedBox(height: 8),
-                          _buildBiayaField(),
+                          _buildBiayaField(c),
                           const SizedBox(height: 20),
 
-                          // ─── NAMA STAFF ───
                           _buildLabel('Nama Staff'),
                           const SizedBox(height: 8),
-                          _buildTextField('Masukkan nama staff'),
+                          _buildTextField(c.namaStaffCtrl, 'Masukkan nama staff'),
                           const SizedBox(height: 24),
 
                           const Divider(color: Color(0xFFF1F5F9)),
                           const SizedBox(height: 20),
 
-                          // ─── DOKUMEN ───
                           const Text(
                             'DOKUMEN PERSYARATAN',
                             style: TextStyle(
@@ -111,25 +115,28 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
 
-                          // ✅ pake UploadFieldWidget yang udah ada
-                          _buildDokumenItem('KTP (Pemilik/Direktur)'),
-                          const SizedBox(height: 12),
-                          _buildDokumenItem('Kartu Keluarga'),
-                          const SizedBox(height: 12),
-                          _buildDokumenItem('NPWP'),
-                          const SizedBox(height: 12),
-                          _buildDokumenItem('Kelengkapan Tambahan', isAdd: true),
+                          Obx(
+                            () => Column(
+                              children: [
+                                for (final field in c.docFields)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: _buildDokumenItem(c, field),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          _buildTambahDokumenBtn(context, c),
                         ],
                       ),
                     ),
 
                     const SizedBox(height: 24),
 
-                    // ─── TOMBOL SIMPAN ───
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () {}, // TODO: logika simpan
+                        onPressed: () => c.submitForm(),
                         icon: const Icon(Icons.save_outlined, color: Colors.white),
                         label: const Text(
                           'Simpan Berkas',
@@ -160,15 +167,11 @@ class TambahBerkasNotarisPage extends StatelessWidget {
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
-        color: Color(0xFF334155),
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
+      style: const TextStyle(color: Color(0xFF334155), fontSize: 14, fontWeight: FontWeight.w600),
     );
   }
 
-  Widget _buildTextField(String hint) {
+  Widget _buildTextField(TextEditingController controller, String hint) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -177,6 +180,7 @@ class TambahBerkasNotarisPage extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: TextField(
+        controller: controller,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
@@ -187,26 +191,40 @@ class TambahBerkasNotarisPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDropdown(String hint) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(hint, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15)),
-          const Icon(Icons.keyboard_arrow_down, color: Color(0xFF94A3B8)),
-        ],
+  Widget _buildJenisPekerjaanDropdown(NotarisFormController c) {
+    return Obx(
+      () => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            isExpanded: true,
+            // 🔒 Guard: kalau value yang tersimpan (misal state lama/draft)
+            // gak ada di daftar opsi saat ini, fallback ke null (hint tampil)
+            // biar gak nabrak assertion "exactly one item with this value".
+            value: c.jenisPekerjaanOptions.contains(c.jenisPekerjaan.value)
+                ? c.jenisPekerjaan.value
+                : null,
+            hint: const Text('Pilih Jenis Pekerjaan', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 15)),
+            icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF94A3B8)),
+            items: c.jenisPekerjaanOptions
+                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .toList(),
+            onChanged: (value) {
+              c.jenisPekerjaan.value = value ?? '';
+            },
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildBiayaField() {
+  Widget _buildBiayaField(NotarisFormController c) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -221,10 +239,11 @@ class TambahBerkasNotarisPage extends StatelessWidget {
             child: const Text('Rp.', style: TextStyle(color: Color(0xFF64748B), fontSize: 16, fontWeight: FontWeight.w700)),
           ),
           const VerticalDivider(color: Color(0xFFE2E8F0), width: 1),
-          const Expanded(
+          Expanded(
             child: TextField(
+              controller: c.biayaCtrl,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: '0',
                 hintStyle: TextStyle(color: Color(0xFF94A3B8)),
                 border: InputBorder.none,
@@ -237,59 +256,86 @@ class TambahBerkasNotarisPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDokumenItem(String label, {bool isAdd = false}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-      ),
-      child: Row(
-        children: [
-          // preview box
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFCBD5E1), width: 2),
+  Widget _buildDokumenItem(NotarisFormController c, NotarisDocField field) {
+    return Obx(
+      () => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
+        ),
+        child: Row(
+          children: [
+            // preview box
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFCBD5E1), width: 2),
+              ),
+              child: field.isLoading.value
+                  ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                  : field.localFilePath.value.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.file(
+                            File(field.localFilePath.value),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Icon(
+                          field.fileValue.value.isNotEmpty
+                              ? Icons.check_circle
+                              : Icons.camera_alt_outlined,
+                          color: field.fileValue.value.isNotEmpty
+                              ? Colors.green
+                              : const Color(0xFF94A3B8),
+                          size: 28,
+                        ),
             ),
-            child: Icon(
-              isAdd ? Icons.add_circle_outline : Icons.camera_alt_outlined,
-              color: const Color(0xFF94A3B8),
-              size: 28,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(field.label,
+                      style: const TextStyle(color: Color(0xFF334155), fontSize: 14, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildUploadBtn(
+                          Icons.photo_camera_outlined,
+                          'Ambil',
+                          () => c.pickAndUploadFile(field, ImageSource.camera),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildUploadBtn(
+                          Icons.image_outlined,
+                          'Galeri',
+                          () => c.pickAndUploadFile(field, ImageSource.gallery),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
-                    style: const TextStyle(color: Color(0xFF334155), fontSize: 14, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                // ✅ tombol ambil & galeri
-                Row(
-                  children: [
-                    Expanded(child: _buildUploadBtn(Icons.photo_camera_outlined, 'Ambil')),
-                    const SizedBox(width: 8),
-                    Expanded(child: _buildUploadBtn(Icons.image_outlined, 'Galeri')),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildUploadBtn(IconData icon, String label) {
+  Widget _buildUploadBtn(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () {}, // TODO: image picker
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
@@ -305,6 +351,54 @@ class TambahBerkasNotarisPage extends StatelessWidget {
             Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF334155))),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTambahDokumenBtn(BuildContext context, NotarisFormController c) {
+    return GestureDetector(
+      onTap: () => _showTambahDokumenDialog(context, c),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFCBD5E1), style: BorderStyle.solid),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_circle_outline, color: Color(0xFF94A3B8), size: 20),
+            SizedBox(width: 8),
+            Text('Kelengkapan Tambahan',
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 14, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTambahDokumenDialog(BuildContext context, NotarisFormController c) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Tambah Dokumen'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Nama dokumen, misal: Akta Pendirian'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Batal')),
+          TextButton(
+            onPressed: () {
+              c.addExtraDocField(controller.text);
+              Get.back();
+            },
+            child: const Text('Tambah'),
+          ),
+        ],
       ),
     );
   }

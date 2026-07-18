@@ -40,6 +40,8 @@ class BerkasModel {
       caseData: CaseModel.fromJson(json['case'] ?? {}),
     );
   }
+
+  String? get type => null;
 }
 
 class ClientModel {

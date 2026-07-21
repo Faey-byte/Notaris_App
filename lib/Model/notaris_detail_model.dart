@@ -5,7 +5,9 @@ class NotarisDetailModel {
   final int caseId;
   final String lifeStatus;
   final String description;
-  final String status; // pending | proses | revisi | selesai
+  final String status;
+  final String? paymentStatus;
+  final int? titipBiayaInput;
   final int createdAt;
   final int updatedAt;
   final NotarisClientModel client;
@@ -21,6 +23,8 @@ class NotarisDetailModel {
     required this.lifeStatus,
     required this.description,
     required this.status,
+    this.paymentStatus,
+    this.titipBiayaInput,
     required this.createdAt,
     required this.updatedAt,
     required this.client,
@@ -30,6 +34,14 @@ class NotarisDetailModel {
   });
 
   factory NotarisDetailModel.fromJson(Map<String, dynamic> json) {
+    final dynamic rawTitip = json['titip_biaya_input'];
+    int? titipBiayaInput;
+    if (rawTitip is int) {
+      titipBiayaInput = rawTitip;
+    } else if (rawTitip is String) {
+      titipBiayaInput = int.tryParse(rawTitip.replaceAll(RegExp(r'[^0-9]'), ''));
+    }
+
     return NotarisDetailModel(
       id: json['id'] ?? 0,
       clientId: json['client_id'] ?? 0,
@@ -38,6 +50,8 @@ class NotarisDetailModel {
       lifeStatus: json['life_status'] ?? '',
       description: json['description'] ?? '',
       status: json['status'] ?? 'pending',
+      paymentStatus: json['payment_status']?.toString(),
+      titipBiayaInput: titipBiayaInput,
       createdAt: json['created_at'] ?? 0,
       updatedAt: json['updated_at'] ?? 0,
       client: NotarisClientModel.fromJson(json['client'] ?? {}),
@@ -91,7 +105,6 @@ class NotarisStaffModel {
 
   factory NotarisStaffModel.fromJson(Map<String, dynamic> json) {
     return NotarisStaffModel(
-      // 🔧 backend pakai key "ID"/"StaffName" (capital) khusus di object staff
       id: json['ID'] ?? 0,
       staffName: json['StaffName'] ?? '',
       instituteId: json['InstituteID'] ?? 0,

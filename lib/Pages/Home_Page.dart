@@ -17,12 +17,9 @@ import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
-   final controller = Get.put(HomeController());
+  final controller = Get.put(HomeController());
   @override
   Widget build(BuildContext context) {
-    // Pastikan controller ter-register
-
-
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
       bottomNavigationBar: AppBottomNavBar(
@@ -30,10 +27,10 @@ class HomePage extends StatelessWidget {
         onTap: (index) {
           switch (index) {
             case 0:
-              Get.offAll(() =>  HomePage());
+              Get.offAll(() => HomePage());
               break;
             case 1:
-              Get.offAll(() =>  NotarisPage());
+              Get.offAll(() => NotarisPage());
               break;
             case 2:
               Get.offAll(() => PpatPage());

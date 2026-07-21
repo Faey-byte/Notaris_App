@@ -4,7 +4,6 @@ import 'package:notaris_app/Controller/Notification_Controller.dart';
 import '../Routes/routes.dart';
 
 class AuthController extends GetxController {
-
   Future<void> logout() async {
     Get.find<NotificationController>().stopListening();
 

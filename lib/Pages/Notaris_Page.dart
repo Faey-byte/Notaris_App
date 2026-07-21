@@ -52,7 +52,8 @@ class NotarisPage extends StatelessWidget {
                 title: 'Berkas Notaris',
                 icon: Icons.gavel,
                 buttonLabel: 'Berkas',
-                onButtonPressed: () => Get.to(() => const TambahBerkasNotarisPage()),
+                onButtonPressed: () =>
+                    Get.to(() => const TambahBerkasNotarisPage()),
               ),
               Container(
                 color: AppColors.white,
@@ -73,21 +74,35 @@ class NotarisPage extends StatelessWidget {
                             padding: EdgeInsets.only(right: 10),
                             child: Row(
                               children: [
-                                Icon(Icons.filter_list, size: 16, color: AppColors.textSecondary),
+                                Icon(
+                                  Icons.filter_list,
+                                  size: 16,
+                                  color: AppColors.textSecondary,
+                                ),
                                 SizedBox(width: 4),
-                                Text('STATUS', style: TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary,
-                                )),
+                                Text(
+                                  'STATUS',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          ...controller.statusList.map((s) => Obx(() => StatusChip(
-                            label: s.label,
-                            textColor: s.textColor,
-                            bgColor: s.bgColor,
-                            isSelected: controller.selectedStatus.value == s.label,
-                            onTap: () => controller.setStatus(s.label),
-                          ))),
+                          ...controller.statusList.map(
+                            (s) => Obx(
+                              () => StatusChip(
+                                label: s.label,
+                                textColor: s.textColor,
+                                bgColor: s.bgColor,
+                                isSelected:
+                                    controller.selectedStatus.value == s.label,
+                                onTap: () => controller.setStatus(s.label),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -96,18 +111,32 @@ class NotarisPage extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('DAFTAR BERKAS TERKINI', style: TextStyle(
-                      fontSize: 11, fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8, color: AppColors.primary,
-                    )),
-                    Obx(() => Text(
-                      '${controller.filteredItems.length} Berkas ditemukan',
-                      style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500),
-                    )),
+                    const Text(
+                      'DAFTAR BERKAS TERKINI',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    Obx(
+                      () => Text(
+                        '${controller.filteredItems.length} Berkas ditemukan',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -118,15 +147,22 @@ class NotarisPage extends StatelessWidget {
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
-                
+
                 if (controller.filteredItems.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(40),
                     child: Column(
                       children: [
-                        Icon(Icons.folder_off_outlined, size: 48, color: AppColors.border),
+                        Icon(
+                          Icons.folder_off_outlined,
+                          size: 48,
+                          color: AppColors.border,
+                        ),
                         SizedBox(height: 12),
-                        Text('Tidak ada data', style: TextStyle(color: AppColors.textSecondary)),
+                        Text(
+                          'Tidak ada data',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
                       ],
                     ),
                   );
@@ -136,7 +172,8 @@ class NotarisPage extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                   itemCount: controller.filteredItems.length,
-                  itemBuilder: (_, i) => NotarisCard(item: controller.filteredItems[i]),
+                  itemBuilder: (_, i) =>
+                      NotarisCard(item: controller.filteredItems[i]),
                 );
               }),
             ],

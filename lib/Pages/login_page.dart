@@ -15,12 +15,10 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
-
             child: Column(
               children: [
                 const SizedBox(height: 60),
@@ -28,12 +26,10 @@ class LoginPage extends StatelessWidget {
                 Container(
                   width: 72,
                   height: 72,
-
                   decoration: BoxDecoration(
                     color: AppColors.primarySoft,
                     shape: BoxShape.circle,
                   ),
-
                   child: const Icon(Icons.gavel, color: AppColors.primary),
                 ),
 
@@ -70,7 +66,6 @@ class LoginPage extends StatelessWidget {
 
                 const Align(
                   alignment: Alignment.centerLeft,
-
                   child: Text(
                     "Email/Username",
                     style: TextStyle(color: AppColors.primary),
@@ -84,13 +79,10 @@ class LoginPage extends StatelessWidget {
                     controller: controller.emailC,
                     hint: "Masukkan Email",
                     icon: Icons.mail_outline,
-
                     isPassword: false,
                     showToggle: false,
                     obscure: false,
-
                     onToggle: () {},
-
                     errorText: controller.emailError.value,
                   ),
                 ),
@@ -99,7 +91,6 @@ class LoginPage extends StatelessWidget {
 
                 const Align(
                   alignment: Alignment.centerLeft,
-
                   child: Text(
                     "Password",
                     style: TextStyle(color: AppColors.primary),
@@ -111,27 +102,21 @@ class LoginPage extends StatelessWidget {
                 Obx(
                   () => TextFormField(
                     controller: controller.passC,
-
                     obscureText: controller.obscure.value,
-
                     decoration: InputDecoration(
                       hintText: "Masukkan Password",
-
                       prefixIcon: const Icon(Icons.lock_outline),
-
                       suffixIcon: IconButton(
                         onPressed: controller.togglePassword,
-
                         icon: Icon(
                           controller.obscure.value
                               ? Icons.visibility_off
                               : Icons.visibility,
                         ),
                       ),
-
+                      errorText: controller.passwordError.value,
                       filled: true,
                       fillColor: Colors.white,
-
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -144,9 +129,7 @@ class LoginPage extends StatelessWidget {
                 Obx(
                   () => PrimaryButton(
                     text: "Log In",
-
                     isLoading: controller.isLoading.value,
-
                     onPressed: controller.login,
                   ),
                 ),
@@ -157,14 +140,13 @@ class LoginPage extends StatelessWidget {
                   onPressed: () {
                     Get.toNamed(AppRoutes.signuppage);
                   },
-
                   child: const Text("Belum punya akun? Daftar "),
                 ),
               ],
             ),
           ),
         ),
-    ),
+      ),
     );
   }
 }

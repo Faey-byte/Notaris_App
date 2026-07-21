@@ -4,7 +4,7 @@ class NotifikasiModel {
   final int id;
   final String title;
   final String message;
-  final String type; // 'berkas', 'pembayaran', 'sistem'
+  final String type;
   final DateTime createdAt;
   bool isRead;
 
@@ -23,7 +23,9 @@ class NotifikasiModel {
       title: json['title'] ?? '',
       message: json['message'] ?? '',
       type: json['type'] ?? 'sistem',
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toString()),
+      createdAt: DateTime.parse(
+        json['created_at'] ?? DateTime.now().toString(),
+      ),
       isRead: json['is_read'] == 1 || json['is_read'] == true,
     );
   }

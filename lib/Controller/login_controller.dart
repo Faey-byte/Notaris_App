@@ -1,8 +1,7 @@
-// login_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
-import 'package:notaris_app/Controller/Notification_Controller.dart'; // ← tambah import ini
+import 'package:notaris_app/Controller/Notification_Controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Routes/routes.dart';
 
@@ -17,24 +16,37 @@ class LoginController extends GetxController {
 
   void togglePassword() => obscure.value = !obscure.value;
 
-  Future<void> login() async {
+  bool _validateFields() {
     emailError.value = null;
     passwordError.value = null;
 
-    if (emailC.text.trim().isEmpty) {
+    final email = emailC.text.trim();
+    final pass = passC.text.trim();
+
+    bool isValid = true;
+
+    if (email.length < 1) {
       emailError.value = "Email wajib diisi";
-      return;
-    }
-    if (!GetUtils.isEmail(emailC.text.trim())) {
+      isValid = false;
+    } else if (!GetUtils.isEmail(email)) {
       emailError.value = "Format email tidak valid";
-      return;
+      isValid = false;
     }
-    if (passC.text.trim().isEmpty) {
+
+    if (pass.length < 1) {
       passwordError.value = "Password wajib diisi";
-      return;
-    }
-    if (passC.text.trim().length < 8) {
+      isValid = false;
+    } else if (pass.length < 8) {
       passwordError.value = "Password minimal 8 karakter";
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  Future<void> login() async {
+    final isValid = _validateFields();
+    if (!isValid) {
       return;
     }
 
@@ -49,13 +61,12 @@ class LoginController extends GetxController {
       print("DATA LOGIN: $data");
 
       String? token = data["token"];
-      String? userId = data["id"]?.toString(); // ← ambil userId dari response
+      String? userId = data["id"]?.toString();
 
       if (token != null && token.isNotEmpty) {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
 
-        // Simpan userId juga untuk WS
         if (userId != null) {
           await prefs.setString('user_id', userId);
         }
@@ -63,14 +74,12 @@ class LoginController extends GetxController {
         print("TOKEN BERHASIL DISIMPAN: $token");
       }
 
-      // ← Mulai listening notif WS setelah login berhasil
       if (userId != null) {
         Get.find<NotificationController>().startListening(userId);
       }
 
       Get.snackbar("Success", data["message"] ?? "Login berhasil");
       Get.offAllNamed(AppRoutes.homepage);
-
     } catch (e) {
       print("ERROR LOGIN: $e");
       Get.snackbar("Error", e.toString().replaceAll("Exception: ", ""));

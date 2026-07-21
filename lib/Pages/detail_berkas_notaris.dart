@@ -9,8 +9,8 @@ import 'package:notaris_app/utils/app_colors.dart';
 
 class DetailBerkasNotarisPage extends StatelessWidget {
   final String clientName;
-  final String? publicId;      // opsional, kalau nanti sudah kesimpen
-  final String? localBerkasId; // opsional, buat fallback total biaya
+  final String? publicId;
+  final String? localBerkasId;
 
   const DetailBerkasNotarisPage({
     super.key,
@@ -86,25 +86,91 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
 
-                    DetailDropdownCard(
-                      title: "STATUS PENGERJAAN",
-                      currentValue: controller.statusPengerjaan.value,
-                      items: const [
-                        "PENDING",
-                        "PROSES",
-                        "REVISI",
-                        "SELESAI",
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Obx(
+                            () => AbsorbPointer(
+                              absorbing: controller.isUpdatingStatus.value,
+                              child: Opacity(
+                                opacity: controller.isUpdatingStatus.value
+                                    ? 0.6
+                                    : 1,
+                                child: DetailDropdownCard(
+                                  title: "STATUS PENGERJAAN",
+                                  currentValue:
+                                      controller.statusPengerjaan.value,
+                                  items: const [
+                                    "PENDING",
+                                    "PROSES",
+                                    "REVISI",
+                                    "SELESAI",
+                                  ],
+                                  onChanged: (val) =>
+                                      controller.updateStatusPekerjaan(val!),
+                                  backgroundColor: controller
+                                      .getStatusPekerjaanBg(
+                                        controller.statusPengerjaan.value,
+                                      ),
+                                  textColor: controller.getStatusPekerjaanColor(
+                                    controller.statusPengerjaan.value,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Obx(
+                            () => AbsorbPointer(
+                              absorbing: controller.isUpdatingStatusPajak.value,
+                              child: Opacity(
+                                opacity: controller.isUpdatingStatusPajak.value
+                                    ? 0.6
+                                    : 1,
+                                child: DetailDropdownCard(
+                                  title: "STATUS PAJAK",
+                                  currentValue: controller.statusPajak.value,
+
+                                  items: const [
+                                    "Belum Lunas",
+                                    "Lunas",
+                                    "Titip Biaya",
+                                  ],
+                                  onChanged: (val) =>
+                                      controller.updateStatusPajak(val!),
+                                  backgroundColor: controller.getStatusPajakBg(
+                                    controller.statusPajak.value,
+                                  ),
+                                  textColor: controller.getStatusPajakColor(
+                                    controller.statusPajak.value,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
-                      onChanged: (val) =>
-                          controller.updateStatusPekerjaan(val!),
-                      backgroundColor: controller.getStatusPekerjaanBg(
-                        controller.statusPengerjaan.value,
-                      ),
-                      textColor: controller.getStatusPekerjaanColor(
-                        controller.statusPengerjaan.value,
-                      ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
+
+                    Obx(() {
+                      if (controller.titipBiayaAmount.value <= 0) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DetailInfoCard(
+                            title: "NOMINAL TITIP BIAYA",
+                            content: controller.titipBiayaAmountFormatted.value,
+                            icon: Icons.savings_outlined,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      );
+                    }),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -139,9 +205,9 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: controller.dokumenList.length,
                             itemBuilder: (context, index) {
-  final doc = controller.dokumenList[index];
-  return NotarisDocItem(doc: doc); // ✅
-},
+                              final doc = controller.dokumenList[index];
+                              return NotarisDocItem(doc: doc);
+                            },
                           ),
                   ],
                 ),
@@ -178,14 +244,16 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Obx(() => Text(
-                          controller.totalBiaya.value,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                        Obx(
+                          () => Text(
+                            controller.totalBiaya.value,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
-                        )),
+                        ),
                       ],
                     ),
                     Column(
@@ -201,14 +269,16 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Obx(() => Text(
-                          controller.namaStaff.value,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                        Obx(
+                          () => Text(
+                            controller.namaStaff.value,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
-                        )),
+                        ),
                       ],
                     ),
                   ],

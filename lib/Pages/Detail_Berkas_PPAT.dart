@@ -84,24 +84,25 @@ class DetailBerkasPage extends StatelessWidget {
                             () => AbsorbPointer(
                               absorbing: controller.isUpdatingStatus.value,
                               child: Opacity(
-                                opacity:
-                                    controller.isUpdatingStatus.value ? 0.6 : 1,
+                                opacity: controller.isUpdatingStatus.value
+                                    ? 0.6
+                                    : 1,
                                 child: DetailDropdownCard(
                                   title: "STATUS PENGERJAAN",
-                                  currentValue: controller.statusPengerjaan.value,
-                                  // Label Indonesia di UI, otomatis dipetakan ke
-                                  // action bahasa Inggris backend di controller.
+                                  currentValue:
+                                      controller.statusPengerjaan.value,
                                   items: const [
                                     "PENDING",
                                     "REVISI",
                                     "SELESAI",
-                                    "DITOLAK",
+                                    "PROSES",
                                   ],
                                   onChanged: (val) =>
                                       controller.updateStatusPengerjaan(val!),
-                                  backgroundColor: controller.getStatusPekerjaanBg(
-                                    controller.statusPengerjaan.value,
-                                  ),
+                                  backgroundColor: controller
+                                      .getStatusPekerjaanBg(
+                                        controller.statusPengerjaan.value,
+                                      ),
                                   textColor: controller.getStatusPekerjaanColor(
                                     controller.statusPengerjaan.value,
                                   ),
@@ -112,17 +113,31 @@ class DetailBerkasPage extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: DetailDropdownCard(
-                            title: "STATUS PAJAK",
-                            currentValue: controller.statusPajak.value,
-                            items: const ["Belum Bayar", "Lunas"],
-                            onChanged: (val) =>
-                                controller.updateStatusPajak(val!),
-                            backgroundColor: controller.getStatusPajakBg(
-                              controller.statusPajak.value,
-                            ),
-                            textColor: controller.getStatusPajakColor(
-                              controller.statusPajak.value,
+                          child: Obx(
+                            () => AbsorbPointer(
+                              absorbing: controller.isUpdatingStatusPajak.value,
+                              child: Opacity(
+                                opacity: controller.isUpdatingStatusPajak.value
+                                    ? 0.6
+                                    : 1,
+                                child: DetailDropdownCard(
+                                  title: "STATUS PAJAK",
+                                  currentValue: controller.statusPajak.value,
+                                  items: const [
+                                    "Belum Lunas",
+                                    "Lunas",
+                                    "Titip Biaya",
+                                  ],
+                                  onChanged: (val) =>
+                                      controller.updateStatusPajak(val!),
+                                  backgroundColor: controller.getStatusPajakBg(
+                                    controller.statusPajak.value,
+                                  ),
+                                  textColor: controller.getStatusPajakColor(
+                                    controller.statusPajak.value,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -137,6 +152,24 @@ class DetailBerkasPage extends StatelessWidget {
                         icon: Icons.location_on,
                       ),
                     ),
+                    const SizedBox(height: 12),
+
+                    Obx(() {
+                      if (controller.titipBiayaAmount.value <= 0) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DetailInfoCard(
+                            title: "NOMINAL TITIP BIAYA",
+                            content: controller.titipBiayaAmountFormatted.value,
+                            icon: Icons.savings_outlined,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      );
+                    }),
                     const SizedBox(height: 24),
 
                     Row(

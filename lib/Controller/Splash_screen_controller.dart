@@ -11,14 +11,10 @@ class SplashController extends GetxController {
       'https://sagem-unsigned-auto-games.trycloudflare.com';
   static const String _checkAuthEndpoint = '/api/v1/checkAuth/token';
 
-  // ─── Lifecycle ───────────────────────────────────────────────────────────────
-
   @override
   void onInit() {
     super.onInit();
-    // Jalankan cek auth setelah frame pertama selesai render
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Beri jeda minimal agar splash animation sempat tampil
       await Future.delayed(const Duration(milliseconds: 1000));
       await checkAuth();
     });
@@ -39,32 +35,35 @@ class SplashController extends GetxController {
       _goToLogin();
     }
   }
-Future<bool> _verifyToken(String token) async {
-  try {
-    final uri = Uri.parse('$_baseUrl$_checkAuthEndpoint');
 
-    final response = await http.post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({'token': token}),
-    ).timeout(const Duration(seconds: 5)); // ← turunkan timeout
+  Future<bool> _verifyToken(String token) async {
+    try {
+      final uri = Uri.parse('$_baseUrl$_checkAuthEndpoint');
 
-    if (response.statusCode == 200) {
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-      final dynamic valid = body['authenticated'] ?? body['message'] == "authenticated";
-      if (valid is bool) return valid;
-      if (valid is String) return valid.toLowerCase() == 'true';
+      final response = await http
+          .post(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({'token': token}),
+          )
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final dynamic valid =
+            body['authenticated'] ?? body['message'] == "authenticated";
+        if (valid is bool) return valid;
+        if (valid is String) return valid.toLowerCase() == 'true';
+      }
+
+      return false;
+    } catch (e) {
+      return false;
     }
-
-    return false;
-  } catch (e) {
-    // Timeout atau tidak ada koneksi → langsung ke login
-    return false;
   }
-}
 
   Future<String?> _getSavedToken() async {
     final prefs = await SharedPreferences.getInstance();

@@ -10,9 +10,6 @@ class TambahBerkasNotarisPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🔄 Pastikan controller selalu fresh tiap kali halaman ini dibuka,
-    // biar gak ada state lama (jenisPekerjaan, docFields, dll) yang nyangkut
-    // dari sesi/pengisian berkas sebelumnya.
     if (Get.isRegistered<NotarisFormController>()) {
       Get.delete<NotarisFormController>(force: true);
     }
@@ -23,7 +20,6 @@ class TambahBerkasNotarisPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // ─── HEADER + BACK ───
             Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -55,7 +51,6 @@ class TambahBerkasNotarisPage extends StatelessWidget {
               ),
             ),
 
-            // ─── CONTENT ───
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -162,8 +157,6 @@ class TambahBerkasNotarisPage extends StatelessWidget {
     );
   }
 
-  // ─── HELPERS ───
-
   Widget _buildLabel(String text) {
     return Text(
       text,
@@ -204,9 +197,6 @@ class TambahBerkasNotarisPage extends StatelessWidget {
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             isExpanded: true,
-            // 🔒 Guard: kalau value yang tersimpan (misal state lama/draft)
-            // gak ada di daftar opsi saat ini, fallback ke null (hint tampil)
-            // biar gak nabrak assertion "exactly one item with this value".
             value: c.jenisPekerjaanOptions.contains(c.jenisPekerjaan.value)
                 ? c.jenisPekerjaan.value
                 : null,
@@ -268,7 +258,6 @@ class TambahBerkasNotarisPage extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // preview box
             Container(
               width: 72,
               height: 72,

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "836856839892",
+    "project_id": "notarisppatapp-b26d9",
+    "storage_bucket": "notarisppatapp-b26d9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836856839892:android:02b5e448391f41e8898541",
+        "android_client_info": {
+          "package_name": "com.example.notaris_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv04AvWQ4Lc-RVZmLHS7JSG3n2yh60Q5A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

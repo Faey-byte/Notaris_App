@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Ppat_Controller.dart';
+import 'package:notaris_app/Controller/rekap_laporan_controller.dart';
 import 'package:notaris_app/Model/rekap_laporan_model.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Home_Page.dart';
@@ -199,21 +200,7 @@ class PpatPage extends StatelessWidget {
               Get.offAll(() => CalculatorPage());
               break;
             case 4:
-              Get.offAll(() => RekapLaporanPage(
-                    data: RekapLaporanModel(
-                      totalBerkas: 0,
-                      totalSelesai: 0,
-                      totalProses: 0,
-                      pemasukan: 0.0,
-                      chartData: [],
-                    ),
-                    tanggalAwal: "01-05-2026",
-                    tanggalAkhir: "23-05-2026",
-                    jenisLayanan: JenisLayanan.values.first,
-                    onJenisLayananChanged: (layanan) {},
-                    currentIndex: 4,
-                    onBack: () => Get.back(),
-                  ));
+              Get.offAll(() => const RekapLaporanController());
               break;
           }
         },

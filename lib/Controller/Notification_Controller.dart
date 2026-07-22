@@ -22,14 +22,12 @@ class NotificationController extends GetxController {
       notifications.insert(0, notif); // terbaru di atas
       unreadCount.value++;
 
-      // Tampilkan snackbar otomatis saat notif masuk
       Get.snackbar(
         '🔔 Notifikasi Baru',
         notif.message,
         duration: const Duration(seconds: 3),
         snackPosition: SnackPosition.TOP,
         onTap: (_) {
-          // Navigasi ke halaman PPAT kalau di-tap
           if (notif.ppatId != null) {
             Get.toNamed('/ppat', arguments: notif.ppatId);
           }

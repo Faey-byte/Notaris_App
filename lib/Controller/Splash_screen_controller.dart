@@ -7,6 +7,8 @@ import 'package:notaris_app/config/base_url.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:notaris_app/Controller/Notification_Controller.dart';
+import 'package:notaris_app/data/services/foreground_task_handler.dart'; // ← tambah import ini
+import 'package:flutter_foreground_task/flutter_foreground_task.dart'; // ← tambah import ini
 import '../Routes/routes.dart';
 
 class SplashController extends GetxController {
@@ -39,6 +41,7 @@ class SplashController extends GetxController {
 
       if (isValid) {
         await _startNotificationListening();
+        await _startForegroundService(); // ← tambah ini
         _goToHome();
       } else {
         _goToLogin();
@@ -50,7 +53,7 @@ class SplashController extends GetxController {
 
   Future<bool> _verifyToken(String token) async {
     try {
-      final uri = Uri.parse('$baseUrl$_checkAuthEndpoint'); // ✅ sudah diperbaiki (baseUrl, bukan _baseUrl)
+      final uri = Uri.parse('$baseUrl$_checkAuthEndpoint');
 
       final response = await http.post(
         uri,
@@ -75,7 +78,7 @@ class SplashController extends GetxController {
     }
   }
 
-  // ─── Notifikasi WS ───────────────────────────────────────────────────────────
+  // ─── Notifikasi WS (dalam app) ────────────────────────────────────────────────
 
   Future<void> _startNotificationListening() async {
     final prefs = await SharedPreferences.getInstance();
@@ -83,6 +86,34 @@ class SplashController extends GetxController {
 
     if (userId != null && userId.isNotEmpty) {
       Get.find<NotificationController>().startListening(userId);
+    }
+  }
+
+  // ✅ Tambahan: Notifikasi background (Foreground Service)
+  Future<void> _startForegroundService() async {
+    print("🟡 [Splash] _startForegroundService() dipanggil");
+
+    try {
+      final NotificationPermission notificationPermission =
+          await FlutterForegroundTask.checkNotificationPermission();
+      print("🟡 [Splash] Status izin notifikasi: $notificationPermission");
+
+      if (notificationPermission != NotificationPermission.granted) {
+        print("🟡 [Splash] Meminta izin notifikasi...");
+        await FlutterForegroundTask.requestNotificationPermission();
+      }
+
+      print("🟡 [Splash] Memanggil FlutterForegroundTask.startService()...");
+
+      final result = await FlutterForegroundTask.startService(
+        notificationTitle: 'Notaris App',
+        notificationText: 'Menjaga notifikasi tetap aktif',
+        callback: startForegroundTaskCallback,
+      );
+
+      print("✅ [Splash] startService() selesai, result: $result");
+    } catch (e) {
+      print("❌ [Splash] ERROR saat startForegroundService: $e");
     }
   }
 

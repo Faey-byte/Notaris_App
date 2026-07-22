@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/Notaris_Controller.dart';
-import 'package:notaris_app/Model/rekap_laporan_model.dart';
+import 'package:notaris_app/Controller/rekap_laporan_controller.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Home_Page.dart';
 import 'package:notaris_app/Pages/ppat_page.dart';
-import 'package:notaris_app/Pages/Profile_Page.dart';
 import 'package:notaris_app/Pages/Tambah_Berkas_Notaris.dart';
-import 'package:notaris_app/Pages/rekap_laporan_page.dart';
 import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
-import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
 import 'package:notaris_app/Widget/Notaris/Notaris_Card.dart';
 import 'package:notaris_app/Widget/Berkas/Page_Header_Widget.dart';
 import 'package:notaris_app/Widget/Berkas/Search_Bar_Widget.dart';
 import 'package:notaris_app/Widget/Berkas/Status_Chip.dart';
 import 'package:notaris_app/utils/app_colors.dart';
-// Duplicate import removed to avoid type conflicts
 
 class NotarisPage extends StatelessWidget {
   NotarisPage({super.key});
@@ -31,10 +27,10 @@ class NotarisPage extends StatelessWidget {
         onTap: (index) {
           switch (index) {
             case 0:
-              Get.offAll(() =>  HomePage());
+              Get.offAll(() => HomePage());
               break;
             case 1:
-              Get.offAll(() =>  NotarisPage());
+              Get.offAll(() => NotarisPage());
               break;
             case 2:
               Get.offAll(() => PpatPage());
@@ -43,21 +39,7 @@ class NotarisPage extends StatelessWidget {
               Get.offAll(() => CalculatorPage());
               break;
             case 4:
-              Get.offAll(() => RekapLaporanPage(
-                    data: RekapLaporanModel(
-                      totalBerkas: 0,
-                      totalSelesai: 0,
-                      totalProses: 0,
-                      pemasukan: 0.0,
-                      chartData: [],
-                    ),
-                    tanggalAwal: "01-05-2026",
-                    tanggalAkhir: "23-05-2026",
-                    jenisLayanan: JenisLayanan.values.first,
-                    onJenisLayananChanged: (layanan) {},
-                    currentIndex: 4,
-                    onBack: () => Get.back(),
-                  ));
+              Get.offAll(() => const RekapLaporanController());
               break;
           }
         },
@@ -70,7 +52,7 @@ class NotarisPage extends StatelessWidget {
                 title: 'Berkas Notaris',
                 icon: Icons.gavel,
                 buttonLabel: 'Berkas',
-                 onButtonPressed: () => Get.to(() => const TambahBerkasNotarisPage()),
+                onButtonPressed: () => Get.to(() => const TambahBerkasNotarisPage()),
               ),
               Container(
                 color: AppColors.white,
@@ -99,7 +81,6 @@ class NotarisPage extends StatelessWidget {
                               ],
                             ),
                           ),
-                          // ✅ controller.statusList langsung accessible karena dari Notaris_Controller
                           ...controller.statusList.map((s) => Obx(() => StatusChip(
                             label: s.label,
                             textColor: s.textColor,
@@ -131,6 +112,13 @@ class NotarisPage extends StatelessWidget {
                 ),
               ),
               Obx(() {
+                if (controller.isLoading.value) {
+                  return const Padding(
+                    padding: EdgeInsets.all(40),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                
                 if (controller.filteredItems.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(40),

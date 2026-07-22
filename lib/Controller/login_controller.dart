@@ -2,8 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
-import 'package:notaris_app/Controller/Notification_Controller.dart'; // ← tambah import ini
+import 'package:notaris_app/Controller/Notification_Controller.dart';
+import 'package:notaris_app/data/services/foreground_task_handler.dart'; // ← tambah import ini
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart'; // ← tambah import ini
 import '../Routes/routes.dart';
 
 class LoginController extends GetxController {
@@ -49,13 +51,12 @@ class LoginController extends GetxController {
       print("DATA LOGIN: $data");
 
       String? token = data["token"];
-      String? userId = data["id"]?.toString(); // ← ambil userId dari response
+      String? userId = data["id"]?.toString();
 
       if (token != null && token.isNotEmpty) {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
 
-        // Simpan userId juga untuk WS
         if (userId != null) {
           await prefs.setString('user_id', userId);
         }
@@ -63,9 +64,12 @@ class LoginController extends GetxController {
         print("TOKEN BERHASIL DISIMPAN: $token");
       }
 
-      // ← Mulai listening notif WS setelah login berhasil
+      // Mulai listening notif WS untuk saat app aktif (sudah ada)
       if (userId != null) {
         Get.find<NotificationController>().startListening(userId);
+
+        // ✅ Nyalakan Foreground Service untuk notif saat app di background/closed
+        await _startForegroundService();
       }
 
       Get.snackbar("Success", data["message"] ?? "Login berhasil");
@@ -77,6 +81,22 @@ class LoginController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // ✅ Fungsi baru: nyalakan Foreground Service
+  Future<void> _startForegroundService() async {
+    // Minta izin notifikasi dulu (Android 13+)
+    final NotificationPermission notificationPermission =
+        await FlutterForegroundTask.checkNotificationPermission();
+    if (notificationPermission != NotificationPermission.granted) {
+      await FlutterForegroundTask.requestNotificationPermission();
+    }
+
+    await FlutterForegroundTask.startService(
+      notificationTitle: 'Notaris App',
+      notificationText: 'Menjaga notifikasi tetap aktif',
+      callback: startForegroundTaskCallback,
+    );
   }
 
   @override

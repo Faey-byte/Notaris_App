@@ -4,7 +4,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as ws_status;
 
 class WebSocketService {
-  static const String _wsUrl = 'wss://echo.websocket.org';
+  static const String _wsUrl = 'wss://themselves-assembled-figure-theoretical.trycloudflare.com';
 
   WebSocketChannel? _channel;
   StreamSubscription? _subscription;

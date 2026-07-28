@@ -28,7 +28,7 @@ class NotarisFormController extends GetxController {
 
   var _token = "".obs;
 
-  var jenisPekerjaan = 'original'.obs; 
+  var jenisPekerjaan = 'original'.obs;
 
   final namaKlienCtrl = TextEditingController();
   final nomorAktaCtrl = TextEditingController();
@@ -290,10 +290,7 @@ class NotarisFormController extends GetxController {
     for (var field in docFields) {
       if (field.publicId.value.isNotEmpty) {
         publicIds.add(field.publicId.value);
-        metadata.add({
-          "label": field.label,
-          "url": field.fileValue.value
-        });
+        metadata.add({"label": field.label, "url": field.fileValue.value});
       }
     }
 
@@ -341,7 +338,9 @@ class NotarisFormController extends GetxController {
       await _saveTextFields();
       await _submitToServer();
 
-      print("🎊 [NOTARIS] SEMUA DATA TERSIMPAN & TERKIRIM. berkasId: $berkasId");
+      print(
+        "🎊 [NOTARIS] SEMUA DATA TERSIMPAN & TERKIRIM. berkasId: $berkasId",
+      );
 
       Get.snackbar(
         "Sukses",

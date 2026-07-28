@@ -15,7 +15,7 @@ class DbHelper {
     String path = join(await getDatabasesPath(), 'notaris_notary.db');
     return await openDatabase(
       path,
-      version: 5, // ✅ Naik ke versi 5: tambah tabel notaris_draft
+      version: 5,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE ppat_draft (
@@ -93,12 +93,8 @@ class DbHelper {
               FROM ppat_draft
             ''');
             await db.execute('DROP TABLE ppat_draft');
-            await db.execute(
-              'ALTER TABLE ppat_draft_new RENAME TO ppat_draft',
-            );
-          } catch (e) {
-            // Jika gagal (misal tabel lama tidak ada), biarkan saja
-          }
+            await db.execute('ALTER TABLE ppat_draft_new RENAME TO ppat_draft');
+          } catch (e) {}
         }
         if (oldVersion < 5) {
           try {
@@ -119,10 +115,6 @@ class DbHelper {
       },
     );
   }
-
-  // ============================================================
-  // CRUD PPAT (tetap seperti semula)
-  // ============================================================
 
   Future<void> saveDraft(Map<String, dynamic> data) async {
     final dbClient = await db;
@@ -164,9 +156,7 @@ class DbHelper {
     return result.first['file_id'] as String?;
   }
 
-  Future<List<Map<String, dynamic>>> getDraftByClientId(
-    String clientId,
-  ) async {
+  Future<List<Map<String, dynamic>>> getDraftByClientId(String clientId) async {
     final dbClient = await db;
     return await dbClient.query(
       'ppat_draft',
@@ -187,11 +177,6 @@ class DbHelper {
     if (result.isEmpty) return null;
     return result.first['file_id'] as String?;
   }
-
-  // ============================================================
-  // CRUD NOTARIS (BARU) — tanpa GraphQL, tanpa dynamic form
-  // berkas_id dipakai sebagai pengganti peran client_id di PPAT
-  // ============================================================
 
   Future<void> saveNotarisDraft(Map<String, dynamic> data) async {
     final dbClient = await db;
@@ -233,10 +218,6 @@ class DbHelper {
     );
   }
 
-  // ============================================================
-  // DEBUG
-  // ============================================================
-
   Future<void> cekSeluruhDataDraft() async {
     try {
       final dbClient = await db;
@@ -275,14 +256,8 @@ class DbHelper {
     }
   }
 
-  // ============================================================
-  // AMBIL SEMUA DATA NOTARIS (buat list page)
-  // ============================================================
   Future<List<Map<String, dynamic>>> getAllNotarisDraft() async {
     final dbClient = await db;
-    return await dbClient.query(
-      'notaris_draft',
-      orderBy: 'berkas_id DESC', // terbaru duluan (berkas_id = NOTARIS_<timestamp>)
-    );
+    return await dbClient.query('notaris_draft', orderBy: 'berkas_id DESC');
   }
 }

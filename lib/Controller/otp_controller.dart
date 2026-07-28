@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/login_controller.dart';
 import 'package:notaris_app/Controller/signup_controller.dart';
@@ -9,12 +8,21 @@ import 'package:notaris_app/data/services/auth_service.dart';
 class OtpController extends GetxController {
   var isLoading = false.obs;
   String email = '';
+  bool isForgotPasswordFlow = false; // ✅ tambahan
 
   @override
   void onInit() {
     super.onInit();
     if (Get.arguments != null) {
-      email = Get.arguments as String;
+      if (Get.arguments is Map) {
+        // ✅ dipakai untuk alur forgot password
+        final args = Get.arguments as Map;
+        email = args['email'] ?? '';
+        isForgotPasswordFlow = args['isForgotPassword'] ?? false;
+      } else {
+        // Perilaku lama untuk signup (tidak diubah)
+        email = Get.arguments as String;
+      }
     }
   }
 
@@ -30,9 +38,18 @@ class OtpController extends GetxController {
       final res = await AuthService.verifyOtp(email: email, otp: otpCode);
 
       Get.snackbar("Success", res["message"] ?? "Verifikasi berhasil!");
-      Get.delete<SignupController>();
-      Get.delete<LoginController>();
-      Get.offAllNamed(AppRoutes.loginpage);
+
+      if (isForgotPasswordFlow) {
+        // ✅ Alur lupa password → lanjut ke halaman reset password
+        Get.offNamed(AppRoutes.resetPasswordPage, arguments: {
+          'email': email,
+        });
+      } else {
+        // Alur signup (perilaku lama, tidak diubah)
+        Get.delete<SignupController>();
+        Get.delete<LoginController>();
+        Get.offAllNamed(AppRoutes.loginpage);
+      }
     } catch (e) {
       Get.snackbar("Error", e.toString());
     } finally {

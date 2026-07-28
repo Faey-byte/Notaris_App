@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import '../Controller/dynamic_form_controller.dart'; // Sesuaikan path controller jika beda
-import '../utils/app_colors.dart'; // Sesuaikan path colors jika beda
+import '../Controller/dynamic_form_controller.dart';
+import '../utils/app_colors.dart';
 
 class DynamicFormPage extends StatelessWidget {
   final String jenis;
@@ -58,7 +58,6 @@ class DynamicFormPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   
-                  // Menggunakan fungsi _buildField di bawah langsung di dalam file ini
                   ...controller.fields.map(
                     (f) => _buildField(f, controller),
                   ),
@@ -99,9 +98,7 @@ class DynamicFormPage extends StatelessWidget {
     );
   }
 
-  // Fungsi internal untuk merender tipe field secara dinamis beserta preview gambarnya
   Widget _buildField(DynamicField field, DynamicFormController controller) {
-    // 1. TAMPILAN JIKA TIPE NYA UPLOAD (DOKUMEN / FOTO)
     if (field.type == "upload") {
       return Obx(() {
         return Container(
@@ -128,13 +125,11 @@ class DynamicFormPage extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // Jika sedang loading upload ke server
                     if (field.isLoading.value)
                       const Padding(
                         padding: EdgeInsets.all(20.0),
                         child: CircularProgressIndicator(),
                       )
-                    // JIKA BERHASIL DIUPLOAD & URL TIDAK KOSONG -> TAMPILKAN GAMBARNYA
                     else if (field.fileValue.value.isNotEmpty)
                       Column(
                         children: [
@@ -161,7 +156,6 @@ class DynamicFormPage extends StatelessWidget {
                           const SizedBox(height: 12),
                           TextButton.icon(
                             onPressed: () {
-                              // Kosongkan reactive value jika ingin hapus/ganti file
                               field.fileValue.value = "";
                               field.fileId.value = "";
                               field.matchKey.value = "";
@@ -174,7 +168,6 @@ class DynamicFormPage extends StatelessWidget {
                           ),
                         ],
                       )
-                    // TAMPILAN DEFAULT TOMBOL JIKA BELUM ADA GAMBAR
                     else
                       Column(
                         children: [
@@ -230,7 +223,6 @@ class DynamicFormPage extends StatelessWidget {
       });
     }
 
-    // 2. TAMPILAN JIKA TIPE NYA KOORDINAT
     if (field.type == "coordinate") {
       return Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -257,7 +249,6 @@ class DynamicFormPage extends StatelessWidget {
       );
     }
 
-    // 3. TAMPILAN DEFAULT JIKA TIPE NYA TEXT ATAU NUMBER
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: Column(

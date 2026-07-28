@@ -133,7 +133,7 @@ class _OtpPagesState extends State<OtpPages> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Masukkan kode OTP yang telah dikirim\nke email: ${controller.email}', // Menampilkan email yang dinamis
+          'Masukkan kode OTP yang telah dikirim\nke email: ${controller.email}',
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.black87, fontSize: 14),
         ),

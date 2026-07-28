@@ -1,24 +1,142 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:notaris_app/Pages/login_page.dart';
+import 'package:notaris_app/config/base_url.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Routes/routes.dart';
 
 class HomeController extends GetxController {
-  // State untuk income
-  final RxString totalIncome = 'Rp 145.500.000'.obs;
+  static const String baseUrl = "${ApiConfig.baseUrl}";
+
+  final RxString totalIncome = 'Rp 0'.obs;
   final RxString incomeGrowth = '+12.5%'.obs;
 
-  // State untuk quick overview stats
-  final RxString notarisFiles = '124'.obs;
-  final RxString ppatFiles = '86'.obs;
-  final RxString inProcess = '12'.obs;
-  final RxString completed = '198'.obs;
+  final RxBool isLoadingIncome = false.obs;
 
-  // State untuk notifikasi
+  final RxString notarisFiles = '0'.obs;
+  final RxString ppatFiles = '0'.obs;
+  final RxString inProcess = '0'.obs;
+  final RxString completed = '0'.obs;
+
+  final RxBool isLoadingSummary = false.obs;
+
   final RxBool hasNotification = true.obs;
 
-  // Fungsi Logout dengan Dialog Konfirmasi
+  @override
+  void onInit() {
+    super.onInit();
+    fetchDashboardSummary();
+    fetchTotalIncome();
+  }
+
+  /// Ambil total pemasukan dari /api/v1/get-total-amount.
+  /// Response: { "amount": 17510000 }
+  Future<void> fetchTotalIncome() async {
+    try {
+      isLoadingIncome.value = true;
+
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? "";
+
+      final uri = Uri.parse('$baseUrl/api/v1/get-total-amount');
+
+      final response = await http.get(
+        uri,
+        headers: {
+          "Accept": "application/json",
+          if (token.isNotEmpty) "Authorization": "Bearer $token",
+        },
+      );
+
+      print("=== TOTAL INCOME ===");
+      print("URL: $uri");
+      print("Status: ${response.statusCode}");
+      print("Body: ${response.body}");
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          "Gagal memuat total pemasukan (Status: ${response.statusCode})",
+        );
+      }
+
+      final decoded = json.decode(response.body);
+      final dynamic rawAmount = decoded['amount'];
+
+      int amountInt = 0;
+      if (rawAmount is int) {
+        amountInt = rawAmount;
+      } else if (rawAmount is double) {
+        amountInt = rawAmount.toInt();
+      } else if (rawAmount is String) {
+        amountInt =
+            int.tryParse(rawAmount.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      }
+
+      final formatter = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp ',
+        decimalDigits: 0,
+      );
+      totalIncome.value = formatter.format(amountInt);
+    } catch (e) {
+      print("❌ [TOTAL INCOME ERROR]: $e");
+    } finally {
+      isLoadingIncome.value = false;
+    }
+  }
+
+  Future<void> fetchDashboardSummary() async {
+    try {
+      isLoadingSummary.value = true;
+
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? "";
+
+      final uri = Uri.parse('$baseUrl/api/v1/dashboard/summary');
+
+      final response = await http.get(
+        uri,
+        headers: {
+          "Accept": "application/json",
+          if (token.isNotEmpty) "Authorization": "Bearer $token",
+        },
+      );
+
+      print("=== DASHBOARD SUMMARY ===");
+      print("URL: $uri");
+      print("Status: ${response.statusCode}");
+      print("Body: ${response.body}");
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          "Gagal memuat ringkasan (Status: ${response.statusCode})",
+        );
+      }
+
+      final decoded = json.decode(response.body);
+
+      if (decoded['status'] != true || decoded['data'] == null) {
+        throw Exception(
+          decoded['message']?.toString() ?? "Data ringkasan tidak valid",
+        );
+      }
+
+      final data = decoded['data'];
+
+      notarisFiles.value = (data['notaris_file'] ?? 0).toString();
+      ppatFiles.value = (data['ppat_file'] ?? 0).toString();
+      inProcess.value = (data['process'] ?? 0).toString();
+      completed.value = (data['finished'] ?? 0).toString();
+    } catch (e) {
+      print("❌ [DASHBOARD SUMMARY ERROR]: $e");
+    } finally {
+      isLoadingSummary.value = false;
+    }
+  }
+
   void logout() {
     Get.defaultDialog(
       title: "Konfirmasi Keluar",
@@ -27,31 +145,25 @@ class HomeController extends GetxController {
       textCancel: "Batal",
       textConfirm: "Ya, Keluar",
       confirmTextColor: Colors.white,
-      buttonColor: const Color(0xFFDC2626), // Warna merah solid
+      buttonColor: const Color(0xFFDC2626),
       cancelTextColor: const Color(0xFF64748B),
       onConfirm: () async {
         try {
-          // 1. Inisialisasi SharedPreferences
           final SharedPreferences prefs = await SharedPreferences.getInstance();
-          
-          // 2. Hapus token otentikasi dari local storage
+
           await prefs.remove('auth_token');
           print("TOKEN BERHASIL DIHAPUS DARI STORAGE");
 
-          // 3. Bersihkan data/state controller GetX yang tertinggal di memory
           Get.deleteAll(force: true);
 
-          // 4. Berikan pesan info sukses
           Get.snackbar(
-            "Logout Berhasil", 
+            "Logout Berhasil",
             "Anda telah keluar dari akun manajemen",
             backgroundColor: const Color(0xFFFEF2F2),
             colorText: const Color(0xFFDC2626),
           );
 
-          // 5. Tendang user kembali ke halaman Login & hapus seluruh tumpukan halaman belakang
           Get.offAllNamed(AppRoutes.loginpage);
-          
         } catch (e) {
           print("ERROR LOGOUT: $e");
           Get.snackbar("Error", "Gagal melakukan logout, coba lagi.");

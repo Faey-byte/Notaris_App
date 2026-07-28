@@ -1,14 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/auth_controller.dart';
+import 'package:notaris_app/Controller/Notification_Controller.dart'; // ← tambah import ini
 import 'package:notaris_app/Pages/Home_Page.dart';
+import 'package:notaris_app/data/services/foreground_task_handler.dart'; // ← tambah import ini
 import 'Routes/routes.dart';
 import 'Routes/pages.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:notaris_app/data/db_helper.dart'; 
+import 'package:notaris_app/data/db_helper.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart'; // ← tambah import ini
+
+// ✅ Inisialisasi konfigurasi Foreground Task (WAJIB dipanggil sebelum runApp)
+void _initForegroundTask() {
+  FlutterForegroundTask.init(
+    androidNotificationOptions: AndroidNotificationOptions(
+      channelId: 'ws_foreground_channel',
+      channelName: 'Notaris App Background Service',
+      channelDescription: 'Menjaga koneksi notifikasi tetap aktif di background',
+      channelImportance: NotificationChannelImportance.LOW,
+      priority: NotificationPriority.LOW,
+    ),
+    iosNotificationOptions: const IOSNotificationOptions(
+      showNotification: false,
+      playSound: false,
+    ),
+    foregroundTaskOptions: ForegroundTaskOptions(
+      eventAction: ForegroundTaskEventAction.repeat(300000), // cek tiap 5 menit (fallback)
+      autoRunOnBoot: true,
+      allowWakeLock: true,
+      allowWifiLock: true,
+    ),
+  );
+}
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
+
+  _initForegroundTask(); // ← tambah ini, dipanggil sebelum runApp
 
   try {
     await dotenv.load(fileName: ".env");
@@ -19,8 +47,8 @@ void main() async {
   print("reload info data notaris");
   await DbHelper().cekSeluruhDataNotaris();
 
-
   Get.put(AuthController());
+  Get.put<NotificationController>(NotificationController(), permanent: true); // ← tambah ini
 
   runApp(const MyApp());
 }

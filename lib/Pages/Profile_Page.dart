@@ -1,35 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:notaris_app/Controller/profile_controller.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(ProfileController());
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF2F2),
+      backgroundColor: const Color(0xFFF3F3F3),
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopBar(),
+            _buildTopBar(controller),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildProfileHeader(),
-                    const SizedBox(height: 28),
-                    _buildSectionLabel('INFORMASI AKUN'),
-                    const SizedBox(height: 8),
-                    _buildInfoSection(),
-                    const SizedBox(height: 24),
-                    _buildSectionLabel('PENGATURAN'),
-                    const SizedBox(height: 8),
-                    _buildSettingsSection(),
-                    const SizedBox(height: 28),
-                    _buildLogoutButton(),
-                  ],
+                child: Obx(
+                  () => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildProfileHeader(controller),
+                      const SizedBox(height: 28),
+                      _buildSectionLabel('INFORMASI AKUN'),
+                      const SizedBox(height: 8),
+                      _buildInfoSection(controller),
+                      const SizedBox(height: 24),
+                      _buildSectionLabel('PENGATURAN'),
+                      const SizedBox(height: 8),
+                      _buildSettingsSection(),
+                      const SizedBox(height: 28),
+                      _buildLogoutButton(controller),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -39,10 +44,9 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-
-  Widget _buildTopBar() {
+  Widget _buildTopBar(ProfileController controller) {
     return Container(
-      color: const Color(0xFFFEF2F2),
+      color: const Color(0xFFF3F3F3),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
@@ -62,7 +66,7 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () {},
+            onTap: controller.openEditDialog,
             child: const Icon(Icons.edit_outlined, color: Color(0xFF1E293B), size: 20),
           ),
         ],
@@ -70,9 +74,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  
-
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(ProfileController controller) {
     return Center(
       child: Column(
         children: [
@@ -106,29 +108,18 @@ class ProfilePage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          const Text(
-            'Kelompok 12',
-            style: TextStyle(
+          Text(
+            controller.nama.value,
+            style: const TextStyle(
               color: Color(0xFF1E293B),
               fontSize: 18,
               fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 2),
-          const Text(
-            'email',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
             ),
           ),
         ],
       ),
     );
   }
-
-
 
   Widget _buildSectionLabel(String label) {
     return Text(
@@ -142,9 +133,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-
-
-  Widget _buildInfoSection() {
+  Widget _buildInfoSection(ProfileController controller) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -152,19 +141,25 @@ class ProfilePage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildInfoRow(Icons.person_outline, 'NAMA LENGKAP', isFirst: true),
+          _buildInfoRow(
+            Icons.person_outline,
+            'NAMA LENGKAP',
+            controller.nama.value,
+            isFirst: true,
+          ),
           _buildDivider(),
-          _buildInfoRow(Icons.mail_outline, 'EMAIL'),
-          _buildDivider(),
-          _buildInfoRow(Icons.phone_outlined, 'NOMOR HP'),
-          _buildDivider(),
-          _buildInfoRow(Icons.grid_view_rounded, 'NAMA KANTOR', isLast: true),
+          _buildInfoRow(
+            Icons.cake_outlined,
+            'TANGGAL LAHIR',
+            controller.tanggalLahir.value,
+            isLast: true,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label,
+  Widget _buildInfoRow(IconData icon, String label, String value,
       {bool isFirst = false, bool isLast = false}) {
     return Container(
       decoration: BoxDecoration(
@@ -194,6 +189,14 @@ class ProfilePage extends StatelessWidget {
             letterSpacing: 0.8,
           ),
         ),
+        subtitle: Text(
+          value,
+          style: const TextStyle(
+            color: Color(0xFF1E293B),
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         trailing: const Icon(Icons.chevron_right, color: Color(0xFFCBD5E1), size: 20),
       ),
     );
@@ -208,8 +211,6 @@ class ProfilePage extends StatelessWidget {
       endIndent: 16,
     );
   }
-
-
 
   Widget _buildSettingsSection() {
     return Container(
@@ -289,26 +290,24 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
- 
-
-  Widget _buildLogoutButton() {
+  Widget _buildLogoutButton(ProfileController controller) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () => Get.toNamed('/LoginPage'),
-        icon: const Icon(Icons.logout, color: Color(0xFF913632), size: 18),
+        onPressed: controller.confirmLogout,
+        icon: const Icon(Icons.logout, color: Colors.white, size: 18),
         label: const Text(
-          'Keluar dari Aplikasi',
+          'Logout',
           style: TextStyle(
-            color: Color(0xFF913632),
+            color: Colors.white,
             fontSize: 15,
             fontWeight: FontWeight.w700,
           ),
         ),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          side: const BorderSide(color: Color(0xFFFCA5A5), width: 1.5),
-          backgroundColor: const Color(0xFFFEF2F2),
+          side: const BorderSide(color: Color(0xFF913632), width: 1.5),
+          backgroundColor: const Color(0xFF913632),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

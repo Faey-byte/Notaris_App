@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:notaris_app/data/services/logging_service.dart';
 import 'package:notaris_app/config/base_url.dart';
+
 class AuthService {
   static const String baseUrl = "${ApiConfig.baseUrl}/api/v1";
 
@@ -14,9 +15,7 @@ class AuthService {
 
     final response = await http.post(
       url,
-
       headers: {"Content-Type": "application/json"},
-
       body: jsonEncode({"email": email, "password": password}),
     );
 
@@ -40,8 +39,7 @@ class AuthService {
     required String username,
     required String email,
     required String password,
-    String?
-    companyName,
+    String? companyName,
   }) async {
     final url = Uri.parse('$baseUrl/signup');
 
@@ -65,9 +63,7 @@ class AuthService {
 
     switch (response.statusCode) {
       case 400:
-        throw Exception(
-          errorMessage,
-        );
+        throw Exception(errorMessage);
       case 429:
         throw Exception('Terlalu banyak permintaan OTP. Tunggu 5 menit.');
       case 500:
@@ -141,6 +137,76 @@ class AuthService {
       case 429:
         throw Exception('Terlalu banyak permintaan. Tunggu 5 menit.');
       case 500:
+      default:
+        throw Exception(errorMessage);
+    }
+  }
+
+  static Future<Map<String, dynamic>> requestResetPassword({
+    required String email,
+  }) async {
+    final url = Uri.parse('$baseUrl/request/reset-password');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    print("REQUEST RESET PASSWORD STATUS: ${response.statusCode}");
+    print("REQUEST RESET PASSWORD BODY: ${response.body}");
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode == 200) {
+      return body;
+    }
+
+    final errorMessage = body['error'] ?? body['message'] ?? 'Gagal mengirim kode reset';
+
+    switch (response.statusCode) {
+      case 404:
+        throw Exception('Email tidak terdaftar');
+      case 429:
+        throw Exception('Terlalu banyak permintaan. Tunggu 5 menit.');
+      default:
+        throw Exception(errorMessage);
+    }
+  }
+
+  static Future<Map<String, dynamic>> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    final url = Uri.parse('$baseUrl/reset-password');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'code': code,
+        'newPassword': newPassword,
+      }),
+    );
+
+    print("RESET PASSWORD STATUS: ${response.statusCode}");
+    print("RESET PASSWORD BODY: ${response.body}");
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode == 200) {
+      return body;
+    }
+
+    final errorMessage = body['error'] ?? body['message'] ?? 'Gagal reset password';
+
+    switch (response.statusCode) {
+      case 404:
+        throw Exception('User tidak ditemukan');
+      case 400:
+        throw Exception(errorMessage);
       default:
         throw Exception(errorMessage);
     }

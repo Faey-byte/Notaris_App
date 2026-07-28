@@ -10,5 +10,8 @@ class AppRoutes {
   static const String ppat = '/PPAT';
   static const String tambahPekerjaan = '/TambahPekerjaan';
   static const String notaris = '/Notaris';
+  static const String otppage = '/OtpPage';
   static const String rekap = '/LaporanPage';
+  static const String notificationPage = '/notification';
+  static const String resetPasswordPage = '/resetpassword';
 }

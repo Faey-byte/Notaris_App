@@ -9,7 +9,11 @@ class StatusItem {
   final String label;
   final Color textColor;
   final Color bgColor;
-  StatusItem({required this.label, required this.textColor, required this.bgColor});
+  StatusItem({
+    required this.label,
+    required this.textColor,
+    required this.bgColor,
+  });
 }
 
 class AktaItem {
@@ -38,12 +42,36 @@ class NotarisController extends GetxController {
   final RxBool isLoading = false.obs;
 
   final statusList = [
-    StatusItem(label: 'SEMUA',   textColor: const Color(0xFF64748B), bgColor: const Color(0xFFF1F5F9)),
-    StatusItem(label: 'PENDING', textColor: const Color(0xFFB45309), bgColor: const Color(0xFFFEF3C7)),
-    StatusItem(label: 'PROSES',  textColor: const Color(0xFFB45309), bgColor: const Color(0xFFFEF3C7)),
-    StatusItem(label: 'SELESAI', textColor: const Color(0xFF15803D), bgColor: const Color(0xFFDCFCE7)),
-    StatusItem(label: 'REVISI',  textColor: const Color(0xFF1D4ED8), bgColor: const Color(0xFFDBEAFE)),
-    StatusItem(label: 'DITOLAK', textColor: const Color(0xFFDC2626), bgColor: const Color(0xFFFEE2E2)),
+    StatusItem(
+      label: 'SEMUA',
+      textColor: const Color(0xFF64748B),
+      bgColor: const Color(0xFFF1F5F9),
+    ),
+    StatusItem(
+      label: 'PENDING',
+      textColor: const Color(0xFFB45309),
+      bgColor: const Color(0xFFFEF3C7),
+    ),
+    StatusItem(
+      label: 'PROSES',
+      textColor: const Color(0xFFB45309),
+      bgColor: const Color(0xFFFEF3C7),
+    ),
+    StatusItem(
+      label: 'SELESAI',
+      textColor: const Color(0xFF15803D),
+      bgColor: const Color(0xFFDCFCE7),
+    ),
+    StatusItem(
+      label: 'REVISI',
+      textColor: const Color(0xFF1D4ED8),
+      bgColor: const Color(0xFFDBEAFE),
+    ),
+    StatusItem(
+      label: 'DITOLAK',
+      textColor: const Color(0xFFDC2626),
+      bgColor: const Color(0xFFFEE2E2),
+    ),
   ];
 
   final RxList<AktaItem> allItems = <AktaItem>[].obs;
@@ -55,9 +83,6 @@ class NotarisController extends GetxController {
     loadFromLocal();
   }
 
-  // ============================================================
-  // AMBIL DATA DARI SQLITE, GROUPING BY berkas_id
-  // ============================================================
   Future<void> loadFromLocal() async {
     try {
       isLoading.value = true;
@@ -65,7 +90,6 @@ class NotarisController extends GetxController {
 
       final rows = await dbHelper.getAllNotarisDraft();
 
-      // group per berkas_id
       final Map<String, List<Map<String, dynamic>>> grouped = {};
       for (var row in rows) {
         final berkasId = row['berkas_id']?.toString() ?? '';
@@ -85,7 +109,6 @@ class NotarisController extends GetxController {
         final no = getLabel('Nomor Akta');
         final jenis = getLabel('Jenis Pekerjaan');
 
-        // berkas_id formatnya "NOTARIS_<millisecondsSinceEpoch>"
         String tanggal = '-';
         final parts = berkasId.split('_');
         if (parts.length == 2) {
@@ -97,20 +120,21 @@ class NotarisController extends GetxController {
           }
         }
 
-        // 🔧 Membaca status yang disimpan di penyimpanan lokal, jika tidak ada default ke 'PENDING'
-        final statusTerupdate = prefs.getString('status_notaris_$berkasId') ?? 'PENDING';
+        final statusTerupdate =
+            prefs.getString('status_notaris_$berkasId') ?? 'PENDING';
 
-        // skip berkas yang belum ada nama klien-nya sama sekali
         if (nama.isEmpty) return;
 
-        hasil.add(AktaItem(
-          berkasId: berkasId,
-          nama: nama,
-          jenis: jenis.isEmpty ? '-' : jenis,
-          no: no.isEmpty ? '-' : no,
-          tanggal: tanggal,
-          status: statusTerupdate, // Menggunakan status dinamis dari cache
-        ));
+        hasil.add(
+          AktaItem(
+            berkasId: berkasId,
+            nama: nama,
+            jenis: jenis.isEmpty ? '-' : jenis,
+            no: no.isEmpty ? '-' : no,
+            tanggal: tanggal,
+            status: statusTerupdate,
+          ),
+        );
       });
 
       allItems.value = hasil;
@@ -137,18 +161,12 @@ class NotarisController extends GetxController {
       final token = prefs.getString('auth_token') ?? "";
 
       final uri = Uri.parse('$baseUrl/api/v1/read-notary').replace(
-        queryParameters: {
-          'notary_type': notaryType,
-          'url': url,
-          'id': id,
-        },
+        queryParameters: {'notary_type': notaryType, 'url': url, 'id': id},
       );
 
       final response = await http.get(
         uri,
-        headers: {
-          if (token.isNotEmpty) 'Authorization': 'Bearer $token',
-        },
+        headers: {if (token.isNotEmpty) 'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode != 200) {
@@ -172,10 +190,15 @@ class NotarisController extends GetxController {
     }
 
     if (searchQuery.value.isNotEmpty) {
-      hasil = hasil.where((e) =>
-        e.nama.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-        e.no.toLowerCase().contains(searchQuery.value.toLowerCase())
-      ).toList();
+      hasil = hasil
+          .where(
+            (e) =>
+                e.nama.toLowerCase().contains(
+                  searchQuery.value.toLowerCase(),
+                ) ||
+                e.no.toLowerCase().contains(searchQuery.value.toLowerCase()),
+          )
+          .toList();
     }
 
     return hasil;

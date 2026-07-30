@@ -27,14 +27,12 @@ class HomeIncomeCard extends StatelessWidget {
             ),
           ],
         ),
-        // ✅ ClipRRect membungkus Stack agar lingkaran dekoratif
-        // benar-benar terpotong mengikuti sudut membulat kartu
         child: ClipRRect(
           borderRadius: BorderRadius.circular(22),
           child: Padding(
             padding: const EdgeInsets.all(22),
             child: Stack(
-              clipBehavior: Clip.none, // biar Positioned tetap bisa "nongol" sebelum di-clip oleh ClipRRect
+              clipBehavior: Clip.none,
               children: [
                 Positioned(
                   right: -20,
@@ -82,8 +80,11 @@ class HomeIncomeCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 6),
+                    // ✅ Tampilkan "Loading..." saat isLoadingIncome true
                     Text(
-                      controller.totalIncome.value,
+                      controller.isLoadingIncome.value
+                          ? 'Loading...'
+                          : controller.totalIncome.value,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 28,

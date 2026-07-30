@@ -1,3 +1,3 @@
 class ApiConfig {
-  static const String baseUrl = "https://themselves-assembled-figure-theoretical.trycloudflare.com";
+  static const String baseUrl = "https://inbox-burning-availability-enb.trycloudflare.com";
 } 

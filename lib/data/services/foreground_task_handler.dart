@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:notaris_app/config/ws_url.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,7 +13,7 @@ class WsForegroundTaskHandler extends TaskHandler {
 
   bool _isConnected = false; // ✅ status koneksi
 
-  static const String _wsUrl = 'wss://themselves-assembled-figure-theoretical.trycloudflare.com';
+ static const String _wsUrl = WsConfig.baseUrl;
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {

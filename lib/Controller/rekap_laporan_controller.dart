@@ -22,13 +22,15 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
 
   JenisLayanan _jenisLayanan = JenisLayanan.notaris;
 
-  // ✅ default: awal bulan ini s.d. hari ini (bukan hardcode 2021-2022)
-  late DateTime _tanggalAwal = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  late DateTime _tanggalAwal = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    1,
+  );
   late DateTime _tanggalAkhir = DateTime.now();
 
   bool _isLoading = false;
 
-  // Data hasil fetch dari server. Null selama belum berhasil fetch.
   RekapLaporanModel? _ppatFetchedData;
   RekapLaporanModel? _notarisFetchedData;
 
@@ -61,9 +63,6 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     }
   }
 
-  // ============================================================
-  // FETCH LAPORAN PPAT DARI /api/v1/generate/report/PPAT
-  // ============================================================
   Future<void> _fetchPpatReport() async {
     try {
       setState(() => _isLoading = true);
@@ -80,8 +79,9 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         'end_date': _formatDateForApi(_tanggalAkhir),
       };
 
-      final uri = Uri.parse('$baseUrl/api/v1/generate/report/PPAT')
-          .replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '$baseUrl/api/v1/generate/report/PPAT',
+      ).replace(queryParameters: queryParams);
 
       print("🌐 [LAPORAN PPAT] Target URL   : $uri");
       print("🌐 [LAPORAN PPAT] Query Params : $queryParams");
@@ -147,12 +147,6 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     }
   }
 
-  // ============================================================
-  // FETCH LAPORAN NOTARIS DARI /api/v1/generate/report/Notaris
-  // 🔧 ASUMSI: struktur response sama dengan PPAT (array transaksi
-  // mentah dengan field amount, case_name, status, created_at, dst).
-  // Kalau ternyata beda, kirim contoh response-nya biar disesuaikan.
-  // ============================================================
   Future<void> _fetchNotarisReport() async {
     try {
       setState(() => _isLoading = true);
@@ -169,8 +163,9 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         'end_date': _formatDateForApi(_tanggalAkhir),
       };
 
-      final uri = Uri.parse('$baseUrl/api/v1/generate/report/Notary')
-          .replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '$baseUrl/api/v1/generate/report/Notary',
+      ).replace(queryParameters: queryParams);
 
       print("🌐 [LAPORAN NOTARIS] Target URL   : $uri");
       print("🌐 [LAPORAN NOTARIS] Query Params : $queryParams");
@@ -192,7 +187,9 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       final decoded = jsonDecode(response.body);
 
       if (decoded == null) {
-        print("⚠️ [LAPORAN NOTARIS] Response null — tidak ada data dari server.");
+        print(
+          "⚠️ [LAPORAN NOTARIS] Response null — tidak ada data dari server.",
+        );
         setState(() {
           _notarisFetchedData = const RekapLaporanModel(
             totalBerkas: 0,
@@ -206,7 +203,9 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       }
 
       final rawList = decoded as List<dynamic>;
-      print("📦 [LAPORAN NOTARIS] Total item mentah dari API: ${rawList.length}");
+      print(
+        "📦 [LAPORAN NOTARIS] Total item mentah dari API: ${rawList.length}",
+      );
 
       final model = RekapLaporanModel.fromNotarisTransactionList(
         rawList,
@@ -267,13 +266,11 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     }
   }
 
-  // ============================================================
-  // EXPORT PDF — generate dari data yang lagi ditampilkan
-  // ============================================================
   Future<void> _onExportPdf() async {
     final data = _currentData;
-    final jenisLabel =
-        _jenisLayanan == JenisLayanan.notaris ? "Notaris" : "PPAT";
+    final jenisLabel = _jenisLayanan == JenisLayanan.notaris
+        ? "Notaris"
+        : "PPAT";
 
     final doc = pw.Document();
 
@@ -286,7 +283,10 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
             children: [
               pw.Text(
                 "Laporan $jenisLabel",
-                style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 20,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
               pw.SizedBox(height: 4),
               pw.Text(
@@ -300,27 +300,37 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
                   _pdfRow("Total Berkas", "${data.totalBerkas}"),
                   _pdfRow("Total Selesai", "${data.totalSelesai}"),
                   _pdfRow("Total Proses", "${data.totalProses}"),
-                  _pdfRow("Pemasukan", "Rp ${data.pemasukan.toStringAsFixed(0)}"),
+                  _pdfRow(
+                    "Pemasukan",
+                    "Rp ${data.pemasukan.toStringAsFixed(0)}",
+                  ),
                 ],
               ),
               pw.SizedBox(height: 20),
               pw.Text(
                 "Detail Bulanan",
-                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 14,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
               pw.SizedBox(height: 8),
               pw.Table(
                 border: pw.TableBorder.all(width: 0.5),
                 children: [
-                  pw.TableRow(children: [
-                    _pdfCellHeader("Bulan"),
-                    _pdfCellHeader("Nilai"),
-                  ]),
+                  pw.TableRow(
+                    children: [
+                      _pdfCellHeader("Bulan"),
+                      _pdfCellHeader("Nilai"),
+                    ],
+                  ),
                   ...data.chartData.map(
-                    (e) => pw.TableRow(children: [
-                      _pdfCell(e.label),
-                      _pdfCell(e.value.toStringAsFixed(0)),
-                    ]),
+                    (e) => pw.TableRow(
+                      children: [
+                        _pdfCell(e.label),
+                        _pdfCell(e.value.toStringAsFixed(0)),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -334,29 +344,22 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
   }
 
   pw.TableRow _pdfRow(String label, String value) {
-    return pw.TableRow(children: [
-      pw.Padding(
-        padding: const pw.EdgeInsets.all(6),
-        child: pw.Text(label),
-      ),
-      pw.Padding(
-        padding: const pw.EdgeInsets.all(6),
-        child: pw.Text(value),
-      ),
-    ]);
+    return pw.TableRow(
+      children: [
+        pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(label)),
+        pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(value)),
+      ],
+    );
   }
 
   pw.Widget _pdfCellHeader(String text) => pw.Padding(
-        padding: const pw.EdgeInsets.all(6),
-        child: pw.Text(text, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-      );
+    padding: const pw.EdgeInsets.all(6),
+    child: pw.Text(text, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+  );
 
-  pw.Widget _pdfCell(String text) => pw.Padding(
-        padding: const pw.EdgeInsets.all(6),
-        child: pw.Text(text),
-      );
+  pw.Widget _pdfCell(String text) =>
+      pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(text));
 
-  // ✅ Format DD/MM/YYYY sesuai layout Go "02/01/2006"
   String _formatDateForApi(DateTime date) {
     final dd = date.day.toString().padLeft(2, '0');
     final mm = date.month.toString().padLeft(2, '0');
@@ -383,9 +386,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         if (_isLoading)
           Container(
             color: Colors.black.withOpacity(0.15),
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
       ],
     );

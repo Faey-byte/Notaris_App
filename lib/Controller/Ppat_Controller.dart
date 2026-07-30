@@ -38,6 +38,18 @@ class PpatController extends GetxController {
 
   static const String baseUrl = "${ApiConfig.baseUrl}";
 
+  static const Map<String, String> backendStatusToLabel = {
+    "pending": "PENDING",
+    "revision": "REVISI",
+    "done": "SELESAI",
+    "rejected": "PROSES",
+  };
+
+  static String labelFromBackendStatus(String? backendStatus) {
+    final key = (backendStatus ?? "pending").toLowerCase().trim();
+    return backendStatusToLabel[key] ?? key.toUpperCase();
+  }
+
   final jenisList = [
     "Semua Berkas",
     "AJB",
@@ -69,9 +81,9 @@ class PpatController extends GetxController {
       bgColor: AppColors.statusProsesBg,
     ),
     StatusModel(
-      label: "PROSES",
-      color: AppColors.statusProses,
-      bgColor: AppColors.statusProsesBg,
+      label: "REVISI",
+      color: AppColors.statusRevisi,
+      bgColor: AppColors.statusRevisiBg,
     ),
     StatusModel(
       label: "SELESAI",
@@ -79,9 +91,9 @@ class PpatController extends GetxController {
       bgColor: AppColors.statusSelesaiBg,
     ),
     StatusModel(
-      label: "REVISI",
-      color: AppColors.statusRevisi,
-      bgColor: AppColors.statusRevisiBg,
+      label: "PROSES",
+      color: AppColors.statusProses,
+      bgColor: AppColors.statusProsesBg,
     ),
   ];
 
@@ -149,6 +161,10 @@ class PpatController extends GetxController {
               .map((item) => BerkasModel.fromJson(item))
               .toList();
 
+          for (final item in newItems) {
+            item.status = labelFromBackendStatus(item.status);
+          }
+
           berkasList.addAll(newItems);
           _currentPage++;
 
@@ -195,7 +211,10 @@ class PpatController extends GetxController {
         if (serverData != null) {
           for (var item in serverData) {
             final serverId = item['id']?.toString() ?? "";
-            final currentStatus = item['status_pengerjaan'] ?? "PENDING";
+
+            final currentStatus = labelFromBackendStatus(
+              item['status_pengerjaan']?.toString(),
+            );
             final index = berkasList.indexWhere((b) => b.id == serverId);
             if (index != -1) {
               (berkasList[index] as dynamic).status = currentStatus;

@@ -1,3 +1,23 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY") ?: ""
+
+android {
+    namespace = "com.example.notaris_app" // sesuaikan dengan punyamu
+    // ... konfigurasi lain yang sudah ada ...
+
+    defaultConfig {
+        // ... applicationId, minSdk, dll yang sudah ada ...
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+    }
+}
+
 plugins {
     id("com.android.application")
     id("kotlin-android")

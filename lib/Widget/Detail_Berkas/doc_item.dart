@@ -99,12 +99,14 @@ class DocItem extends StatelessWidget {
         return;
       }
 
-      // ✅ Pakai queryHint sebagai documentName agar cocok dengan label di SQLite
+      // 🔧 Sekarang fileId juga dikirim, dipakai sebagai 'id' di /read-ppat
       controller.displayDocument(
+        context: context,
         documentName: doc.queryHint,
         documentUrl: doc.url,
         clientId: clientId,
-        ppatType: doc.ppatType, 
+        fileId: fileId,
+        ppatType: doc.ppatType,
       );
     } catch (e) {
       debugPrint("[DOC] ❌ Exception: $e");

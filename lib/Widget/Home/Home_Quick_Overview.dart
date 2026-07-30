@@ -48,28 +48,36 @@ class HomeQuickOverview extends StatelessWidget {
                 icon: Icons.description_outlined,
                 iconBg: const Color(0xFFF7E3E2),
                 iconColor: const Color(0xFF913632),
-                value: controller.notarisFiles.value,
+                value: controller.isLoadingSummary.value
+                    ? 'Loading...'
+                    : controller.notarisFiles.value,
                 label: 'Notaris File',
               ),
               StatCard(
                 icon: Icons.history_edu_outlined,
                 iconBg: const Color(0xFFF7E3E2),
                 iconColor: const Color(0xFF913632),
-                value: controller.ppatFiles.value,
+                value: controller.isLoadingSummary.value
+                    ? 'Loading...'
+                    : controller.ppatFiles.value,
                 label: 'PPAT File',
               ),
               StatCard(
                 icon: Icons.sync,
                 iconBg: const Color(0xFFFEF3C7),
                 iconColor: const Color(0xFFD97706),
-                value: controller.inProcess.value,
+                value: controller.isLoadingSummary.value
+                    ? 'Loading...'
+                    : controller.inProcess.value,
                 label: 'Proses',
               ),
               StatCard(
                 icon: Icons.task_alt,
                 iconBg: const Color(0xFFD1FAE5),
                 iconColor: const Color(0xFF059669),
-                value: controller.completed.value,
+                value: controller.isLoadingSummary.value
+                    ? 'Loading...'
+                    : controller.completed.value,
                 label: 'Selesai',
               ),
             ],

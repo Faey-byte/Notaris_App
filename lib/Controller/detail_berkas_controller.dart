@@ -3,36 +3,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:notaris_app/Model/ppat_model.dart';
 import 'package:notaris_app/config/base_url.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:notaris_app/Model/Ppat_Model.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:notaris_app/data/services/logging_service.dart';
-
-class DokumenModel {
-  final String nama;
-  final String url;
-  final String tanggal;
-  final bool isImage;
-  final String staffName;
-
-  // 🔧 Sebelumnya ini getter yang selalu return null — makanya
-  // documentName & ppatType yang dikirim ke displayDocument() selalu kosong.
-  // Sekarang jadi field beneran yang diisi waktu DokumenModel dibuat.
-  final String queryHint;
-  final String ppatType;
-
-  DokumenModel({
-    required this.nama,
-    required this.url,
-    required this.tanggal,
-    required this.isImage,
-    required this.staffName,
-    required this.queryHint,
-    required this.ppatType,
-  });
-}
 
 class DetailBerkasController extends GetxController {
   static const String baseUrl = "${ApiConfig.baseUrl}";
@@ -85,7 +61,9 @@ class DetailBerkasController extends GetxController {
   var titipBiayaAmountFormatted = "".obs;
   var statusPengerjaan = "PENDING".obs;
   var namaStaff = "Sistem Otomatis".obs;
-  var dokumenList = <DokumenModel>[].obs;
+
+  // Menggunakan PpatDocMetadata agar cocok dengan Widget PpatDocItem
+  var dokumenList = <PpatDocMetadata>[].obs;
 
   var jenisTransaksi = "".obs;
 
@@ -103,10 +81,10 @@ class DetailBerkasController extends GetxController {
     return formatter.format(amount);
   }
 
-  void initData(BerkasModel? data) {
+  void initData(PpatDetailModel? data) {
     if (data != null) {
-      fallbackName = data.client.name ?? "";
-      fallbackPublicID = data.client.publicID ?? "";
+      fallbackName = data.client.name;
+      fallbackPublicID = data.client.publicId;
 
       publicId.value = fallbackPublicID;
       transactionId = data.id;
@@ -152,10 +130,10 @@ class DetailBerkasController extends GetxController {
         if (data == null) return;
 
         final staff = data['staff'];
-        namaStaff.value = staff?['StaffName'] ?? "Sistem Otomatis";
+        namaStaff.value = staff?['StaffName'] ?? staff?['name'] ?? "Sistem Otomatis";
 
         final client = data['client'];
-        publicId.value = client?['publicID'] ?? fallbackPublicID;
+        publicId.value = client?['publicID'] ?? client?['public_id'] ?? fallbackPublicID;
 
         final rawId = data['id'];
         if (rawId is int) {
@@ -173,7 +151,7 @@ class DetailBerkasController extends GetxController {
         );
 
         if (jenisTransaksi.value.isEmpty) {
-          final caseData = data['case_data'] ?? data['caseData'];
+          final caseData = data['case_data'] ?? data['caseData'] ?? data['case'];
           jenisTransaksi.value =
               (caseData?['case_name'] ?? caseData?['caseName'] ?? '')
                   .toString();
@@ -190,63 +168,81 @@ class DetailBerkasController extends GetxController {
         }
         titipBiayaAmountFormatted.value = _formatRupiah(titipBiayaAmount.value);
 
-        final asset = data['document_transaction']?['asset'];
+        final docTransaction = data['document_transaction'];
+        final asset = docTransaction?['asset'];
         final metadata = asset?['metadata'];
 
+        final dynamic rawAmount = data['amount'] 
+            ?? (metadata is Map ? metadata['amount'] : null) 
+            ?? data['total_biaya'] 
+            ?? data['price'];
+
+        int amountInt = 0;
+        if (rawAmount is int) {
+          amountInt = rawAmount;
+        } else if (rawAmount is String) {
+          amountInt =
+              int.tryParse(rawAmount.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+        }
+
+        final formatter = NumberFormat.currency(
+          locale: 'id_ID',
+          symbol: 'Rp ',
+          decimalDigits: 0,
+        );
+        totalBiaya.value = amountInt > 0
+            ? formatter.format(amountInt)
+            : "Rp 0";
+
+        // Processing Metadata dokumen
+        List<PpatDocMetadata> fetchedDocs = [];
+
         if (metadata != null) {
-          final dynamic rawAmount = metadata['amount'];
-          int amountInt = 0;
-          if (rawAmount is int) {
-            amountInt = rawAmount;
-          } else if (rawAmount is String) {
-            amountInt =
-                int.tryParse(rawAmount.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-          }
+          if (metadata is Map) {
+            final loc = metadata['location'];
+            if (loc != null && loc is Map) {
+              final lat = loc['latitude']?.toString() ?? "";
+              final lng = loc['longitude']?.toString() ?? "";
+              alamat.value = (lat.isNotEmpty && lng.isNotEmpty)
+                  ? "Lat: $lat, Lng: $lng"
+                  : "Tidak ada lokasi";
+            } else {
+              alamat.value = "Tidak ada lokasi";
+            }
 
-          final formatter = NumberFormat.currency(
-            locale: 'id_ID',
-            symbol: 'Rp ',
-            decimalDigits: 0,
-          );
-          totalBiaya.value = amountInt > 0
-              ? formatter.format(amountInt)
-              : "Rp 0";
+            final rawFiles = metadata['files'];
+            if (rawFiles is List) {
+              for (var f in rawFiles) {
+                if (f is Map) {
+                  // 🔍 DEBUG: lihat field apa saja yang tersedia per file
+                  // dari backend, supaya kita tau nama field yang benar
+                  // buat 'id' yang dibutuhkan endpoint /api/v1/read-ppat.
+                  print("🔍 [PPAT RAW FILE] $f");
 
-          final loc = metadata['location'];
-          if (loc != null && loc is Map) {
-            final lat = loc['latitude']?.toString() ?? "";
-            final lng = loc['longitude']?.toString() ?? "";
-            alamat.value = (lat.isNotEmpty && lng.isNotEmpty)
-                ? "Lat: $lat, Lng: $lng"
-                : "Tidak ada lokasi";
-          } else {
-            alamat.value = "Tidak ada lokasi";
-          }
-
-          final rawFiles = metadata['files'];
-          if (rawFiles != null && rawFiles is List) {
-            dokumenList.value = rawFiles
-                .where((f) => f is Map && (f['url'] ?? '').isNotEmpty)
-                .map((f) {
-                  final fileUrl = f['url'] as String;
-                  final fileName = f['name'] ?? fileUrl.split('/').last;
-                  return DokumenModel(
-                    nama: fileName,
-                    url: fileUrl,
-                    tanggal: "13 Nov 2023",
-                    isImage: [
-                      '.jpg',
-                      '.jpeg',
-                      '.png',
-                    ].any((ext) => fileUrl.toLowerCase().endsWith(ext)),
-                    staffName: namaStaff.value,
-                    queryHint: fileName,
-                    ppatType: jenisTransaksi.value,
+                  // ✅ DIUBAH DI SINI: Cast Map secara eksplisit
+                  fetchedDocs.add(
+                    PpatDocMetadata.fromJson(Map<String, dynamic>.from(f)),
                   );
-                })
-                .toList();
+                }
+              }
+            }
+          } else if (metadata is List) {
+            for (var item in metadata) {
+              if (item is Map) {
+                // 🔍 DEBUG: sama seperti di atas, buat kasus metadata
+                // berbentuk List langsung (bukan Map berisi 'files').
+                print("🔍 [PPAT RAW FILE] $item");
+
+                // ✅ DIUBAH DI SINI: Cast Map secara eksplisit
+                fetchedDocs.add(
+                  PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)),
+                );
+              }
+            }
           }
         }
+
+        dokumenList.value = fetchedDocs;
       }
     } catch (e) {
       print("ERROR HANDLER: $e");
@@ -255,10 +251,7 @@ class DetailBerkasController extends GetxController {
     }
   }
 
-  Future<void> updateStatusPekerjaan(String label) =>
-      updateStatusPengerjaan(label);
-
-  Future<void> updateStatusPengerjaan(String label) async {
+  Future<void> updateStatusPekerjaan(String label) async {
     final action = statusLabelToAction[label];
     if (action == null) {
       Get.snackbar("Gagal", "Status \"$label\" tidak dikenali");
@@ -295,12 +288,6 @@ class DetailBerkasController extends GetxController {
         body: json.encode({"action": action}),
       );
 
-      print("=== UPDATE STATUS ===");
-      print("URL: $url");
-      print("Action dikirim: $action");
-      print("Status code: ${response.statusCode}");
-      print("Body: ${response.body}");
-
       if (response.statusCode != 200 && response.statusCode != 204) {
         statusPengerjaan.value = previousLabel;
 
@@ -316,7 +303,6 @@ class DetailBerkasController extends GetxController {
       }
     } catch (e) {
       statusPengerjaan.value = previousLabel;
-      print("ERROR UPDATE STATUS: $e");
       Get.snackbar("Gagal", "Terjadi kesalahan saat memperbarui status");
     } finally {
       isUpdatingStatus.value = false;
@@ -374,13 +360,6 @@ class DetailBerkasController extends GetxController {
         }),
       );
 
-      print("=== UPDATE STATUS PAJAK ===");
-      print("URL: $url");
-      print("transactionID dikirim: $transactionId");
-      print("Status dikirim: $backendStatus, titipBiayaAmount: $amount");
-      print("Status code: ${response.statusCode}");
-      print("Body: ${response.body}");
-
       if (response.statusCode != 200 && response.statusCode != 204) {
         statusPajak.value = previousLabel;
         titipBiayaAmount.value = previousAmount;
@@ -402,7 +381,6 @@ class DetailBerkasController extends GetxController {
       statusPajak.value = previousLabel;
       titipBiayaAmount.value = previousAmount;
       titipBiayaAmountFormatted.value = _formatRupiah(previousAmount);
-      print("ERROR UPDATE STATUS PAJAK: $e");
       Get.snackbar(
         "Gagal",
         "Terjadi kesalahan saat memperbarui status pembayaran",
@@ -501,7 +479,7 @@ class DetailBerkasController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? "";
 
-      final uri = Uri.parse('$baseUrl/read-ppat').replace(
+      final uri = Uri.parse('$baseUrl/api/v1/read-ppat').replace(
         queryParameters: {
           'ppat_type': ppatType ?? '',
           'url': documentUrl,
@@ -544,6 +522,28 @@ class DetailBerkasController extends GetxController {
   }
 
   void _tampilkanPopupGambar(BuildContext context, Uint8List bytes) {
+    // 1. Cek apakah Byte Data adalah PDF (PDF diawali dengan header ASCII '%PDF')
+    bool isPdf = false;
+    if (bytes.length >= 4) {
+      // String '%PDF' dalam byte/ASCII adalah [37, 80, 68, 70]
+      if (bytes[0] == 0x25 && bytes[1] == 0x50 && bytes[2] == 0x44 && bytes[3] == 0x46) {
+        isPdf = true;
+      }
+    }
+
+    // 2. Jika ternyata PDF, beritahu user (atau buka viewer PDF)
+    if (isPdf) {
+      Get.snackbar(
+        "Format PDF Detected",
+        "Dokumen ini berformat PDF, gunakan PDF Viewer untuk membuka.",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    // 3. Jika benar-benar Gambar, tampilkan Dialog
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -566,13 +566,23 @@ class DetailBerkasController extends GetxController {
                   errorBuilder: (context, error, stackTrace) {
                     return const SizedBox(
                       height: 250,
-                      child: Center(
-                        child: Text(
-                          "Format gambar tidak kompatibel.",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.broken_image, size: 48, color: Colors.red),
+                              SizedBox(height: 8),
+                              Text(
+                                "Gagal menampilkan file.\nFormat file tidak didukung sebagai Gambar.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

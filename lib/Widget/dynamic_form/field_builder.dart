@@ -48,6 +48,8 @@ class _FieldBuilderState extends State<FieldBuilder> {
         return buildUpload();
       case "coordinate":
         return buildCoordinate();
+      case "date": // NEW
+        return buildDate();
       default:
         return const SizedBox();
     }
@@ -86,6 +88,84 @@ class _FieldBuilderState extends State<FieldBuilder> {
     return UploadFieldWidget(
       widget.field,
       controller: widget.controller,
+    );
+  }
+
+  // =========================================================
+  // DATE (NEW) — e.g. "Tanggal Akta" / deed_date
+  // Styled to match buildCoordinate(): icon + status text + action button.
+  // =========================================================
+  Widget buildDate() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.field.label,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.white,
+          ),
+          child: Column(
+            children: [
+              Obx(() {
+                final selectedDate = widget.field.dateValue.value;
+                final hasDate = selectedDate != null;
+
+                final displayText = hasDate
+                    ? "${selectedDate!.day.toString().padLeft(2, '0')}/"
+                        "${selectedDate.month.toString().padLeft(2, '0')}/"
+                        "${selectedDate.year}"
+                    : "Tanggal Belum Dipilih";
+
+                return Column(
+                  children: [
+                    Icon(
+                      Icons.calendar_month,
+                      size: 40,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      displayText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: hasDate ? FontWeight.w600 : FontWeight.normal,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                );
+              }),
+
+              const SizedBox(height: 16),
+
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () =>
+                      widget.controller.pickDeedDate(widget.field),
+                  icon: const Icon(Icons.edit_calendar),
+                  label: const Text("Pilih Tanggal"),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    foregroundColor: AppColors.primary,
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: Colors.grey.shade400),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 

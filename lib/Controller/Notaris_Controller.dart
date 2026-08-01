@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -40,6 +41,11 @@ class NotarisController extends GetxController {
   final RxString searchQuery = ''.obs;
   final RxString selectedStatus = 'SEMUA'.obs;
   final RxBool isLoading = false.obs;
+  final RxBool isLoadingMore = false.obs;
+  final RxBool hasMore = true.obs;
+
+  int _currentPage = 1;
+  static const int _limit = 5;
 
   final statusList = [
     StatusItem(
@@ -80,66 +86,121 @@ class NotarisController extends GetxController {
   void onInit() {
     dbHelper = DbHelper();
     super.onInit();
-    loadFromLocal();
+    loadFromServer(reset: true);
   }
 
-  Future<void> loadFromLocal() async {
+  /// Maps the raw backend status string (e.g. "pending") to the
+  /// uppercase label used by [statusList] (e.g. "PENDING").
+  String _mapStatus(String? rawStatus) {
+    switch ((rawStatus ?? '').toLowerCase()) {
+      case 'pending':
+        return 'PENDING';
+      case 'proses':
+      case 'in_progress':
+      case 'process':
+        return 'PROSES';
+      case 'selesai':
+      case 'done':
+      case 'completed':
+        return 'SELESAI';
+      case 'revisi':
+      case 'revision':
+        return 'REVISI';
+      case 'ditolak':
+      case 'rejected':
+        return 'DITOLAK';
+      default:
+        return 'PENDING';
+    }
+  }
+
+  AktaItem _mapItem(Map<String, dynamic> item) {
+    final client = item['client'] as Map<String, dynamic>?;
+    final caseData = item['case'] as Map<String, dynamic>?;
+
+    final nama = client?['name']?.toString() ?? '-';
+    final jenis = caseData?['case_name']?.toString() ?? '-';
+
+    // Backend doesn't return a manual "nomor akta" field — the closest
+    // equivalent is the auto-generated monthly running number.
+    final monthlyNumber = item['monthly_number'];
+    final no = monthlyNumber != null ? monthlyNumber.toString() : '-';
+
+    final tanggal = item['akta_date']?.toString() ?? '-';
+    final status = _mapStatus(item['status']?.toString());
+    final berkasId = item['id']?.toString() ?? '';
+
+    return AktaItem(
+      berkasId: berkasId,
+      nama: nama,
+      jenis: jenis,
+      no: no,
+      tanggal: tanggal,
+      status: status,
+    );
+  }
+
+  Future<void> loadFromServer({bool reset = false}) async {
+    if (reset) {
+      _currentPage = 1;
+      hasMore.value = true;
+      allItems.clear();
+    }
+
+    if (!hasMore.value) return;
+
     try {
-      isLoading.value = true;
-      final prefs = await SharedPreferences.getInstance();
-
-      final rows = await dbHelper.getAllNotarisDraft();
-
-      final Map<String, List<Map<String, dynamic>>> grouped = {};
-      for (var row in rows) {
-        final berkasId = row['berkas_id']?.toString() ?? '';
-        if (berkasId.isEmpty) continue;
-        grouped.putIfAbsent(berkasId, () => []).add(row);
+      if (reset) {
+        isLoading.value = true;
+      } else {
+        isLoadingMore.value = true;
       }
 
-      final List<AktaItem> hasil = [];
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? "";
 
-      grouped.forEach((berkasId, fields) {
-        String getLabel(String label) {
-          final match = fields.firstWhereOrNull((f) => f['label'] == label);
-          return match?['text_value']?.toString() ?? '';
-        }
+      if (token.isEmpty) {
+        throw Exception("Token tidak ditemukan. Silakan login ulang.");
+      }
 
-        final nama = getLabel('Nama Klien/Perusahaan');
-        final no = getLabel('Nomor Akta');
-        final jenis = getLabel('Jenis Pekerjaan');
+      final uri = Uri.parse('$baseUrl/api/v1/show-all-notary').replace(
+        queryParameters: {'page': _currentPage.toString()},
+      );
 
-        String tanggal = '-';
-        final parts = berkasId.split('_');
-        if (parts.length == 2) {
-          final ms = int.tryParse(parts[1]);
-          if (ms != null) {
-            final date = DateTime.fromMillisecondsSinceEpoch(ms);
-            tanggal =
-                "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
-          }
-        }
+      final response = await http.post(
+        uri,
+        headers: {'Authorization': 'Bearer $token'},
+      );
 
-        final statusTerupdate =
-            prefs.getString('status_notaris_$berkasId') ?? 'PENDING';
-
-        if (nama.isEmpty) return;
-
-        hasil.add(
-          AktaItem(
-            berkasId: berkasId,
-            nama: nama,
-            jenis: jenis.isEmpty ? '-' : jenis,
-            no: no.isEmpty ? '-' : no,
-            tanggal: tanggal,
-            status: statusTerupdate,
-          ),
+      if (response.statusCode != 200) {
+        throw Exception(
+          "Server Error (${response.statusCode}): ${response.body}",
         );
-      });
+      }
 
-      allItems.value = hasil;
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      final List rawData = decoded['data'] ?? [];
+
+      final mapped = rawData
+          .whereType<Map<String, dynamic>>()
+          .map(_mapItem)
+          .toList();
+
+      if (reset) {
+        allItems.value = mapped;
+      } else {
+        allItems.addAll(mapped);
+      }
+
+      // If the server returned fewer items than the page limit,
+      // there's nothing more to load.
+      hasMore.value = mapped.length >= _limit;
+
+      if (mapped.isNotEmpty) {
+        _currentPage += 1;
+      }
     } catch (e) {
-      print("❌ [NOTARIS LIST] Gagal ambil data lokal: $e");
+      print("❌ [NOTARIS LIST] Gagal ambil data dari server: $e");
       Get.snackbar(
         "Error",
         "Gagal memuat data berkas notaris",
@@ -148,7 +209,17 @@ class NotarisController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+      isLoadingMore.value = false;
     }
+  }
+
+  Future<void> loadMore() async {
+    if (isLoadingMore.value || isLoading.value || !hasMore.value) return;
+    await loadFromServer(reset: false);
+  }
+
+  Future<void> refresh() async {
+    await loadFromServer(reset: true);
   }
 
   Future<List<int>?> fetchNotaryImage({

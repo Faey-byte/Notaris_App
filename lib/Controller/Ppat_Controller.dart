@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:notaris_app/Model/Ppat_Model.dart';
+import 'package:notaris_app/Model/ppat_model.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
 import 'package:notaris_app/config/base_url.dart';
@@ -33,8 +33,8 @@ class PpatController extends GetxController {
   int _currentPage = 1;
   String _token = '';
 
-  var berkasList = <BerkasModel>[].obs;
-  var filteredList = <BerkasModel>[].obs;
+  var berkasList = <PpatDetailModel>[].obs;
+  var filteredList = <PpatDetailModel>[].obs;
 
   static const String baseUrl = "${ApiConfig.baseUrl}";
 
@@ -158,7 +158,7 @@ class PpatController extends GetxController {
           hasMore.value = false;
         } else {
           final newItems = dynamicList
-              .map((item) => BerkasModel.fromJson(item))
+              .map((item) => PpatDetailModel.fromJson(item))
               .toList();
 
           for (final item in newItems) {

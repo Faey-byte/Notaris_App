@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/detail_berkas_controller.dart';
-import 'package:notaris_app/Model/Ppat_Model.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/doc_item.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/detail_info_card.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/detail_dropdown_card.dart';
 import 'package:notaris_app/utils/app_colors.dart';
+import 'package:notaris_app/Model/ppat_model.dart';
 
 class DetailBerkasPage extends StatelessWidget {
-  final BerkasModel data;
+  final PpatDetailModel data;
 
   const DetailBerkasPage({super.key, required this.data});
 
@@ -98,7 +98,7 @@ class DetailBerkasPage extends StatelessWidget {
                                     "PROSES",
                                   ],
                                   onChanged: (val) =>
-                                      controller.updateStatusPengerjaan(val!),
+                                      controller.updateStatusPekerjaan(val!),
                                   backgroundColor: controller
                                       .getStatusPekerjaanBg(
                                         controller.statusPengerjaan.value,
@@ -215,8 +215,24 @@ class DetailBerkasPage extends StatelessWidget {
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: controller.dokumenList.length,
                             itemBuilder: (context, index) {
-                              return DocItem(
-                                doc: controller.dokumenList[index],
+                              final item = controller.dokumenList[index];
+                              return PpatDocItem(
+                                doc: item,
+                                // Dekripsi dilakukan di SERVER lewat
+                                // endpoint /api/v1/read-ppat (lihat
+                                // DetailBerkasController.displayDocument).
+                                // Client tidak lagi coba dekripsi manual.
+                                onPreview: () => controller.displayDocument(
+                                  context: context,
+                                  documentName: item.label,
+                                  documentUrl: item.url,
+                                  clientId: controller.publicId.value,
+                                  fileId: item
+                                      .id, // <-- ganti dari item.id ke item.matchkey
+                                  ppatType: controller
+                                      .jenisTransaksi
+                                      .value, // apapun yang sudah ada
+                                ),
                               );
                             },
                           ),
@@ -231,7 +247,7 @@ class DetailBerkasPage extends StatelessWidget {
                 color: AppColors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, -4),
                   ),

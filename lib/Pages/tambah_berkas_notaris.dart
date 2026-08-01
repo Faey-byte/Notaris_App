@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:notaris_app/Controller/Form_Notaris_controller.dart';  
+import 'package:notaris_app/Controller/Form_Notaris_controller.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class TambahBerkasNotarisPage extends StatelessWidget {
@@ -86,6 +86,23 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                           _buildTextField(c.nomorAktaCtrl, 'Masukkan nomor akta'),
                           const SizedBox(height: 20),
 
+                          // NEW: Tanggal Akta (akta_date) — sebelumnya
+                          // kelupaan, sekarang ditambahkan persis di
+                          // bawah Nomor Akta.
+                          _buildLabel('Tanggal Akta'),
+                          const SizedBox(height: 8),
+                          _buildAktaDateField(c),
+                          const SizedBox(height: 20),
+
+                          // akta_nature (free text)
+                          _buildLabel('Sifat / Jenis Akta'),
+                          const SizedBox(height: 8),
+                          _buildTextField(
+                            c.aktaNatureCtrl,
+                            'Contoh: Akta Kuasa Menjual, Akta Pendirian, dll',
+                          ),
+                          const SizedBox(height: 20),
+
                           _buildLabel('Total Biaya Layanan'),
                           const SizedBox(height: 8),
                           _buildBiayaField(c),
@@ -96,6 +113,48 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                           _buildTextField(c.namaStaffCtrl, 'Masukkan nama staff'),
                           const SizedBox(height: 24),
 
+                          const Divider(color: Color(0xFFF1F5F9)),
+                          const SizedBox(height: 20),
+
+                          // PENGHADAP section
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'PENGHADAP',
+                                style: TextStyle(
+                                  color: Color(0xFF1E293B),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.7,
+                                ),
+                              ),
+                              Text(
+                                'Min. 1 orang',
+                                style: TextStyle(
+                                  color: Colors.grey.shade500,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          Obx(
+                            () => Column(
+                              children: [
+                                for (final penghadap in c.penghadapList)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: _buildPenghadapItem(c, penghadap),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          _buildTambahPenghadapBtn(c),
+
+                          const SizedBox(height: 24),
                           const Divider(color: Color(0xFFF1F5F9)),
                           const SizedBox(height: 20),
 
@@ -184,6 +243,45 @@ class TambahBerkasNotarisPage extends StatelessWidget {
     );
   }
 
+  // =========================================================
+  // NEW: Tanggal Akta field — tap to open a date picker, styled
+  // to match _buildTextField.
+  // =========================================================
+  Widget _buildAktaDateField(NotarisFormController c) {
+    return Obx(() {
+      final date = c.aktaDateValue.value;
+      final label = date == null
+          ? 'Pilih tanggal akta'
+          : '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+      return GestureDetector(
+        onTap: () => c.pickAktaDate(),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: date == null ? const Color(0xFF94A3B8) : const Color(0xFF1E293B),
+                  fontSize: 15,
+                ),
+              ),
+              const Icon(Icons.calendar_today_outlined, size: 18, color: Color(0xFF94A3B8)),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
   Widget _buildJenisPekerjaanDropdown(NotarisFormController c) {
     return Obx(
       () => Container(
@@ -242,6 +340,114 @@ class TambahBerkasNotarisPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // =========================================================
+  // Penghadap item — name + title fields, remove button,
+  // styled to match _buildDokumenItem.
+  // =========================================================
+  Widget _buildPenghadapItem(NotarisFormController c, NotarisPenghadap penghadap) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Penghadap ${penghadap.orderNumber}',
+                style: const TextStyle(
+                  color: Color(0xFF334155),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => c.removePenghadap(penghadap),
+                child: const Icon(
+                  Icons.delete_outline,
+                  size: 20,
+                  color: Color(0xFFDC2626),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: TextField(
+              controller: penghadap.nameCtrl,
+              decoration: const InputDecoration(
+                hintText: 'Nama lengkap penghadap',
+                hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: TextField(
+              controller: penghadap.titleCtrl,
+              decoration: const InputDecoration(
+                // NOTE: field ini dipakai buat gelar (Tuan/Nyonya) supaya
+                // kolom "NAMA-NAMA PENGHADAP" di laporan PDF bisa langsung
+                // format "1.Tuan Budi Santoso; 2.Nyonya Siti Aminah;" —
+                // sesuaikan hint ini kalau kamu mau pakai kedudukan lain.
+                hintText: 'Gelar, misal: Tuan / Nyonya / Sarjana Hukum',
+                hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTambahPenghadapBtn(NotarisFormController c) {
+    return GestureDetector(
+      onTap: () => c.addPenghadap(),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFCBD5E1), style: BorderStyle.solid),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.person_add_alt_1_outlined, color: Color(0xFF94A3B8), size: 20),
+            SizedBox(width: 8),
+            Text('Tambah Penghadap',
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 14, fontWeight: FontWeight.w600)),
+          ],
+        ),
       ),
     );
   }

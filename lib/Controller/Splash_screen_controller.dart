@@ -229,13 +229,13 @@ class SplashController extends GetxController {
 
       print("🟡 [Splash] Memanggil FlutterForegroundTask.startService()...");
 
-      final result = await FlutterForegroundTask.startService(
-        notificationTitle: 'Notaris App',
-        notificationText: 'Menjaga notifikasi tetap aktif',
-        callback: startForegroundTaskCallback,
-      );
+      // final result = await FlutterForegroundTask.startService(
+      //   notificationTitle: 'Notaris App',
+      //   notificationText: 'Menjaga notifikasi tetap aktif',
+      //   callback: startForegroundTaskCallback,
+      // );
 
-      print("✅ [Splash] startService() selesai, result: $result");
+      // print("✅ [Splash] startService() selesai, result: $result");
     } catch (e) {
       print("❌ [Splash] ERROR saat startForegroundService: $e");
     }

@@ -39,7 +39,7 @@ class AuthService {
     required String username,
     required String email,
     required String password,
-    String? companyName,
+    required String companyName,
   }) async {
     final url = Uri.parse('$baseUrl/signup');
 
@@ -50,8 +50,12 @@ class AuthService {
         'username': username,
         'email': email,
         'password': password,
+        'institute_name': companyName,
       }),
     );
+
+    print("SIGNUP STATUS: ${response.statusCode}");
+    print("SIGNUP BODY: ${response.body}");
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
 

@@ -231,14 +231,14 @@ class LoginController extends GetxController {
       }
 
       // Mulai listening notif WS untuk saat app aktif (sudah ada)
-      if (userId != null) {
-        Get.find<NotificationController>().startListening(userId);
+      // if (userId != null) {
+      //   Get.find<NotificationController>().startListening(userId);
 
-        // ✅ Nyalakan Foreground Service untuk notif saat app di background/closed
-        await _startForegroundService();
-      } else {
-        print("⚠️ [Login] userId tetap null setelah semua percobaan — startListening TIDAK dipanggil");
-      }
+      //   // ✅ Nyalakan Foreground Service untuk notif saat app di background/closed
+      //   await _startForegroundService();
+      // } else {
+      //   print("⚠️ [Login] userId tetap null setelah semua percobaan — startListening TIDAK dipanggil");
+      // }
 
       Get.snackbar("Success", data["message"] ?? "Login berhasil");
       Get.offAllNamed(AppRoutes.homepage);

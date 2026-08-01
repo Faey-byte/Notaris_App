@@ -35,14 +35,14 @@ class NotarisCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        // Menggunakan await agar kode di bawahnya tereksekusi pasca halaman detail di-close
-        await Get.to(() => DetailBerkasNotarisPage(
-          clientName: item.nama,        
-          localBerkasId: item.berkasId,
-        ));
-        // Memicu refresh pembacaan SQLite + SharedPreferences terupdate
-        controller.loadFromLocal();
-      },
+  // Menggunakan await agar kode di bawahnya tereksekusi pasca halaman detail di-close
+    await Get.to(() => DetailBerkasNotarisPage(
+      clientName: item.nama,        
+      localBerkasId: item.berkasId,
+    ));
+    // Refresh dari server (bukan sqlite lagi) biar status/data terbaru muncul
+    controller.loadFromServer(reset: true);
+  },
       child: Container(
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 10),

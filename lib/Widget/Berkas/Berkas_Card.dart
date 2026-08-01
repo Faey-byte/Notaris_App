@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:notaris_app/Model/Ppat_Model.dart';
+import 'package:notaris_app/Model/ppat_model.dart';
 import 'package:notaris_app/Pages/Detail_Berkas_PPAT.dart';
 import 'package:notaris_app/Controller/Ppat_Controller.dart';
 
 class BerkasCard extends StatelessWidget {
-  final BerkasModel data;
+  final PpatDetailModel data;
 
   const BerkasCard({super.key, required this.data});
 
@@ -81,7 +81,7 @@ class BerkasCard extends StatelessWidget {
                         style: const TextStyle(fontSize: 13, color: Color(0xFF888888)),
                       ),
                       Text(
-                        data.client.publicID,
+                        data.client.publicId,
                         style: const TextStyle(fontSize: 12, color: Color(0xFFAAAAAA)),
                       ),
                     ],

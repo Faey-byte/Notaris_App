@@ -20,6 +20,39 @@ class NotarisDocField {
   NotarisDocField({required this.label});
 }
 
+// NEW: represents one entry of entities.PenghadapRequest
+// { public_id, name, order_number, title }
+class NotarisPenghadap {
+  /// Sent to backend as `public_id`. Generated client-side so it stays
+  /// stable while the user edits name/title, and unique across entries.
+  final String publicId;
+
+  int orderNumber;
+
+  final TextEditingController nameCtrl;
+  final TextEditingController titleCtrl;
+
+  NotarisPenghadap({
+    required this.publicId,
+    required this.orderNumber,
+  })  : nameCtrl = TextEditingController(),
+        titleCtrl = TextEditingController();
+
+  Map<String, dynamic> toJson() {
+    return {
+      "public_id": publicId,
+      "name": nameCtrl.text.trim(),
+      "order_number": orderNumber,
+      "title": titleCtrl.text.trim(),
+    };
+  }
+
+  void dispose() {
+    nameCtrl.dispose();
+    titleCtrl.dispose();
+  }
+}
+
 class NotarisFormController extends GetxController {
   late final DbHelper dbHelper;
   final ImagePicker _picker = ImagePicker();
@@ -35,6 +68,14 @@ class NotarisFormController extends GetxController {
   final biayaCtrl = TextEditingController();
   final namaStaffCtrl = TextEditingController();
 
+  // NEW: akta_nature — free text, required by backend
+  final aktaNatureCtrl = TextEditingController();
+
+  // NEW: akta_date — required by backend, previously missing entirely
+  // from the form. Stored as a DateTime (like DynamicFormController's
+  // deedDate pattern) and sent as "dd/MM/yyyy" on submit.
+  var aktaDateValue = Rxn<DateTime>();
+
   final List<String> jenisPekerjaanOptions = [
     "Akta Pendirian PT",
     "Akta Pendirian CV",
@@ -49,6 +90,10 @@ class NotarisFormController extends GetxController {
     NotarisDocField(label: 'NPWP'),
   ].obs;
 
+  // NEW: dynamic list of "penghadap" (parties appearing in the deed).
+  // Backend requires at least 1.
+  var penghadapList = <NotarisPenghadap>[].obs;
+
   static const String baseUrl = "${ApiConfig.baseUrl}";
 
   @override
@@ -57,11 +102,39 @@ class NotarisFormController extends GetxController {
     berkasId = "NOTARIS_${DateTime.now().millisecondsSinceEpoch}";
     super.onInit();
     _loadToken();
+
+    // Start with one penghadap row so the form isn't empty
+    // (backend rejects an empty penghadap array).
+    addPenghadap();
   }
 
   Future<void> _loadToken() async {
     final prefs = await SharedPreferences.getInstance();
     _token.value = prefs.getString('auth_token') ?? "";
+    print("🔑 [TOKEN LOADED]: ${_token.value}");
+  }
+
+  /// Helper untuk mengambil ID (user_id) dari token via endpoint convert
+  Future<int?> _fetchUserId(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/v1/convert/tokenTo/ID'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        return decoded['user_id'] as int?;
+      } else {
+        print("❌ [CONVERT TOKEN FAILED]: (${response.statusCode}) ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      print("❌ [CONVERT TOKEN ERROR]: $e");
+      return null;
+    }
   }
 
   void addExtraDocField(String label) {
@@ -71,6 +144,83 @@ class NotarisFormController extends GetxController {
 
   void removeDocField(NotarisDocField field) {
     docFields.remove(field);
+  }
+
+  // =========================================================
+  // Tanggal Akta (akta_date) picker
+  // =========================================================
+  Future<void> pickAktaDate() async {
+    try {
+      final context = Get.context;
+      if (context == null) return;
+
+      final now = DateTime.now();
+      final picked = await showDatePicker(
+        context: context,
+        initialDate: aktaDateValue.value ?? now,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(now.year + 5),
+      );
+
+      if (picked == null) return;
+
+      aktaDateValue.value = picked;
+    } catch (e) {
+      Get.snackbar(
+        "Gagal Memilih Tanggal",
+        "Terjadi kesalahan: ${e.toString()}",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Formats aktaDateValue as "dd/MM/yyyy"
+  String _formatAktaDate() {
+    final d = aktaDateValue.value;
+    if (d == null) return "";
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    final yyyy = d.year.toString();
+    return "$dd/$mm/$yyyy";
+  }
+
+  // =========================================================
+  // Penghadap management
+  // =========================================================
+
+  void addPenghadap() {
+    final orderNumber = penghadapList.length + 1;
+    penghadapList.add(
+      NotarisPenghadap(
+        publicId:
+            "PENGHADAP_${DateTime.now().millisecondsSinceEpoch}_$orderNumber",
+        orderNumber: orderNumber,
+      ),
+    );
+  }
+
+  void removePenghadap(NotarisPenghadap item) {
+    if (penghadapList.length <= 1) {
+      Get.snackbar(
+        "Peringatan",
+        "Minimal harus ada 1 penghadap",
+        backgroundColor: Colors.orangeAccent,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    item.dispose();
+    penghadapList.remove(item);
+    _reorderPenghadap();
+  }
+
+  void _reorderPenghadap() {
+    for (int i = 0; i < penghadapList.length; i++) {
+      penghadapList[i].orderNumber = i + 1;
+    }
+    penghadapList.refresh();
   }
 
   Future<void> pickAndUploadFile(
@@ -103,9 +253,14 @@ class NotarisFormController extends GetxController {
       final currentToken = prefs.getString('auth_token') ?? "";
       _token.value = currentToken;
 
+      print("🔑 [NOTARIS UPLOAD TOKEN]: $currentToken");
+
       if (currentToken.isEmpty) {
         throw Exception("Token tidak ditemukan. Silakan login ulang.");
       }
+
+      // 1. Fetch user_id dari token
+      final userId = await _fetchUserId(currentToken);
 
       final request = http.MultipartRequest(
         'POST',
@@ -114,6 +269,11 @@ class NotarisFormController extends GetxController {
       request.headers['Authorization'] = 'Bearer $currentToken';
 
       request.fields['notary_type'] = jenisPekerjaan.value;
+
+      // 2. Sertakan user_id pada request jika berhasil didapatkan
+      if (userId != null) {
+        request.fields['user_id'] = userId.toString();
+      }
 
       request.files.add(
         await http.MultipartFile.fromPath(
@@ -205,40 +365,6 @@ class NotarisFormController extends GetxController {
     }
   }
 
-  Future<void> _saveTextFields() async {
-    await dbHelper.saveNotarisDraft({
-      'id_field': "${berkasId}_Jenis Pekerjaan",
-      'berkas_id': berkasId,
-      'jenis_pekerjaan': jenisPekerjaan.value,
-      'label': 'Jenis Pekerjaan',
-      'text_value': jenisPekerjaan.value,
-      'url': null,
-      'matchkey': null,
-      'local_path': null,
-    });
-
-    final Map<String, TextEditingController> textMap = {
-      'Nama Klien/Perusahaan': namaKlienCtrl,
-      'Nomor Akta': nomorAktaCtrl,
-      'Total Biaya Layanan': biayaCtrl,
-      'Nama Staff': namaStaffCtrl,
-    };
-
-    for (var entry in textMap.entries) {
-      if (entry.value.text.isEmpty) continue;
-      await dbHelper.saveNotarisDraft({
-        'id_field': "${berkasId}_${entry.key}",
-        'berkas_id': berkasId,
-        'jenis_pekerjaan': jenisPekerjaan.value,
-        'label': entry.key,
-        'text_value': entry.value.text,
-        'url': null,
-        'matchkey': null,
-        'local_path': null,
-      });
-    }
-  }
-
   bool validateFields() {
     if (jenisPekerjaan.value.isEmpty) {
       Get.snackbar(
@@ -260,6 +386,49 @@ class NotarisFormController extends GetxController {
       );
       return false;
     }
+
+    if (aktaNatureCtrl.text.trim().isEmpty) {
+      Get.snackbar(
+        "Peringatan",
+        "Sifat/Jenis Akta belum diisi",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
+    if (aktaDateValue.value == null) {
+      Get.snackbar(
+        "Peringatan",
+        "Tanggal Akta belum dipilih",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
+    if (penghadapList.isEmpty) {
+      Get.snackbar(
+        "Peringatan",
+        "Minimal harus ada 1 penghadap",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+    for (var penghadap in penghadapList) {
+      if (penghadap.nameCtrl.text.trim().isEmpty ||
+          penghadap.titleCtrl.text.trim().isEmpty) {
+        Get.snackbar(
+          "Peringatan",
+          "Lengkapi nama dan title untuk setiap penghadap",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+    }
+
     for (var field in docFields) {
       if (field.fileValue.value.isEmpty) {
         Get.snackbar(
@@ -274,72 +443,111 @@ class NotarisFormController extends GetxController {
     return true;
   }
 
-  Future<void> _submitToServer() async {
-    final prefs = await SharedPreferences.getInstance();
-    final currentToken = prefs.getString('auth_token') ?? "";
+Future<void> _submitToServer() async {
+  final prefs = await SharedPreferences.getInstance();
+  final currentToken = prefs.getString('auth_token') ?? "";
 
-    final instituteId = prefs.getInt('institute_id') ?? 0;
+  if (currentToken.isEmpty) {
+    throw Exception("Token tidak ditemukan. Silakan login ulang.");
+  }
 
-    if (currentToken.isEmpty) {
-      throw Exception("Token tidak ditemukan. Silakan login ulang.");
+  // ======================================================
+  // Ambil user_id dari endpoint convert/tokenTo/ID
+  // (sementara dipakai sebagai institute_id)
+  // ======================================================
+  final int? userId = await _fetchUserId(currentToken);
+
+  if (userId == null) {
+    throw Exception("Gagal mendapatkan user_id");
+  }
+
+  // sementara institute_id = user_id
+  final int instituteId = userId;
+
+  // =========================
+  // BUILD METADATA
+  // =========================
+  final metadata = <Map<String, dynamic>>[];
+
+  for (var field in docFields) {
+    if (field.publicId.value.isNotEmpty) {
+      metadata.add({
+        "label": field.label,
+        "url": field.fileValue.value,
+      });
     }
+  }
 
-    final publicIds = <String>[];
-    final metadata = <Map<String, dynamic>>[];
+  // =========================
+  // BUILD PENGHADAP
+  // =========================
+  final penghadapData =
+      penghadapList.map((p) => p.toJson()).toList();
 
-    for (var field in docFields) {
-      if (field.publicId.value.isNotEmpty) {
-        publicIds.add(field.publicId.value);
-        metadata.add({"label": field.label, "url": field.fileValue.value});
-      }
-    }
+  // =========================
+  // REQUEST BODY
+  // =========================
+  final Map<String, dynamic> bodyMap = {
+    "clientName": namaKlienCtrl.text.trim(),
 
-    final body = jsonEncode({
-      "institude_id": 1,
-      "public_ids": publicIds,
-      "staff_name": namaStaffCtrl.text,
-      "client_name": namaKlienCtrl.text,
-      "notary_type": jenisPekerjaan.value,
-      "life_status": "single",
-      "metadata": metadata,
-    });
+    // sementara memakai user_id
+    "institude_id": instituteId,
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/v1/upload-notary'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $currentToken',
-      },
-      body: body,
-    );
+    "staff_name": namaStaffCtrl.text.trim(),
+    "amount": int.tryParse(biayaCtrl.text.trim()) ?? 0,
+    "notary_type": jenisPekerjaan.value,
+    "akta_nature": aktaNatureCtrl.text.trim(),
+    "akta_date": _formatAktaDate(),
+    "life_status": "single",
+    "penghadap": penghadapData,
+    "metadata": metadata,
+  };
 
-    print("🚀 [NOTARIS SUBMIT] Response mentah: ${response.body}");
+  final body = jsonEncode(bodyMap);
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        "Server Error (${response.statusCode}): ${response.body}",
-      );
-    }
+  print("========== NOTARY REQUEST ==========");
+  print(body);
+  print("====================================");
 
-    final decoded = jsonDecode(response.body);
-    final message = decoded['message'] ?? "upload success";
-    final isExisting = decoded['is_existing'] ?? false;
+  final response = await http.post(
+    Uri.parse('$baseUrl/api/v1/upload-notary'),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $currentToken',
+    },
+    body: body,
+  );
 
-    print(
-      "🎊 [NOTARIS] SUBMIT KE SERVER SUKSES -> message: $message, "
-      "is_existing: $isExisting, public_ids: ${decoded['public_ids']}",
+  print("🚀 [NOTARIS SUBMIT] Response mentah:");
+  print(response.body);
+
+  if (response.statusCode != 200) {
+    throw Exception(
+      "Server Error (${response.statusCode}): ${response.body}",
     );
   }
+
+  final decoded = jsonDecode(response.body);
+
+  final message = decoded['message'] ?? "upload success";
+  final isExisting = decoded['is_existing'] ?? false;
+  final publicIDs = decoded['public_ids'] ?? [];
+
+  print("========== NOTARY RESPONSE ==========");
+  print("message      : $message");
+  print("is_existing  : $isExisting");
+  print("public_ids   : $publicIDs");
+  print("====================================");
+}
 
   Future<void> submitForm() async {
     if (!validateFields()) return;
 
     try {
-      await _saveTextFields();
       await _submitToServer();
 
       print(
-        "🎊 [NOTARIS] SEMUA DATA TERSIMPAN & TERKIRIM. berkasId: $berkasId",
+        "🎊 [NOTARIS] DATA TERKIRIM. berkasId: $berkasId",
       );
 
       Get.snackbar(
@@ -367,6 +575,12 @@ class NotarisFormController extends GetxController {
     nomorAktaCtrl.dispose();
     biayaCtrl.dispose();
     namaStaffCtrl.dispose();
+    aktaNatureCtrl.dispose();
+
+    for (var penghadap in penghadapList) {
+      penghadap.dispose();
+    }
+
     super.onClose();
   }
 }

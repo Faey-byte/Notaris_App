@@ -5,15 +5,13 @@ import 'package:notaris_app/config/base_url.dart';
 class ProfileService {
   static const String baseUrl = "${ApiConfig.baseUrl}/api/v1";
 
-  /// Update profile (nama & tanggal lahir) sesuai struktur backend:
-  /// POST body: { currentName, newName, birthDay } (birthDay format: YYYY-MM-DD)
   static Future<String> updateProfile({
     required String token,
     required String currentName,
     required String newName,
     required DateTime birthDay,
   }) async {
-    final uri = Uri.parse('$baseUrl/profile/update'); // sesuaikan path route-nya
+    final uri = Uri.parse('$baseUrl/profile/update');
 
     final birthDayFormatted =
         "${birthDay.year.toString().padLeft(4, '0')}-"
@@ -44,7 +42,6 @@ class ProfileService {
       return decoded['message'] ?? "Profile updated successfully";
     }
 
-    // Tangani error sesuai daftar error dari backend
     final errorMsg = decoded['message'] ?? decoded['error'] ?? "Gagal update profile";
     throw Exception(errorMsg);
   }

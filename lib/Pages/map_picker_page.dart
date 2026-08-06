@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:notaris_app/Widget/map_locate_me_button.dart';
+import 'package:notaris_app/Widget/map_search_field.dart';
+import 'package:notaris_app/data/services/location_service.dart';
 
 class MapPickerPage extends StatefulWidget {
-  final double initialLat;
-  final double initialLng;
+  /// null = belum ada koordinat tersimpan -> halaman ini bakal
+  /// auto-ambil lokasi device begitu dibuka.
+  final double? initialLat;
+  final double? initialLng;
 
   const MapPickerPage({
     Key? key,
-    required this.initialLat,
-    required this.initialLng,
+    this.initialLat,
+    this.initialLng,
   }) : super(key: key);
 
   @override
@@ -18,17 +22,85 @@ class MapPickerPage extends StatefulWidget {
 }
 
 class _MapPickerPageState extends State<MapPickerPage> {
+  static const LatLng _fallbackLocation = LatLng(-6.175392, 106.827153);
+  static const LocationService _locationService = LocationService();
+
   late LatLng _selectedLocation;
   GoogleMapController? _mapController;
+  final TextEditingController _searchController = TextEditingController();
+
+  bool _isLoadingLocation = false;
+  bool _isSearching = false;
+
+  bool get _hasSavedLocation =>
+      widget.initialLat != null && widget.initialLng != null;
 
   @override
   void initState() {
     super.initState();
-    double lat = widget.initialLat == 0.0 ? -6.175392 : widget.initialLat;
-    double lng = widget.initialLng == 0.0 ? 106.827153 : widget.initialLng;
 
-    _selectedLocation = LatLng(lat, lng);
-  } 
+    if (_hasSavedLocation) {
+      // Mode edit: sudah ada koordinat sebelumnya, jangan auto-locate.
+      _selectedLocation = LatLng(widget.initialLat!, widget.initialLng!);
+    } else {
+      // Mode baru: auto ambil lokasi device begitu halaman kebuka.
+      _selectedLocation = _fallbackLocation;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleLocateMe();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _moveCameraTo(LatLng target) {
+    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(target, 17.0));
+  }
+
+  void _showError(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: Colors.redAccent,
+      colorText: Colors.white,
+    );
+  }
+
+  Future<void> _handleLocateMe() async {
+    setState(() => _isLoadingLocation = true);
+    try {
+      final result = await _locationService.getCurrentDeviceLocation();
+      setState(() => _selectedLocation = result.coordinate);
+      _moveCameraTo(result.coordinate);
+    } on LocationServiceException catch (e) {
+      _showError("Gagal Ambil Lokasi Device", e.message);
+    } finally {
+      if (mounted) setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  Future<void> _handleSearch(String query) async {
+    FocusScope.of(context).unfocus();
+    setState(() => _isSearching = true);
+    try {
+      final result = await _locationService.searchAddress(query);
+      setState(() => _selectedLocation = result.coordinate);
+      _moveCameraTo(result.coordinate);
+    } on LocationServiceException catch (e) {
+      _showError("Pencarian Gagal", e.message);
+    } finally {
+      if (mounted) setState(() => _isSearching = false);
+    }
+  }
+
+  void _handleMapTap(LatLng location) {
+    setState(() => _selectedLocation = location);
+    _mapController?.animateCamera(CameraUpdate.newLatLng(location));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,15 +117,9 @@ class _MapPickerPageState extends State<MapPickerPage> {
               target: _selectedLocation,
               zoom: 16.0,
             ),
-            onMapCreated: (controller) {
-              _mapController = controller;
-            },
-            onTap: (LatLng location) {
-              setState(() {
-                _selectedLocation = location;
-              });
-              _mapController?.animateCamera(CameraUpdate.newLatLng(location));
-            },
+            zoomControlsEnabled: false, // hindari numpuk sama custom button
+            onMapCreated: (controller) => _mapController = controller,
+            onTap: _handleMapTap,
             markers: {
               Marker(
                 markerId: const MarkerId("selected_target"),
@@ -61,6 +127,26 @@ class _MapPickerPageState extends State<MapPickerPage> {
                 infoWindow: const InfoWindow(title: "Lokasi Terpilih"),
               ),
             },
+          ),
+
+          Positioned(
+            top: 16,
+            left: 16,
+            right: 16,
+            child: MapSearchField(
+              controller: _searchController,
+              isSearching: _isSearching,
+              onSearch: _handleSearch,
+            ),
+          ),
+
+          Positioned(
+            bottom: 90,
+            right: 16,
+            child: MapLocateMeButton(
+              isLoading: _isLoadingLocation,
+              onPressed: _handleLocateMe,
+            ),
           ),
 
           Positioned(
@@ -75,9 +161,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () {
-                Get.back(result: _selectedLocation);
-              },
+              onPressed: () => Get.back(result: _selectedLocation),
               child: const Text(
                 "KONFIRMASI TITIK LOKASI",
                 style: TextStyle(

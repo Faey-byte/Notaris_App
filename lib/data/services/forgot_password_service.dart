@@ -5,7 +5,6 @@ import 'package:notaris_app/config/base_url.dart';
 class ForgotPasswordService {
   static const String baseUrl = "${ApiConfig.baseUrl}/api/v1";
 
-  /// Step 1: Kirim kode reset ke email
   static Future<String> requestResetPassword(String email) async {
     final uri = Uri.parse('$baseUrl/request/reset-password');
 
@@ -29,7 +28,6 @@ class ForgotPasswordService {
     throw Exception(decoded['message'] ?? decoded['error'] ?? "Gagal mengirim kode reset");
   }
 
-  /// Step 2: Verifikasi kode OTP (4 digit) dari email
   static Future<String> verifyCode(String email, String otpCode) async {
     final uri = Uri.parse('$baseUrl/verify/code');
 
@@ -53,7 +51,6 @@ class ForgotPasswordService {
     throw Exception(decoded['message'] ?? decoded['error'] ?? "Kode verifikasi tidak valid");
   }
 
-  /// Step 3: Reset password pakai kode (5 digit) + password baru
   static Future<String> resetPassword({
     required String email,
     required String code,

@@ -24,6 +24,10 @@ class AktaItem {
   final String no;
   final String tanggal;
   final String status;
+  final List<String> transactionTypes;
+  final String aktaNature;
+  final int penghadapCount;
+
   const AktaItem({
     required this.berkasId,
     required this.nama,
@@ -31,6 +35,9 @@ class AktaItem {
     required this.no,
     required this.tanggal,
     required this.status,
+    this.transactionTypes = const [],
+    this.aktaNature = '',
+    this.penghadapCount = 0,
   });
 }
 
@@ -89,8 +96,6 @@ class NotarisController extends GetxController {
     loadFromServer(reset: true);
   }
 
-  /// Maps the raw backend status string (e.g. "pending") to the
-  /// uppercase label used by [statusList] (e.g. "PENDING").
   String _mapStatus(String? rawStatus) {
     switch ((rawStatus ?? '').toLowerCase()) {
       case 'pending':
@@ -116,19 +121,20 @@ class NotarisController extends GetxController {
 
   AktaItem _mapItem(Map<String, dynamic> item) {
     final client = item['client'] as Map<String, dynamic>?;
-    final caseData = item['case'] as Map<String, dynamic>?;
-
     final nama = client?['name']?.toString() ?? '-';
-    final jenis = caseData?['case_name']?.toString() ?? '-';
-
-    // Backend doesn't return a manual "nomor akta" field — the closest
-    // equivalent is the auto-generated monthly running number.
+    final rawTypes = item['transaction_types'];
+    final types = (rawTypes is List)
+        ? rawTypes.map((e) => e.toString()).toList()
+        : <String>[];
+    final jenis = types.isNotEmpty ? types.join(', ') : '-';
     final monthlyNumber = item['monthly_number'];
     final no = monthlyNumber != null ? monthlyNumber.toString() : '-';
-
     final tanggal = item['akta_date']?.toString() ?? '-';
     final status = _mapStatus(item['status']?.toString());
     final berkasId = item['id']?.toString() ?? '';
+    final rawPenghadap = item['penghadap'];
+    final penghadapCount = (rawPenghadap is List) ? rawPenghadap.length : 0;
+    final aktaNature = item['akta_nature']?.toString() ?? '';
 
     return AktaItem(
       berkasId: berkasId,
@@ -137,6 +143,9 @@ class NotarisController extends GetxController {
       no: no,
       tanggal: tanggal,
       status: status,
+      transactionTypes: types,
+      aktaNature: aktaNature,
+      penghadapCount: penghadapCount,
     );
   }
 
@@ -163,9 +172,9 @@ class NotarisController extends GetxController {
         throw Exception("Token tidak ditemukan. Silakan login ulang.");
       }
 
-      final uri = Uri.parse('$baseUrl/api/v1/show-all-notary').replace(
-        queryParameters: {'page': _currentPage.toString()},
-      );
+      final uri = Uri.parse(
+        '$baseUrl/api/v1/show-all-notary',
+      ).replace(queryParameters: {'page': _currentPage.toString()});
 
       final response = await http.post(
         uri,
@@ -192,8 +201,6 @@ class NotarisController extends GetxController {
         allItems.addAll(mapped);
       }
 
-      // If the server returned fewer items than the page limit,
-      // there's nothing more to load.
       hasMore.value = mapped.length >= _limit;
 
       if (mapped.isNotEmpty) {

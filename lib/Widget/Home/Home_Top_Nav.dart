@@ -66,48 +66,48 @@ class HomeTopNav extends StatelessWidget {
               
               const Spacer(),
               
-              // Widget Lonceng Notifikasi (Tetap menuju NotifikasiPage)
-              InkWell(
-                onTap: () => Get.to(() => NotifikasiPage()),
-                borderRadius: BorderRadius.circular(14),
-                child: Obx(
-                  () => Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(
-                          Icons.notifications_outlined,
-                          color: Color(0xFF913632),
-                          size: 22,
-                        ),
-                      ),
-                      if (controller.hasNotification.value)
-                        Positioned(
-                          top: 7,
-                          right: 7,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEF4444),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFFF1F5F9),
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+              // // Widget Lonceng Notifikasi (Tetap menuju NotifikasiPage)
+              // InkWell(
+              //   onTap: () => Get.to(() => NotifikasiPage()),
+              //   borderRadius: BorderRadius.circular(14),
+              //   child: Obx(
+              //     () => Stack(
+              //       clipBehavior: Clip.none,
+              //       children: [
+              //         Container(
+              //           width: 40,
+              //           height: 40,
+              //           decoration: BoxDecoration(
+              //             color: const Color(0xFFF1F5F9),
+              //             borderRadius: BorderRadius.circular(14),
+              //           ),
+              //           child: const Icon(
+              //             Icons.notifications_outlined,
+              //             color: Color(0xFF913632),
+              //             size: 22,
+              //           ),
+              //         ),
+              //         if (controller.hasNotification.value)
+              //           Positioned(
+              //             top: 7,
+              //             right: 7,
+              //             child: Container(
+              //               width: 8,
+              //               height: 8,
+              //               decoration: BoxDecoration(
+              //                 color: const Color(0xFFEF4444),
+              //                 shape: BoxShape.circle,
+              //                 border: Border.all(
+              //                   color: const Color(0xFFF1F5F9),
+              //                   width: 1.5,
+              //                 ),
+              //               ),
+              //             ),
+              //           ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

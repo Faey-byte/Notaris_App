@@ -5,12 +5,13 @@ import '../Routes/routes.dart';
 
 class AuthController extends GetxController {
   Future<void> logout() async {
-    Get.find<NotificationController>().stopListening();
+    // Get.find<NotificationController>().stopListening();
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("token");
     await prefs.remove("email");
     await prefs.remove("user_id");
+    await prefs.remove("teamkey");
 
     Get.snackbar("Info", "Berhasil logout");
     Get.offAllNamed(AppRoutes.loginpage);

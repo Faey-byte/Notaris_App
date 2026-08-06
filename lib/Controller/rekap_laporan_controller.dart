@@ -36,16 +36,19 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
   ];
 
   static const List<String> _bulanRomawi = [
-    'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII',
+    'I',
+    'II',
+    'III',
+    'IV',
+    'V',
+    'VI',
+    'VII',
+    'VIII',
+    'IX',
+    'X',
+    'XI',
+    'XII',
   ];
-
-  // =========================================================
-  // NOTE: these two are placeholders for the notary office's own
-  // ledger numbering/name — the API response has no field for them,
-  // they're normally kept by hand on paper. Adjust to your actual
-  // office code/name (or wire them up to a settings value) so the
-  // printed "Nomor" and footer line match your real records.
-  // =========================================================
   static const String _notaryOfficeCode = "NOT.WLN";
   static const String _notaryLocationLabel = "Notaris di Kabupaten Karanganyar";
 
@@ -63,11 +66,8 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
   RekapLaporanModel? _ppatFetchedData;
   RekapLaporanModel? _notarisFetchedData;
 
-  // detailed per-transaction rows for the PPAT "buku besar" PDF table.
   List<PpatTransactionDetail> _ppatDetailItems = [];
 
-  // NEW: detailed per-transaction rows for the Notaris
-  // "SALINAN DAFTAR AKTA" PDF table.
   List<NotarisTransactionDetail> _notarisDetailItems = [];
 
   RekapLaporanModel get _currentData {
@@ -153,19 +153,24 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         return;
       }
 
-      // the response root is an object like
-      // { "data": [...], "total_amount": ..., "total_operation": ... }
       final rawList = PpatReportResponse.rawItemsFrom(decoded);
       print("📦 [LAPORAN PPAT] Total item mentah dari API: ${rawList.length}");
+
+      // NEW: ambil total_amount langsung dari root response, biar
+      // "Pemasukan" akurat sesuai perhitungan backend, bukan hasil
+      // hitung ulang manual di Flutter yang gampang meleset.
+      final double? totalAmountFromApi = (decoded is Map &&
+              decoded['total_amount'] != null)
+          ? ((decoded['total_amount'] as num).toDouble())
+          : null;
 
       final model = RekapLaporanModel.fromPpatTransactionList(
         rawList,
         startDate: _tanggalAwal,
         endDate: _tanggalAkhir,
+        totalAmountOverride: totalAmountFromApi,
       );
 
-      // parse the detailed nested rows (address/certificate/
-      // client/staff) used to build the "buku besar" PDF table.
       final detailedResponse = PpatReportResponse.fromDecoded(decoded);
 
       print(
@@ -249,22 +254,25 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         return;
       }
 
-      // CHANGED: the response root is now an object like
-      // { "data": [...], "total_amount": ..., "total_operation": ... }
-      // (same wrapper shape PPAT uses), instead of a bare list.
       final rawList = NotarisReportResponse.rawItemsFrom(decoded);
       print(
         "📦 [LAPORAN NOTARIS] Total item mentah dari API: ${rawList.length}",
       );
 
+      // NEW: sama seperti PPAT — pakai total_amount dari root
+      // response backend buat "Pemasukan".
+      final double? totalAmountFromApi = (decoded is Map &&
+              decoded['total_amount'] != null)
+          ? ((decoded['total_amount'] as num).toDouble())
+          : null;
+
       final model = RekapLaporanModel.fromNotarisTransactionList(
         rawList,
         startDate: _tanggalAwal,
         endDate: _tanggalAkhir,
+        totalAmountOverride: totalAmountFromApi,
       );
 
-      // NEW: parse the detailed rows (akta_date/case_name/akta_nature/
-      // penghadap) used to build the "SALINAN DAFTAR AKTA" PDF table.
       final detailedResponse = NotarisReportResponse.fromDecoded(decoded);
 
       print(
@@ -327,27 +335,18 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     if (_jenisLayanan == JenisLayanan.ppat) {
       await _onExportPpatDetailedPdf();
     } else {
-      // CHANGED: Notaris now exports the "SALINAN DAFTAR AKTA" table
-      // format instead of the old generic summary PDF.
       await _onExportNotarisDetailedPdf();
     }
   }
 
-  // =========================================================
-  // PPAT "buku besar" style export, matching the screenshot
-  // (BULAN header + multi-level column groups).
-  // =========================================================
   Future<void> _onExportPpatDetailedPdf() async {
     final doc = pw.Document();
     final bulanLabel = _bulanIndonesia[_tanggalAwal.month - 1];
 
-    // only render transactions that actually have PPAT data filled
-    // in (deed/certificate number or at least one party's name).
-    // Rows where everything is empty are incomplete records in the
-    // database, not something worth printing on the report.
     final validItems = _ppatDetailItems.where((item) {
       final hasCertificate = item.certificate.deedNumber.trim().isNotEmpty;
-      final hasParties = item.address.transferorName.trim().isNotEmpty ||
+      final hasParties =
+          item.address.transferorName.trim().isNotEmpty ||
           item.address.transfereeName.trim().isNotEmpty;
       return hasCertificate || hasParties;
     }).toList();
@@ -411,13 +410,15 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     await Printing.layoutPdf(onLayout: (format) => doc.save());
   }
 
-  // ---- header row (2-level, mirrors the screenshot) ----
-
   pw.Widget _buildPpatTableHeader() {
     return pw.Row(
       children: [
         _headerCellMerged("NO", flex: 1),
-        _headerCellGroup("NO TGL & JENIS AKTA", ["NO/TGL", "JENIS AKTA"], [2, 2]),
+        _headerCellGroup(
+          "NO TGL & JENIS AKTA",
+          ["NO/TGL", "JENIS AKTA"],
+          [2, 2],
+        ),
         _headerCellMerged("JENIS NOMOR\nHAK MILIK", flex: 3),
         _headerCellGroup(
           "NAMA ALAMAT & NPWP",
@@ -433,8 +434,6 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     );
   }
 
-  /// A header cell with no sub-columns — visually spans both header
-  /// rows by using a fixed height equal to group-header + sub-header.
   pw.Widget _headerCellMerged(String text, {required int flex}) {
     return pw.Expanded(
       flex: flex,
@@ -455,8 +454,6 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     );
   }
 
-  /// A header group: a title row on top, then N sub-column labels
-  /// below it, all within the same total flex width as the group.
   pw.Widget _headerCellGroup(
     String groupLabel,
     List<String> subLabels,
@@ -478,7 +475,10 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
             child: pw.Text(
               groupLabel,
               textAlign: pw.TextAlign.center,
-              style: pw.TextStyle(fontSize: 6.5, fontWeight: pw.FontWeight.bold),
+              style: pw.TextStyle(
+                fontSize: 6.5,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
           ),
           pw.Row(
@@ -509,8 +509,6 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     );
   }
 
-  // ---- data row (flex widths MUST sum the same as the header: 31) ----
-
   pw.Widget _buildPpatDataRow(
     int no,
     PpatTransactionDetail item, {
@@ -536,43 +534,79 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     );
     final letakText = _letakText(addr);
     final landAreaText = addr.landArea > 0 ? _formatAngka(addr.landArea) : "-";
-    final buildingAreaText =
-        addr.buildingArea > 0 ? _formatAngka(addr.buildingArea) : "-";
+    final buildingAreaText = addr.buildingArea > 0
+        ? _formatAngka(addr.buildingArea)
+        : "-";
     final nopText = _orDash(addr.nop);
     final njopText = addr.njop > 0 ? _formatRibuan(addr.njop) : "-";
     final bphtbText = addr.bphtb > 0 ? _formatRibuan(addr.bphtb) : "-";
     final notaryText = _orDash(item.notaryName);
-
-    // Cari baris terbanyak di antara semua kolom pada row ini, lalu
-    // paksa SEMUA sel di row ini pakai tinggi yang sama (fixed height,
-    // bukan stretch), supaya tidak ada yang tinggi-pendek lagi.
     final allTexts = [
-      noText, deedText, rightTypeText, rightText,
-      transferorText, transfereeText, letakText,
-      landAreaText, buildingAreaText, nopText,
-      njopText, bphtbText, notaryText,
+      noText,
+      deedText,
+      rightTypeText,
+      rightText,
+      transferorText,
+      transfereeText,
+      letakText,
+      landAreaText,
+      buildingAreaText,
+      nopText,
+      njopText,
+      bphtbText,
+      notaryText,
     ];
     final maxLines = allTexts
         .map((t) => '\n'.allMatches(t).length + 1)
         .reduce((a, b) => a > b ? a : b);
-    const lineHeight = 8.0; // perkiraan tinggi 1 baris teks di fontSize 6.5
-    const verticalPadding = 8.0; // padding atas+bawah cell (4+4)
+    const lineHeight = 8.0;
+    const verticalPadding = 8.0;
     final rowHeight = (maxLines * lineHeight) + verticalPadding;
 
     return pw.Row(
       children: [
-        _dataCell(noText, flex: 1, color: rowColor, align: pw.TextAlign.center, height: rowHeight),
+        _dataCell(
+          noText,
+          flex: 1,
+          color: rowColor,
+          align: pw.TextAlign.center,
+          height: rowHeight,
+        ),
         _dataCell(deedText, flex: 2, color: rowColor, height: rowHeight),
         _dataCell(rightTypeText, flex: 2, color: rowColor, height: rowHeight),
         _dataCell(rightText, flex: 3, color: rowColor, height: rowHeight),
         _dataCell(transferorText, flex: 4, color: rowColor, height: rowHeight),
         _dataCell(transfereeText, flex: 4, color: rowColor, height: rowHeight),
         _dataCell(letakText, flex: 3, color: rowColor, height: rowHeight),
-        _dataCell(landAreaText, flex: 1, color: rowColor, align: pw.TextAlign.center, height: rowHeight),
-        _dataCell(buildingAreaText, flex: 1, color: rowColor, align: pw.TextAlign.center, height: rowHeight),
+        _dataCell(
+          landAreaText,
+          flex: 1,
+          color: rowColor,
+          align: pw.TextAlign.center,
+          height: rowHeight,
+        ),
+        _dataCell(
+          buildingAreaText,
+          flex: 1,
+          color: rowColor,
+          align: pw.TextAlign.center,
+          height: rowHeight,
+        ),
         _dataCell(nopText, flex: 3, color: rowColor, height: rowHeight),
-        _dataCell(njopText, flex: 2, color: rowColor, align: pw.TextAlign.right, height: rowHeight),
-        _dataCell(bphtbText, flex: 2, color: rowColor, align: pw.TextAlign.right, height: rowHeight),
+        _dataCell(
+          njopText,
+          flex: 2,
+          color: rowColor,
+          align: pw.TextAlign.right,
+          height: rowHeight,
+        ),
+        _dataCell(
+          bphtbText,
+          flex: 2,
+          color: rowColor,
+          align: pw.TextAlign.right,
+          height: rowHeight,
+        ),
         _dataCell(notaryText, flex: 3, color: rowColor, height: rowHeight),
       ],
     );
@@ -588,13 +622,13 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     final alignment = align == pw.TextAlign.center
         ? pw.Alignment.center
         : align == pw.TextAlign.right
-            ? pw.Alignment.centerRight
-            : pw.Alignment.centerLeft;
+        ? pw.Alignment.centerRight
+        : pw.Alignment.centerLeft;
 
     return pw.Expanded(
       flex: flex,
       child: pw.Container(
-        height: height, // fixed height -> semua sel di row ini sama tinggi
+        height: height,
         alignment: alignment,
         padding: const pw.EdgeInsets.symmetric(horizontal: 3, vertical: 4),
         decoration: pw.BoxDecoration(
@@ -610,12 +644,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     );
   }
 
-  /// Returns "-" for an empty/blank string, otherwise the trimmed value.
   String _orDash(String value) => value.trim().isEmpty ? "-" : value.trim();
-
-  /// Builds the "Nama, Alamat, NPWP" cell text, skipping any line
-  /// that's empty instead of leaving a dangling "NPWP:" with nothing
-  /// after it. Returns "-" if all three are empty.
   String _partyText(String name, String address, String npwp) {
     final lines = <String>[];
     if (name.trim().isNotEmpty) lines.add(name.trim());
@@ -646,9 +675,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
   }
 
   String _formatAngka(double value) {
-    return value % 1 == 0
-        ? value.toStringAsFixed(0)
-        : value.toStringAsFixed(2);
+    return value % 1 == 0 ? value.toStringAsFixed(0) : value.toStringAsFixed(2);
   }
 
   String _formatRibuan(num value) {
@@ -661,11 +688,6 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     return buffer.toString();
   }
 
-  // =========================================================
-  // NEW: Notaris "SALINAN DAFTAR AKTA" style export, matching
-  // your example table (NO. URUT / NOMOR BULANAN / TANGGAL AKTA /
-  // SIFAT AKTA / NAMA-NAMA PENGHADAP columns).
-  // =========================================================
   Future<void> _onExportNotarisDetailedPdf() async {
     final doc = pw.Document();
 
@@ -680,9 +702,6 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       return DateTime(y, m, d);
     }
 
-    // Only rows that actually have a deed date filled in belong in the
-    // official "Daftar Akta" ledger — records still pending (akta_date
-    // null) are work in progress, not yet a finished akta.
     final validItems = _notarisDetailItems
         .where((item) => item.aktaDate != null)
         .toList();
@@ -698,13 +717,9 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       "setelah filter (hanya yang punya tanggal akta): ${validItems.length}",
     );
 
-    // NOMOR BULANAN: resets to 1 every time the akta_date's month changes.
     int monthlyCounter = 0;
-    int? lastMonthKey; // encoded as year*100+month
+    int? lastMonthKey;
 
-    // NOTE: "NO. URUT" here starts from 1 for this export. If your
-    // office wants it to continue from a previous physical ledger
-    // (like the "734" in your example), change this starting number.
     const int noUrutStart = 1;
 
     final periodDate = _tanggalAkhir;
@@ -730,14 +745,32 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
                     children: [
                       pw.Row(
                         children: [
-                          pw.SizedBox(width: 60, child: pw.Text("Nomor", style: const pw.TextStyle(fontSize: 10))),
-                          pw.Text(": $nomorSurat", style: const pw.TextStyle(fontSize: 10)),
+                          pw.SizedBox(
+                            width: 60,
+                            child: pw.Text(
+                              "Nomor",
+                              style: const pw.TextStyle(fontSize: 10),
+                            ),
+                          ),
+                          pw.Text(
+                            ": $nomorSurat",
+                            style: const pw.TextStyle(fontSize: 10),
+                          ),
                         ],
                       ),
                       pw.Row(
                         children: [
-                          pw.SizedBox(width: 60, child: pw.Text("Tanggal", style: const pw.TextStyle(fontSize: 10))),
-                          pw.Text(": $tanggalSurat", style: const pw.TextStyle(fontSize: 10)),
+                          pw.SizedBox(
+                            width: 60,
+                            child: pw.Text(
+                              "Tanggal",
+                              style: const pw.TextStyle(fontSize: 10),
+                            ),
+                          ),
+                          pw.Text(
+                            ": $tanggalSurat",
+                            style: const pw.TextStyle(fontSize: 10),
+                          ),
                         ],
                       ),
                     ],
@@ -748,7 +781,10 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
               pw.Center(
                 child: pw.Text(
                   "SALINAN DAFTAR AKTA",
-                  style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(
+                    fontSize: 13,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
                 ),
               ),
               pw.SizedBox(height: 12),
@@ -820,10 +856,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         height: 40,
         alignment: pw.Alignment.center,
         padding: const pw.EdgeInsets.symmetric(horizontal: 4),
-        decoration: const pw.BoxDecoration(
-          // brownish header fill, matching your example table
-          color: PdfColor.fromInt(0xFF5C4A3A),
-        ),
+        decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFF5C4A3A)),
         child: pw.Text(
           text,
           textAlign: pw.TextAlign.center,
@@ -850,7 +883,13 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         : item.sifatAktaDisplay.toUpperCase();
     final penghadapText = _penghadapText(item.penghadap);
 
-    final allTexts = [noUrutText, nomorBulananText, tanggalAktaText, sifatAktaText, penghadapText];
+    final allTexts = [
+      noUrutText,
+      nomorBulananText,
+      tanggalAktaText,
+      sifatAktaText,
+      penghadapText,
+    ];
     final maxLines = allTexts
         .map((t) => '\n'.allMatches(t).length + 1)
         .reduce((a, b) => a > b ? a : b);
@@ -860,9 +899,24 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
 
     return pw.Row(
       children: [
-        _notarisDataCell(noUrutText, flex: 2, height: rowHeight, align: pw.TextAlign.center),
-        _notarisDataCell(nomorBulananText, flex: 3, height: rowHeight, align: pw.TextAlign.center),
-        _notarisDataCell(tanggalAktaText, flex: 3, height: rowHeight, align: pw.TextAlign.center),
+        _notarisDataCell(
+          noUrutText,
+          flex: 2,
+          height: rowHeight,
+          align: pw.TextAlign.center,
+        ),
+        _notarisDataCell(
+          nomorBulananText,
+          flex: 3,
+          height: rowHeight,
+          align: pw.TextAlign.center,
+        ),
+        _notarisDataCell(
+          tanggalAktaText,
+          flex: 3,
+          height: rowHeight,
+          align: pw.TextAlign.center,
+        ),
         _notarisDataCell(sifatAktaText, flex: 5, height: rowHeight),
         _notarisDataCell(penghadapText, flex: 8, height: rowHeight),
       ],
@@ -886,7 +940,9 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         alignment: alignment,
         padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 6),
         decoration: const pw.BoxDecoration(
-          border: pw.Border(bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey400)),
+          border: pw.Border(
+            bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey400),
+          ),
         ),
         child: pw.Text(
           text,
@@ -897,10 +953,6 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
     );
   }
 
-  /// Builds "1.Tuan JOKO SETIAWAN;\n2.Nyonya NITA SUSARI;" style text,
-  /// matching your example table. Returns "-" if there's no penghadap
-  /// data yet (see NotarisTransactionDetail's class-level note about
-  /// the backend not returning `penghadap` on this endpoint yet).
   String _penghadapText(List<NotarisPenghadapDetail> list) {
     if (list.isEmpty) return "-";
     final lines = <String>[];

@@ -54,10 +54,8 @@ class HomeManagementServices extends StatelessWidget {
           onTap: () => Get.toNamed('/LaporanPage'),
         ),
         const SizedBox(height: 16),
-        
-        // Tombol Logout Utama
         GestureDetector(
-          onTap: controller.logout, // Memanggil dialog konfirmasi logout
+          onTap: controller.logout,
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),

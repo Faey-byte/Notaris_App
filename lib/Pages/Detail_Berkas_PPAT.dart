@@ -218,20 +218,16 @@ class DetailBerkasPage extends StatelessWidget {
                               final item = controller.dokumenList[index];
                               return PpatDocItem(
                                 doc: item,
-                                // Dekripsi dilakukan di SERVER lewat
-                                // endpoint /api/v1/read-ppat (lihat
-                                // DetailBerkasController.displayDocument).
-                                // Client tidak lagi coba dekripsi manual.
                                 onPreview: () => controller.displayDocument(
                                   context: context,
                                   documentName: item.label,
                                   documentUrl: item.url,
                                   clientId: controller.publicId.value,
                                   fileId: item
-                                      .id, // <-- ganti dari item.id ke item.matchkey
+                                      .id,
                                   ppatType: controller
                                       .jenisTransaksi
-                                      .value, // apapun yang sudah ada
+                                      .value,
                                 ),
                               );
                             },

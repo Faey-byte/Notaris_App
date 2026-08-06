@@ -130,10 +130,6 @@ class StaffModel {
   }
 }
 
-// =========================================================
-// 📁 KELAS TAMBAHAN UNTUK METADATA DOKUMEN BERKAS PPAT
-// =========================================================
-
 class DocumentTransactionModel {
   final int id;
   final AssetModel asset;

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -7,6 +8,7 @@ import 'package:notaris_app/data/db_Helper.dart';
 import 'package:notaris_app/Model/notaris_detail_model.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:notaris_app/utils/app_colors.dart';
 
 class DetailBerkasNotarisController extends GetxController {
   late final DbHelper dbHelper;
@@ -16,7 +18,8 @@ class DetailBerkasNotarisController extends GetxController {
   final RxBool isUpdatingStatus = false.obs;
   final RxBool isUpdatingStatusPajak = false.obs;
   final Rxn<NotarisDetailModel> detail = Rxn<NotarisDetailModel>();
-
+  final RxList<NotarisPenghadapModel> penghadapList =
+      <NotarisPenghadapModel>[].obs;
   final RxString fallbackName = ''.obs;
   final RxString publicId = ''.obs;
   final RxString statusPengerjaan = 'PENDING'.obs;
@@ -95,11 +98,7 @@ class DetailBerkasNotarisController extends GetxController {
     if (localBerkasId != null) {
       currentLocalBerkasId.value = localBerkasId;
     }
-
     await fetchDetail(clientName: clientName, publicId: publicIdParam);
-    if (localBerkasId != null) {
-      await _loadTotalBiayaFromLocal(localBerkasId);
-    }
   }
 
   Future<void> fetchDetail({String? clientName, String? publicId}) async {
@@ -166,15 +165,20 @@ class DetailBerkasNotarisController extends GetxController {
 
       titipBiayaAmount.value = model.titipBiayaInput ?? 0;
       titipBiayaAmountFormatted.value = _formatRupiah(titipBiayaAmount.value);
+      totalBiaya.value = model.amount > 0 ? _formatRupiah(model.amount) : '-';
+      print("💰 [NOTARIS DETAIL] amount dari backend: ${model.amount}");
 
       namaStaff.value = model.staff.staffName.isEmpty
           ? '-'
           : model.staff.staffName;
-      jenisPekerjaan.value = model.caseData.caseName
-          .replaceAll('_', ' ')
-          .toUpperCase();
+
+      jenisPekerjaan.value = model.transactionTypes.isNotEmpty
+          ? model.transactionTypes.join(', ').toUpperCase()
+          : '-';
 
       dokumenList.value = model.documentTransaction?.asset.metadata ?? [];
+
+      penghadapList.value = model.penghadap;
     } catch (e) {
       print("❌ [NOTARIS DETAIL ERROR]: $e");
       Get.snackbar(
@@ -190,21 +194,6 @@ class DetailBerkasNotarisController extends GetxController {
 
   void publicId2(String value) {
     publicId.value = value;
-  }
-
-  Future<void> _loadTotalBiayaFromLocal(String berkasId) async {
-    try {
-      final rows = await dbHelper.getNotarisDraftByBerkasId(berkasId);
-      final match = rows.where((r) => r['label'] == 'Total Biaya Layanan');
-      if (match.isNotEmpty) {
-        final val = match.first['text_value']?.toString();
-        if (val != null && val.isNotEmpty) {
-          totalBiaya.value = val;
-        }
-      }
-    } catch (e) {
-      print("❌ [NOTARIS DETAIL] Gagal ambil total biaya lokal: $e");
-    }
   }
 
   Future<void> updateStatusPekerjaan(String label) async {
@@ -473,8 +462,234 @@ class DetailBerkasNotarisController extends GetxController {
     }
   }
 
-  void displayNotarisDocument({
-    required String label,
-    required String localPath,
-  }) {}
+  Future<List<Map<String, dynamic>>> _fetchAesEncFileTeam() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? "";
+    final teamKey = prefs.getString('teamkey') ?? "";
+
+    if (token.isEmpty) {
+      throw Exception("Token tidak ditemukan. Silakan login ulang.");
+    }
+    if (teamKey.isEmpty) {
+      throw Exception("TeamKey tidak ditemukan. Silakan login ulang.");
+    }
+
+    final uri = Uri.parse('$baseUrl/api/v1/show/aes/enc/fileTeam');
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({"aes_institute_key": teamKey}),
+    );
+
+    print("=== SHOW AES ENC FILE TEAM (NOTARIS) ===");
+    print("Status: ${response.statusCode}");
+    print("Body: ${response.body}");
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        "Gagal mengambil daftar file team (${response.statusCode})",
+      );
+    }
+
+    final decoded = json.decode(response.body);
+    if (decoded is Map &&
+        decoded['success'] == true &&
+        decoded['data'] is List) {
+      return List<Map<String, dynamic>>.from(
+        (decoded['data'] as List).map((e) => Map<String, dynamic>.from(e)),
+      );
+    }
+
+    return [];
+  }
+
+  String? _resolveIdFromTeamList(
+    List<Map<String, dynamic>> teamFiles,
+    String documentUrl,
+  ) {
+    final normalizedTarget = documentUrl.trim();
+
+    for (final item in teamFiles) {
+      final itemUrl = (item['url_file'] ?? '').toString().trim();
+      if (itemUrl.isNotEmpty && itemUrl == normalizedTarget) {
+        final aesKey = (item['file_aes_key'] ?? '').toString();
+        if (aesKey.isNotEmpty) {
+          print("✅ [MATCH TEAM FILE] url: $itemUrl -> file_aes_key: $aesKey");
+          return aesKey;
+        }
+      }
+    }
+
+    print(
+      "⚠️ [NO MATCH TEAM FILE] Tidak ada url_file yang cocok dengan: $normalizedTarget",
+    );
+    return null;
+  }
+
+  Future<void> displayNotarisDocument({
+    required BuildContext context,
+    required NotarisDocMetadata document,
+  }) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+        ),
+      ),
+    );
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? "";
+
+      String resolvedId = "";
+      try {
+        final teamFiles = await _fetchAesEncFileTeam();
+        final matchedId = _resolveIdFromTeamList(teamFiles, document.url);
+        if (matchedId != null && matchedId.isNotEmpty) {
+          resolvedId = matchedId;
+        }
+      } catch (e) {
+        print("⚠️ [AES ENC FILE TEAM ERROR] $e");
+      }
+
+      final uri = Uri.parse('$baseUrl/api/v1/read-notary').replace(
+        queryParameters: {
+          'notary_type': detail.value?.transactionTypes.isNotEmpty == true
+              ? detail.value!.transactionTypes.first
+              : '',
+          'url': document.url,
+          'id': resolvedId,
+        },
+      );
+
+      print("=== READ NOTARIS (displayNotarisDocument) ===");
+      print("URL: $uri");
+
+      final response = await http.get(
+        uri,
+        headers: {if (token.isNotEmpty) 'Authorization': 'Bearer $token'},
+      );
+
+      print("Status: ${response.statusCode}");
+      if (response.statusCode != 200) {
+        print("Body: ${response.body}");
+      }
+
+      if (Navigator.canPop(context)) Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+        _tampilkanPopupGambar(context, response.bodyBytes);
+      } else {
+        String message = "Gagal memuat berkas (Status: ${response.statusCode})";
+        try {
+          final decoded = json.decode(response.body);
+          if (decoded is Map && decoded['message'] != null) {
+            message = decoded['message'].toString();
+          }
+        } catch (_) {}
+        Get.snackbar("Error", message);
+      }
+    } catch (e) {
+      if (Navigator.canPop(context)) Navigator.pop(context);
+      print("ERROR READ NOTARIS (displayNotarisDocument): $e");
+      Get.snackbar("Error", "Gagal memuat berkas: $e");
+    }
+  }
+
+  void _tampilkanPopupGambar(BuildContext context, Uint8List bytes) {
+    bool isPdf = false;
+    if (bytes.length >= 4) {
+      if (bytes[0] == 0x25 &&
+          bytes[1] == 0x50 &&
+          bytes[2] == 0x44 &&
+          bytes[3] == 0x46) {
+        isPdf = true;
+      }
+    }
+
+    if (isPdf) {
+      Get.snackbar(
+        "Format PDF Detected",
+        "Dokumen ini berformat PDF, gunakan PDF Viewer untuk membuka.",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(15),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.memory(
+                  bytes,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const SizedBox(
+                      height: 250,
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.broken_image,
+                                size: 48,
+                                color: Colors.red,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                "Gagal menampilkan file.\nFormat file tidak didukung sebagai Gambar.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: CircleAvatar(
+                  backgroundColor: Colors.black.withOpacity(0.5),
+                  child: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

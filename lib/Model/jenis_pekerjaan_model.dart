@@ -9,3 +9,11 @@ class JenisPekerjaanModel {
     required this.desc,
   });
 }
+
+const List<String> kJenisPekerjaanOptions = [
+  "Akta Pendirian PT",
+  "Akta Pendirian CV",
+  "Akta Yayasan",
+  "Akta Kuasa",
+  "Legalisasi Dokumen",
+];

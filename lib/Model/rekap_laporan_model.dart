@@ -32,6 +32,11 @@ class RekapLaporanModel {
     List<dynamic> rawList, {
     DateTime? startDate,
     DateTime? endDate,
+    // NEW: kalau backend sudah kasih total_amount di root response,
+    // pakai itu langsung buat "pemasukan" — lebih akurat daripada
+    // hitung manual per-item (yang gampang meleset kalau ada mismatch
+    // casing/whitespace status, atau item ke-exclude filter tanggal).
+    double? totalAmountOverride,
   }) {
     final items = rawList.whereType<Map<String, dynamic>>().toList();
 
@@ -42,10 +47,15 @@ class RekapLaporanModel {
         .length;
     final totalProses = totalBerkas - totalSelesai;
 
-    double pemasukan = 0;
-    for (var item in items) {
-      if ((item['status']?.toString() ?? '') == 'done') {
-        pemasukan += ((item['amount'] ?? 0) as num).toDouble();
+    double pemasukan;
+    if (totalAmountOverride != null) {
+      pemasukan = totalAmountOverride;
+    } else {
+      pemasukan = 0;
+      for (var item in items) {
+        if ((item['status']?.toString() ?? '') == 'done') {
+          pemasukan += ((item['amount'] ?? 0) as num).toDouble();
+        }
       }
     }
 
@@ -91,6 +101,8 @@ class RekapLaporanModel {
     List<dynamic> rawList, {
     DateTime? startDate,
     DateTime? endDate,
+    // NEW: sama seperti PPAT — pakai total_amount dari backend kalau ada.
+    double? totalAmountOverride,
   }) {
     var items = rawList.whereType<Map<String, dynamic>>().toList();
 
@@ -118,10 +130,15 @@ class RekapLaporanModel {
         .length;
     final totalProses = totalBerkas - totalSelesai;
 
-    double pemasukan = 0;
-    for (var item in items) {
-      if ((item['status']?.toString() ?? '') == 'done') {
-        pemasukan += ((item['amount'] ?? 0) as num).toDouble();
+    double pemasukan;
+    if (totalAmountOverride != null) {
+      pemasukan = totalAmountOverride;
+    } else {
+      pemasukan = 0;
+      for (var item in items) {
+        if ((item['status']?.toString() ?? '') == 'done') {
+          pemasukan += ((item['amount'] ?? 0) as num).toDouble();
+        }
       }
     }
 
@@ -189,13 +206,6 @@ class ChartDataModel {
   }
 }
 
-// =========================================================
-// Shared parsing helpers (used by both PPAT and Notaris detail
-// parsing below).
-// =========================================================
-
-/// Safely parses any numeric-ish value (int, double, numeric String,
-/// or null) into an int, defaulting to 0.
 int _parseInt(dynamic value) {
   if (value == null) return 0;
   if (value is int) return value;
@@ -203,8 +213,6 @@ int _parseInt(dynamic value) {
   return int.tryParse(value.toString()) ?? 0;
 }
 
-/// Safely decodes a field that may already be a Map, or may be a
-/// JSON-encoded string (as seen in the sample response), or null.
 Map<String, dynamic> _decodeNestedObject(dynamic raw) {
   if (raw == null) return {};
   if (raw is Map<String, dynamic>) return raw;
@@ -212,16 +220,11 @@ Map<String, dynamic> _decodeNestedObject(dynamic raw) {
     try {
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) return decoded;
-    } catch (_) {
-      // ignore malformed nested JSON, fall through to empty map
-    }
+    } catch (_) {}
   }
   return {};
 }
 
-/// Safely decodes a field that may already be a List, or may be a
-/// JSON-encoded string list, or null. Used for `penghadap` (and could
-/// also be reused for `documents` if ever needed elsewhere).
 List<Map<String, dynamic>> _decodeNestedList(dynamic raw) {
   if (raw == null) return [];
   if (raw is List) {
@@ -233,17 +236,10 @@ List<Map<String, dynamic>> _decodeNestedList(dynamic raw) {
       if (decoded is List) {
         return decoded.whereType<Map<String, dynamic>>().toList();
       }
-    } catch (_) {
-      // ignore malformed nested JSON, fall through to empty list
-    }
+    } catch (_) {}
   }
   return [];
 }
-
-// =========================================================
-// PPAT detailed transaction parsing for the "buku besar"
-// style report.
-// =========================================================
 
 class PpatAddressDetail {
   final String transferorName;
@@ -329,7 +325,7 @@ class PpatAddressDetail {
 
 class PpatCertificateDetail {
   final String deedNumber;
-  final String deedDate; // dd/mm/yyyy, as sent by backend
+  final String deedDate;
   final String deedType;
   final String rightType;
   final String rightNumber;
@@ -417,7 +413,6 @@ class PpatStaffDetail {
   static const empty = PpatStaffDetail(id: 0, staffName: '', instituteId: 0);
 }
 
-/// One row of the detailed "buku besar" PPAT report.
 class PpatTransactionDetail {
   final int id;
   final String status;
@@ -473,8 +468,6 @@ class PpatTransactionDetail {
   }
 }
 
-/// Wraps the PPAT report endpoint's root response:
-/// { "data": [...], "total_amount": ..., "total_operation": ... }
 class PpatReportResponse {
   static const String _listKey = 'data';
 
@@ -531,22 +524,6 @@ class PpatReportResponse {
   }
 }
 
-// =========================================================
-// NEW: Notaris detailed transaction parsing for the
-// "SALINAN DAFTAR AKTA" style report (NO. URUT / NOMOR BULANAN /
-// TANGGAL AKTA / SIFAT AKTA / NAMA NAMA PENGHADAP DAN/ATAU YANG
-// DIWAKILI/KUASA table).
-//
-// IMPORTANT: as of the sample response you shared for
-// /generate/report/Notary, each item does NOT include `akta_nature`
-// or `penghadap` fields yet — only `case_name`, `documents`, etc.
-// This parser reads `akta_nature`/`penghadap` defensively (falls
-// back to empty/blank) so the report still works today, and will
-// automatically pick the real data up the moment the backend adds
-// those fields to that endpoint's response — no Flutter changes
-// needed at that point.
-// =========================================================
-
 class NotarisPenghadapDetail {
   final String publicId;
   final String name;
@@ -570,27 +547,16 @@ class NotarisPenghadapDetail {
   }
 }
 
-/// One row of the "SALINAN DAFTAR AKTA" Notaris report.
 class NotarisTransactionDetail {
   final int id;
   final String status;
   final double amount;
   final String createdAt;
 
-  /// "dd/mm/yyyy", or null if the deed date hasn't been filled in yet
-  /// (backend sends this as JSON null for still-pending records).
   final String? aktaDate;
-
   final String caseName;
-
-  /// May be empty — see class-level note above about the backend not
-  /// yet returning `akta_nature` on this endpoint.
   final String aktaNature;
-
   final String lifeStatus;
-
-  /// May be empty — see class-level note above about the backend not
-  /// yet returning `penghadap` on this endpoint.
   final List<NotarisPenghadapDetail> penghadap;
 
   const NotarisTransactionDetail({
@@ -631,15 +597,10 @@ class NotarisTransactionDetail {
     );
   }
 
-  /// "SIFAT AKTA" cell text: prefer `akta_nature` (once the backend
-  /// sends it), otherwise fall back to `case_name`.
   String get sifatAktaDisplay =>
       aktaNature.trim().isNotEmpty ? aktaNature.trim() : caseName.trim();
 }
 
-/// Wraps the Notaris report endpoint's root response:
-/// { "data": [...], "total_amount": ..., "total_operation": ... }
-/// (same wrapper shape as the PPAT endpoint, per your sample response).
 class NotarisReportResponse {
   static const String _listKey = 'data';
 
@@ -653,8 +614,6 @@ class NotarisReportResponse {
     required this.totalOperation,
   });
 
-  /// Accepts either the {data:[...]} wrapper, or a bare List (older
-  /// API shape), for backward compatibility.
   factory NotarisReportResponse.fromDecoded(dynamic decoded) {
     List<dynamic> rawList;
     double totalAmount = 0;
@@ -684,9 +643,6 @@ class NotarisReportResponse {
     );
   }
 
-  /// Convenience: the raw list of maps, for feeding into the existing
-  /// RekapLaporanModel.fromNotarisTransactionList() which only needs
-  /// the top-level status/amount/created_at fields.
   static List<Map<String, dynamic>> rawItemsFrom(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       final rawFromKey = decoded[_listKey];

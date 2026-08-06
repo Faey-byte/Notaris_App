@@ -62,7 +62,6 @@ class DetailBerkasController extends GetxController {
   var statusPengerjaan = "PENDING".obs;
   var namaStaff = "Sistem Otomatis".obs;
 
-  // Menggunakan PpatDocMetadata agar cocok dengan Widget PpatDocItem
   var dokumenList = <PpatDocMetadata>[].obs;
 
   var jenisTransaksi = "".obs;
@@ -130,10 +129,12 @@ class DetailBerkasController extends GetxController {
         if (data == null) return;
 
         final staff = data['staff'];
-        namaStaff.value = staff?['StaffName'] ?? staff?['name'] ?? "Sistem Otomatis";
+        namaStaff.value =
+            staff?['StaffName'] ?? staff?['name'] ?? "Sistem Otomatis";
 
         final client = data['client'];
-        publicId.value = client?['publicID'] ?? client?['public_id'] ?? fallbackPublicID;
+        publicId.value =
+            client?['publicID'] ?? client?['public_id'] ?? fallbackPublicID;
 
         final rawId = data['id'];
         if (rawId is int) {
@@ -151,7 +152,8 @@ class DetailBerkasController extends GetxController {
         );
 
         if (jenisTransaksi.value.isEmpty) {
-          final caseData = data['case_data'] ?? data['caseData'] ?? data['case'];
+          final caseData =
+              data['case_data'] ?? data['caseData'] ?? data['case'];
           jenisTransaksi.value =
               (caseData?['case_name'] ?? caseData?['caseName'] ?? '')
                   .toString();
@@ -172,10 +174,11 @@ class DetailBerkasController extends GetxController {
         final asset = docTransaction?['asset'];
         final metadata = asset?['metadata'];
 
-        final dynamic rawAmount = data['amount'] 
-            ?? (metadata is Map ? metadata['amount'] : null) 
-            ?? data['total_biaya'] 
-            ?? data['price'];
+        final dynamic rawAmount =
+            data['amount'] ??
+            (metadata is Map ? metadata['amount'] : null) ??
+            data['total_biaya'] ??
+            data['price'];
 
         int amountInt = 0;
         if (rawAmount is int) {
@@ -190,11 +193,8 @@ class DetailBerkasController extends GetxController {
           symbol: 'Rp ',
           decimalDigits: 0,
         );
-        totalBiaya.value = amountInt > 0
-            ? formatter.format(amountInt)
-            : "Rp 0";
+        totalBiaya.value = amountInt > 0 ? formatter.format(amountInt) : "Rp 0";
 
-        // Processing Metadata dokumen
         List<PpatDocMetadata> fetchedDocs = [];
 
         if (metadata != null) {
@@ -214,12 +214,8 @@ class DetailBerkasController extends GetxController {
             if (rawFiles is List) {
               for (var f in rawFiles) {
                 if (f is Map) {
-                  // 🔍 DEBUG: lihat field apa saja yang tersedia per file
-                  // dari backend, supaya kita tau nama field yang benar
-                  // buat 'id' yang dibutuhkan endpoint /api/v1/read-ppat.
                   print("🔍 [PPAT RAW FILE] $f");
 
-                  // ✅ DIUBAH DI SINI: Cast Map secara eksplisit
                   fetchedDocs.add(
                     PpatDocMetadata.fromJson(Map<String, dynamic>.from(f)),
                   );
@@ -229,11 +225,8 @@ class DetailBerkasController extends GetxController {
           } else if (metadata is List) {
             for (var item in metadata) {
               if (item is Map) {
-                // 🔍 DEBUG: sama seperti di atas, buat kasus metadata
-                // berbentuk List langsung (bukan Map berisi 'files').
                 print("🔍 [PPAT RAW FILE] $item");
 
-                // ✅ DIUBAH DI SINI: Cast Map secara eksplisit
                 fetchedDocs.add(
                   PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)),
                 );
@@ -457,6 +450,74 @@ class DetailBerkasController extends GetxController {
     }
   }
 
+  Future<List<Map<String, dynamic>>> _fetchAesEncFileTeam() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? "";
+    final teamKey = prefs.getString('teamkey') ?? "";
+
+    if (token.isEmpty) {
+      throw Exception("Token tidak ditemukan. Silakan login ulang.");
+    }
+    if (teamKey.isEmpty) {
+      throw Exception("TeamKey tidak ditemukan. Silakan login ulang.");
+    }
+
+    final uri = Uri.parse('$baseUrl/api/v1/show/aes/enc/fileTeam');
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({"aes_institute_key": teamKey}),
+    );
+
+    print("=== SHOW AES ENC FILE TEAM ===");
+    print("Status: ${response.statusCode}");
+    print("Body: ${response.body}");
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        "Gagal mengambil daftar file team (${response.statusCode})",
+      );
+    }
+
+    final decoded = json.decode(response.body);
+    if (decoded is Map &&
+        decoded['success'] == true &&
+        decoded['data'] is List) {
+      return List<Map<String, dynamic>>.from(
+        (decoded['data'] as List).map((e) => Map<String, dynamic>.from(e)),
+      );
+    }
+
+    return [];
+  }
+
+  String? _resolveIdFromTeamList(
+    List<Map<String, dynamic>> teamFiles,
+    String documentUrl,
+  ) {
+    final normalizedTarget = documentUrl.trim();
+
+    for (final item in teamFiles) {
+      final itemUrl = (item['url_file'] ?? '').toString().trim();
+      if (itemUrl.isNotEmpty && itemUrl == normalizedTarget) {
+        final aesKey = (item['file_aes_key'] ?? '').toString();
+        if (aesKey.isNotEmpty) {
+          print("✅ [MATCH TEAM FILE] url: $itemUrl -> file_aes_key: $aesKey");
+          return aesKey;
+        }
+      }
+    }
+
+    print(
+      "⚠️ [NO MATCH TEAM FILE] Tidak ada url_file yang cocok dengan: $normalizedTarget",
+    );
+    return null;
+  }
+
   Future<void> displayDocument({
     required BuildContext context,
     required String documentName,
@@ -478,12 +539,25 @@ class DetailBerkasController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? "";
+      String resolvedId = (fileId != null && fileId.isNotEmpty)
+          ? fileId
+          : clientId;
+
+      try {
+        final teamFiles = await _fetchAesEncFileTeam();
+        final matchedId = _resolveIdFromTeamList(teamFiles, documentUrl);
+        if (matchedId != null && matchedId.isNotEmpty) {
+          resolvedId = matchedId;
+        }
+      } catch (e) {
+        print("⚠️ [AES ENC FILE TEAM ERROR] Fallback ke id lama: $e");
+      }
 
       final uri = Uri.parse('$baseUrl/api/v1/read-ppat').replace(
         queryParameters: {
           'ppat_type': ppatType ?? '',
           'url': documentUrl,
-          'id': (fileId != null && fileId.isNotEmpty) ? fileId : clientId,
+          'id': resolvedId,
         },
       );
 
@@ -522,16 +596,16 @@ class DetailBerkasController extends GetxController {
   }
 
   void _tampilkanPopupGambar(BuildContext context, Uint8List bytes) {
-    // 1. Cek apakah Byte Data adalah PDF (PDF diawali dengan header ASCII '%PDF')
     bool isPdf = false;
     if (bytes.length >= 4) {
-      // String '%PDF' dalam byte/ASCII adalah [37, 80, 68, 70]
-      if (bytes[0] == 0x25 && bytes[1] == 0x50 && bytes[2] == 0x44 && bytes[3] == 0x46) {
+      if (bytes[0] == 0x25 &&
+          bytes[1] == 0x50 &&
+          bytes[2] == 0x44 &&
+          bytes[3] == 0x46) {
         isPdf = true;
       }
     }
 
-    // 2. Jika ternyata PDF, beritahu user (atau buka viewer PDF)
     if (isPdf) {
       Get.snackbar(
         "Format PDF Detected",
@@ -542,8 +616,6 @@ class DetailBerkasController extends GetxController {
       );
       return;
     }
-
-    // 3. Jika benar-benar Gambar, tampilkan Dialog
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -572,7 +644,11 @@ class DetailBerkasController extends GetxController {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.broken_image, size: 48, color: Colors.red),
+                              Icon(
+                                Icons.broken_image,
+                                size: 48,
+                                color: Colors.red,
+                              ),
                               SizedBox(height: 8),
                               Text(
                                 "Gagal menampilkan file.\nFormat file tidak didukung sebagai Gambar.",

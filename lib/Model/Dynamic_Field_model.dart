@@ -2,21 +2,18 @@ import 'package:get/get.dart';
 
 class DynamicField {
   final String label;
-  final String type; // Contoh: "upload", "coordinate", "text", "number", "date"
+  final String type;
   final String? placeholder;
 
-  // Rx Variables untuk Reactivity GetX (Obx)
-  var fileValue = ''.obs;      // Menyimpan URL file yang diupload
-  var fileId = ''.obs;         // Menyimpan ID / public_id file dari server
-  var matchKey = ''.obs;       // Menyimpan matchkey enkripsi file
-  var localFilePath = ''.obs;  // Menyimpan path file lokal (cache/preview)
-  var isLoading = false.obs;   // Status loading saat upload per field
+  var fileValue = ''.obs;      
+  var fileId = ''.obs;        
+  var matchKey = ''.obs;   
+  var localFilePath = ''.obs;  
+  var isLoading = false.obs;   
 
-  // Untuk field tipe Koordinat (Lokasi)
   var latitude = (-6.175392).obs;
   var longitude = (106.827153).obs;
 
-  // Untuk field tipe Tanggal (Date)
   var dateValue = Rxn<DateTime>();
 
   DynamicField({
@@ -32,7 +29,6 @@ class DynamicField {
     if (initialMatchKey != null) matchKey.value = initialMatchKey;
   }
 
-  /// Reset/Membersihkan data pada field ini
   void clear() {
     fileValue.value = '';
     fileId.value = '';
@@ -42,7 +38,6 @@ class DynamicField {
     dateValue.value = null;
   }
 
-  /// Konversi ke Map jika butuh dikirim sebagai JSON
   Map<String, dynamic> toJson() {
     return {
       'label': label,

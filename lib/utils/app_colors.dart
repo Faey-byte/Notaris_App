@@ -22,7 +22,6 @@ class AppColors {
   static const Color statusRevisi = Color(0xFFF44336);
   static const Color statusRevisiBg = Color(0xFFFFEBEE);
 
-  // Tambahan untuk chart
   static const Color chartBar = Color(0xFF8B1A1A);
   static const Color chartBarSoft = Color(0xFFE8B4B4);
 }

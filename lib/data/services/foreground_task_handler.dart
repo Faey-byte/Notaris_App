@@ -11,7 +11,7 @@ class WsForegroundTaskHandler extends TaskHandler {
   final FlutterLocalNotificationsPlugin _localNotif =
       FlutterLocalNotificationsPlugin();
 
-  bool _isConnected = false; // ✅ status koneksi
+  bool _isConnected = false;
 
  static const String _wsUrl = WsConfig.baseUrl;
 
@@ -53,7 +53,6 @@ class WsForegroundTaskHandler extends TaskHandler {
         Uri.parse('$_wsUrl?userId=$userId'),
       );
 
-      // ✅ Cek koneksi berhasil dibuka (tunggu ready dulu)
       await _channel!.ready.then((_) {
         _isConnected = true;
         print("✅ [ForegroundTask] WebSocket TERHUBUNG");
@@ -139,7 +138,6 @@ class WsForegroundTaskHandler extends TaskHandler {
 
   @override
   void onRepeatEvent(DateTime timestamp) {
-    // ✅ Tambahan: cek ulang status koneksi tiap repeat event (kalau diaktifkan)
     print("🔁 [ForegroundTask] onRepeatEvent — isConnected: $_isConnected");
   }
 

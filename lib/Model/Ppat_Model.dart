@@ -13,7 +13,11 @@ class PpatDetailModel {
   final ClientModel client;
   final CaseModel caseData;
   final StaffModel staff;
+  final InstituteModel? institute;
   final DocumentTransactionModel? documentTransaction;
+  final TransactionAddressModel? transactionAddress;
+  final CertificateModel? certificate;
+  final String notaryName;
 
   PpatDetailModel({
     required this.id,
@@ -30,7 +34,11 @@ class PpatDetailModel {
     required this.client,
     required this.caseData,
     required this.staff,
+    this.institute,
     this.documentTransaction,
+    this.transactionAddress,
+    this.certificate,
+    this.notaryName = "",
   });
 
   factory PpatDetailModel.fromJson(Map<String, dynamic> json) {
@@ -49,9 +57,19 @@ class PpatDetailModel {
       client: ClientModel.fromJson(json['client'] ?? {}),
       caseData: CaseModel.fromJson(json['case'] ?? {}),
       staff: StaffModel.fromJson(json['staff'] ?? {}),
+      institute: json['institute'] != null
+          ? InstituteModel.fromJson(json['institute'])
+          : null,
       documentTransaction: json['document_transaction'] != null
           ? DocumentTransactionModel.fromJson(json['document_transaction'])
           : null,
+      transactionAddress: json['transaction_address'] != null
+          ? TransactionAddressModel.fromJson(json['transaction_address'])
+          : null,
+      certificate: json['certificate'] != null
+          ? CertificateModel.fromJson(json['certificate'])
+          : null,
+      notaryName: json['notary_name'] ?? "",
     );
   }
 
@@ -124,8 +142,26 @@ class StaffModel {
 
   factory StaffModel.fromJson(Map<String, dynamic> json) {
     return StaffModel(
+      id: json['id'] ?? json['ID'] ?? 0,
+      staffName: json['name'] ?? json['staff_name'] ?? json['StaffName'] ?? "",
+    );
+  }
+}
+
+/// Notaris / kantor yang menangani transaksi
+class InstituteModel {
+  final int id;
+  final String name;
+
+  InstituteModel({
+    required this.id,
+    required this.name,
+  });
+
+  factory InstituteModel.fromJson(Map<String, dynamic> json) {
+    return InstituteModel(
       id: json['id'] ?? 0,
-      staffName: json['name'] ?? json['staff_name'] ?? "",
+      name: json['name'] ?? "",
     );
   }
 }
@@ -153,11 +189,25 @@ class AssetModel {
   AssetModel({required this.metadata});
 
   factory AssetModel.fromJson(Map<String, dynamic> json) {
-    var rawList = json['metadata'];
+    var rawMetadata = json['metadata'];
     List<PpatDocMetadata> metaList = [];
 
-    if (rawList is List) {
-      metaList = rawList.map((item) => PpatDocMetadata.fromJson(item)).toList();
+    // metadata bisa berupa List langsung, atau Map berisi { files: [...] }
+    if (rawMetadata is List) {
+      metaList = rawMetadata
+          .whereType<Map>()
+          .map((item) =>
+              PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
+    } else if (rawMetadata is Map) {
+      final rawFiles = rawMetadata['files'];
+      if (rawFiles is List) {
+        metaList = rawFiles
+            .whereType<Map>()
+            .map((item) =>
+                PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)))
+            .toList();
+      }
     }
 
     return AssetModel(metadata: metaList);
@@ -183,6 +233,131 @@ class PpatDocMetadata {
       label: json['label'] ?? json['name'] ?? json['title'] ?? 'Dokumen tanpa nama',
       url: json['url'] ?? json['file_url'] ?? '',
       matchkey: json['matchkey'] ?? json['match_key'] ?? '',
+    );
+  }
+}
+
+/// Data pihak I (transferor), pihak II (transferee), objek tanah & pajak
+class TransactionAddressModel {
+  final int id;
+  final int transactionId;
+  final String transferorName;
+  final String transferorAddress;
+  final String transferorNpwp;
+  final String transfereeName;
+  final String transfereeAddress;
+  final String transfereeNpwp;
+  final String hamlet;
+  final String village;
+  final int landArea;
+  final int buildingArea;
+  final String book;
+  final String number;
+  final int taxYear;
+  final String nop;
+  final int njop;
+  final int bphtb;
+  final int createdAt;
+  final int updatedAt;
+
+  TransactionAddressModel({
+    required this.id,
+    required this.transactionId,
+    required this.transferorName,
+    required this.transferorAddress,
+    required this.transferorNpwp,
+    required this.transfereeName,
+    required this.transfereeAddress,
+    required this.transfereeNpwp,
+    required this.hamlet,
+    required this.village,
+    required this.landArea,
+    required this.buildingArea,
+    required this.book,
+    required this.number,
+    required this.taxYear,
+    required this.nop,
+    required this.njop,
+    required this.bphtb,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory TransactionAddressModel.fromJson(Map<String, dynamic> json) {
+    int _toInt(dynamic v) {
+      if (v is int) return v;
+      if (v is double) return v.toInt();
+      if (v is String) return int.tryParse(v) ?? 0;
+      return 0;
+    }
+
+    return TransactionAddressModel(
+      id: _toInt(json['id']),
+      transactionId: _toInt(json['transaction_id']),
+      transferorName: json['transferor_name']?.toString() ?? '',
+      transferorAddress: json['transferor_address']?.toString() ?? '',
+      transferorNpwp: json['transferor_npwp']?.toString() ?? '',
+      transfereeName: json['transferee_name']?.toString() ?? '',
+      transfereeAddress: json['transferee_address']?.toString() ?? '',
+      transfereeNpwp: json['transferee_npwp']?.toString() ?? '',
+      hamlet: json['hamlet']?.toString() ?? '',
+      village: json['village']?.toString() ?? '',
+      landArea: _toInt(json['land_area']),
+      buildingArea: _toInt(json['building_area']),
+      book: json['book']?.toString() ?? '',
+      number: json['number']?.toString() ?? '',
+      taxYear: _toInt(json['tax_year']),
+      nop: json['nop']?.toString() ?? '',
+      njop: _toInt(json['njop']),
+      bphtb: _toInt(json['bphtb']),
+      createdAt: _toInt(json['created_at']),
+      updatedAt: _toInt(json['updated_at']),
+    );
+  }
+}
+
+/// Data akta / sertipikat
+class CertificateModel {
+  final int id;
+  final int transactionId;
+  final String deedNumber;
+  final int deedDate;
+  final String deedType;
+  final String rightType;
+  final String rightNumber;
+  final int createdAt;
+  final int updatedAt;
+
+  CertificateModel({
+    required this.id,
+    required this.transactionId,
+    required this.deedNumber,
+    required this.deedDate,
+    required this.deedType,
+    required this.rightType,
+    required this.rightNumber,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory CertificateModel.fromJson(Map<String, dynamic> json) {
+    int _toInt(dynamic v) {
+      if (v is int) return v;
+      if (v is double) return v.toInt();
+      if (v is String) return int.tryParse(v) ?? 0;
+      return 0;
+    }
+
+    return CertificateModel(
+      id: _toInt(json['id']),
+      transactionId: _toInt(json['transaction_id']),
+      deedNumber: json['deed_number']?.toString() ?? '',
+      deedDate: _toInt(json['deed_date']),
+      deedType: json['deed_type']?.toString() ?? '',
+      rightType: json['right_type']?.toString() ?? '',
+      rightNumber: json['right_number']?.toString() ?? '',
+      createdAt: _toInt(json['created_at']),
+      updatedAt: _toInt(json['updated_at']),
     );
   }
 }

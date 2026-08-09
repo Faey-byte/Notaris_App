@@ -7,6 +7,7 @@ import 'Routes/pages.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:notaris_app/data/db_helper.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart'; 
+import 'package:intl/date_symbol_data_local.dart'; // ✅ NEW: buat inisialisasi locale id_ID
 
 
 // void _initForegroundTask() {
@@ -35,6 +36,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // _initForegroundTask();
+
+  // ✅ NEW: wajib dipanggil sebelum pakai DateFormat(..., 'id_ID') di mana pun,
+  // kalau tidak, DateFormat akan throw error dan fallback ke string mentah.
+  await initializeDateFormatting('id_ID', null);
 
   try {
     await dotenv.load(fileName: ".env");

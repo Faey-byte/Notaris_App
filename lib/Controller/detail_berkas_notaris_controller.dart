@@ -31,6 +31,12 @@ class DetailBerkasNotarisController extends GetxController {
   final RxString jenisPekerjaan = '-'.obs;
   final RxList<NotarisDocMetadata> dokumenList = <NotarisDocMetadata>[].obs;
 
+  // ✅ NEW: field tambahan dari detail berkas
+  final RxString sifatAkta = '-'.obs;
+  final RxString tanggalAkta = '-'.obs;
+  final RxString statusPerkawinan = '-'.obs;
+  final RxString keterangan = ''.obs;
+
   final RxString currentLocalBerkasId = ''.obs;
 
   int transactionId = 0;
@@ -80,6 +86,27 @@ class DetailBerkasNotarisController extends GetxController {
       decimalDigits: 0,
     );
     return formatter.format(amount);
+  }
+
+  // ✅ NEW: kapitalisasi tiap kata, contoh "pendirian cv" -> "Pendirian Cv"
+  static String _capitalizeWords(String value) {
+    if (value.trim().isEmpty) return '-';
+    return value
+        .trim()
+        .split(RegExp(r'\s+'))
+        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
+  }
+
+  // ✅ NEW: format tanggal akta "2026-08-05" -> "05 Agustus 2026"
+  static String _formatTanggalAkta(String rawDate) {
+    if (rawDate.trim().isEmpty) return '-';
+    try {
+      final parsed = DateTime.parse(rawDate);
+      return DateFormat('dd MMMM yyyy', 'id_ID').format(parsed);
+    } catch (_) {
+      return rawDate;
+    }
   }
 
   @override
@@ -176,9 +203,18 @@ class DetailBerkasNotarisController extends GetxController {
           ? model.transactionTypes.join(', ').toUpperCase()
           : '-';
 
+      // ✅ NEW: isi field tambahan dari detail berkas
+      sifatAkta.value = _capitalizeWords(model.aktaNature);
+      tanggalAkta.value = _formatTanggalAkta(model.aktaDate);
+      statusPerkawinan.value = _capitalizeWords(model.lifeStatus);
+      keterangan.value = model.description.trim();
+
       dokumenList.value = model.documentTransaction?.asset.metadata ?? [];
 
-      penghadapList.value = model.penghadap;
+      // ✅ NEW: urutkan penghadap berdasarkan OrderNumber sebelum ditampilkan
+      final sortedPenghadap = [...model.penghadap]
+        ..sort((a, b) => a.orderNumber.compareTo(b.orderNumber));
+      penghadapList.value = sortedPenghadap;
     } catch (e) {
       print("❌ [NOTARIS DETAIL ERROR]: $e");
       Get.snackbar(

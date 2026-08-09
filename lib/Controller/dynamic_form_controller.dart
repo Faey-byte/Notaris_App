@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +14,37 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:notaris_app/Model/dynamic_field_model.dart';
+
+/// Formatter untuk otomatis menambahkan titik ribuan saat user mengetik angka.
+/// Contoh: user ketik "1000000" -> tampil "1.000.000"
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Ambil angka murni saja (buang semua titik/karakter non-digit)
+    String digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digitsOnly.isEmpty) {
+      return const TextEditingValue(text: '');
+    }
+
+    // Format jadi 1.000.000
+    final formatted = digitsOnly.replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (match) => '${match[1]}.',
+    );
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 class DynamicField {
   final String label;
@@ -84,6 +116,10 @@ class DynamicFormController extends GetxController {
 
   var uploadedFilesData = <String, Map<String, String>>{}.obs;
 
+  /// Jadi true setelah user pertama kali menekan tombol submit/lanjut.
+  /// Dipakai UI untuk menentukan kapan tanda bintang merah mulai muncul.
+  var attemptedSubmit = false.obs;
+
   final List<String> lifeStatusOptions = [
     "single",
     "married",
@@ -115,6 +151,13 @@ class DynamicFormController extends GetxController {
   static const String labelRightType = "Jenis Hak Atas Tanah";
   static const String labelRightNumber = "Nomor Hak";
   static const String labelNotaryName = "Nama Notaris";
+
+  /// Label field yang inputnya berupa uang dan perlu format titik ribuan.
+  static const List<String> moneyFieldLabels = [
+    "Total biaya layanan",
+    labelNjop,
+    labelBphtb,
+  ];
 
   @override
   void onInit() {
@@ -625,48 +668,48 @@ class DynamicFormController extends GetxController {
     }
   }
 
-Future<void> openManualLocationPicker(DynamicField field) async {
-  try {
-    field.isLoading.value = true;
-    fields.refresh();
-
-    final bool hasSavedLocation =
-        field.latitude.value != 0.0 || field.longitude.value != 0.0;
-
-    final pickedResult = await Get.to<LatLng>(
-      () => MapPickerPage(
-        initialLat: hasSavedLocation ? field.latitude.value : null,
-        initialLng: hasSavedLocation ? field.longitude.value : null,
-      ),
-    );
-
-    if (pickedResult != null) {
-      field.latitude.value = pickedResult.latitude;
-      field.longitude.value = pickedResult.longitude;
-
+  Future<void> openManualLocationPicker(DynamicField field) async {
+    try {
+      field.isLoading.value = true;
       fields.refresh();
 
+      final bool hasSavedLocation =
+          field.latitude.value != 0.0 || field.longitude.value != 0.0;
+
+      final pickedResult = await Get.to<LatLng>(
+        () => MapPickerPage(
+          initialLat: hasSavedLocation ? field.latitude.value : null,
+          initialLng: hasSavedLocation ? field.longitude.value : null,
+        ),
+      );
+
+      if (pickedResult != null) {
+        field.latitude.value = pickedResult.latitude;
+        field.longitude.value = pickedResult.longitude;
+
+        fields.refresh();
+
+        Get.snackbar(
+          "Berhasil",
+          "Lokasi manual berhasil diparsing ke koordinat form!",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        debugPrint("Pemilihan lokasi manual dibatalkan oleh pengguna.");
+      }
+    } catch (e) {
       Get.snackbar(
-        "Berhasil",
-        "Lokasi manual berhasil diparsing ke koordinat form!",
-        backgroundColor: Colors.green,
+        "Gagal Mengambil Lokasi",
+        "Terjadi kesalahan: ${e.toString()}",
+        backgroundColor: Colors.redAccent,
         colorText: Colors.white,
       );
-    } else {
-      debugPrint("Pemilihan lokasi manual dibatalkan oleh pengguna.");
+    } finally {
+      field.isLoading.value = false;
+      fields.refresh();
     }
-  } catch (e) {
-    Get.snackbar(
-      "Gagal Mengambil Lokasi",
-      "Terjadi kesalahan: ${e.toString()}",
-      backgroundColor: Colors.redAccent,
-      colorText: Colors.white,
-    );
-  } finally {
-    field.isLoading.value = false;
-    fields.refresh();
   }
-}
 
   Future<void> pickDeedDate(DynamicField field) async {
     try {
@@ -696,65 +739,63 @@ Future<void> openManualLocationPicker(DynamicField field) async {
     }
   }
 
-  bool validateFields() {
-    for (var field in fields) {
-      if (field.type == "text" || field.type == "number") {
+  /// Cek apakah sebuah field masih kosong (belum diisi), dipakai untuk
+  /// menampilkan bintang merah di UI.
+  bool isFieldEmpty(DynamicField field) {
+    switch (field.type) {
+      case "text":
+      case "number":
         final value = controllers[field.label]?.text ?? "";
-        if (value.length == 0) {
-          Get.snackbar(
-            "Peringatan",
-            "Tidak bisa lanjut, karena kolom kosong",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return false;
-        }
-      } else if (field.type == "upload") {
-        if (field.fileValue.value.length == 0) {
-          Get.snackbar(
-            "Peringatan",
-            "Tidak bisa lanjut, karena kolom kosong",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return false;
-        }
-      } else if (field.type == "coordinate") {
-        if (field.latitude.value == 0.0 && field.longitude.value == 0.0) {
-          Get.snackbar(
-            "Peringatan",
-            "Tidak bisa lanjut, karena kolom kosong",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return false;
-        }
-      } else if (field.type == "date") {
-        if (field.dateValue.value == null) {
-          Get.snackbar(
-            "Peringatan",
-            "Tidak bisa lanjut, karena kolom kosong",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return false;
-        }
+        return value.trim().isEmpty;
+      case "upload":
+        return field.fileValue.value.trim().isEmpty;
+      case "coordinate":
+        return field.latitude.value == 0.0 && field.longitude.value == 0.0;
+      case "date":
+        return field.dateValue.value == null;
+      default:
+        return false;
+    }
+  }
+
+  bool validateFields() {
+    // Tandai bahwa user sudah pernah mencoba submit, supaya UI mulai
+    // menampilkan bintang merah pada field yang masih kosong.
+    attemptedSubmit.value = true;
+
+    bool allValid = true;
+
+    for (var field in fields) {
+      if (isFieldEmpty(field)) {
+        allValid = false;
       }
     }
-    return true;
+
+    if (!allValid) {
+      Get.snackbar(
+        "Peringatan",
+        "Tidak bisa lanjut, karena masih ada kolom wajib yang kosong",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+
+    fields.refresh();
+    return allValid;
   }
 
   String _text(String label) => controllers[label]?.text.trim() ?? "";
 
-  double _number(String label) =>
-      double.tryParse(controllers[label]?.text.trim() ?? "") ?? 0.0;
+  double _number(String label) => double.tryParse(
+        (controllers[label]?.text.trim() ?? "").replaceAll('.', ''),
+      ) ??
+      0.0;
 
-  int _intNumber(String label) =>
-      int.tryParse(controllers[label]?.text.trim() ?? "") ?? 0;
+  int _intNumber(String label) => int.tryParse(
+        (controllers[label]?.text.trim() ?? "").replaceAll('.', ''),
+      ) ??
+      0;
 
   Future<int> _fetchInstitudeId(String token) async {
     final response = await http.get(
@@ -871,8 +912,7 @@ Future<void> openManualLocationPicker(DynamicField field) async {
       double targetLng = coordinateField?.longitude.value ?? 106.827153;
 
       final metadata = {
-        "amount":
-            int.tryParse(controllers["Total biaya layanan"]?.text ?? "0") ?? 0,
+        "amount": _intNumber("Total biaya layanan"),
         "files": files,
         "location": {"latitude": targetLat, "longitude": targetLng},
       };

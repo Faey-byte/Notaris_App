@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:notaris_app/Controller/dynamic_form_controller.dart';
@@ -55,20 +56,62 @@ class _FieldBuilderState extends State<FieldBuilder> {
     }
   }
 
+  // =========================================================
+  // LABEL dengan bintang merah (*) kalau field wajib masih kosong
+  // dan user sudah pernah menekan tombol submit/lanjut.
+  // =========================================================
+  Widget _buildLabel(DynamicField field) {
+    return Obx(() {
+      final bool showStar = widget.controller.attemptedSubmit.value &&
+          widget.controller.isFieldEmpty(field);
+
+      return RichText(
+        text: TextSpan(
+          style: const TextStyle(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+          ),
+          children: [
+            TextSpan(text: field.label),
+            if (showStar)
+              const TextSpan(
+                text: ' *',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
   Widget buildTextField() {
+    final bool isMoneyField =
+        DynamicFormController.moneyFieldLabels.contains(widget.field.label);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.field.label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-        ),
+        _buildLabel(widget.field),
         const SizedBox(height: 6),
         TextField(
           controller: widget.controller.controllers[widget.field.label],
           keyboardType: widget.field.type == "number"
               ? TextInputType.number
               : TextInputType.text,
+          inputFormatters: isMoneyField
+              ? [
+                  FilteringTextInputFormatter.digitsOnly,
+                  ThousandsSeparatorInputFormatter(),
+                ]
+              : null,
+          onChanged: (_) {
+            // Supaya bintang merah langsung update (hilang/muncul)
+            // secara real-time saat user mengetik, tanpa menunggu submit.
+            setState(() {});
+          },
           decoration: InputDecoration(
             hintText: widget.field.placeholder,
             filled: true,
@@ -99,10 +142,7 @@ class _FieldBuilderState extends State<FieldBuilder> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.field.label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-        ),
+        _buildLabel(widget.field),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(16),
@@ -149,8 +189,11 @@ class _FieldBuilderState extends State<FieldBuilder> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () =>
-                      widget.controller.pickDeedDate(widget.field),
+                  onPressed: () async {
+                    await widget.controller.pickDeedDate(widget.field);
+                    // Update bintang merah setelah tanggal dipilih.
+                    setState(() {});
+                  },
                   icon: const Icon(Icons.edit_calendar),
                   label: const Text("Pilih Tanggal"),
                   style: OutlinedButton.styleFrom(
@@ -173,10 +216,7 @@ class _FieldBuilderState extends State<FieldBuilder> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.field.label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-        ),
+        _buildLabel(widget.field),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(16),
@@ -345,8 +385,12 @@ class _FieldBuilderState extends State<FieldBuilder> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => widget.controller
-                      .openManualLocationPicker(widget.field),
+                  onPressed: () async {
+                    await widget.controller
+                        .openManualLocationPicker(widget.field);
+                    // Update bintang merah setelah lokasi dipilih dari map.
+                    setState(() {});
+                  },
                   icon: const Icon(Icons.map),
                   label: const Text("Pilih Dari Map"),
                   style: OutlinedButton.styleFrom(

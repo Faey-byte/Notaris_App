@@ -66,6 +66,41 @@ class DetailBerkasController extends GetxController {
 
   var jenisTransaksi = "".obs;
 
+  // ==== Tambahan: data umum transaksi ====
+  var description = "".obs;
+  var lifeStatus = "".obs;
+  var namaInstitute = "".obs;
+  var notaryName = "".obs;
+
+  // ==== Tambahan: data pihak I (transferor / penjual) ====
+  var transferorName = "".obs;
+  var transferorAddress = "".obs;
+  var transferorNpwp = "".obs;
+
+  // ==== Tambahan: data pihak II (transferee / pembeli) ====
+  var transfereeName = "".obs;
+  var transfereeAddress = "".obs;
+  var transfereeNpwp = "".obs;
+
+  // ==== Tambahan: data objek tanah & pajak ====
+  var hamlet = "".obs; // dusun/kampung
+  var village = "".obs; // desa/kelurahan
+  var landArea = 0.obs; // luas tanah (m2)
+  var buildingArea = 0.obs; // luas bangunan (m2)
+  var book = "".obs; // buku tanah
+  var number = "".obs; // nomor hak
+  var taxYear = 0.obs; // tahun pajak
+  var nop = "".obs; // NOP PBB
+  var njop = 0.obs; // NJOP
+  var bphtb = 0.obs; // BPHTB
+
+  // ==== Tambahan: data akta / sertipikat ====
+  var deedNumber = "".obs; // nomor akta
+  var deedDate = "".obs; // tanggal akta (terformat)
+  var deedType = "".obs; // jenis akta
+  var rightType = "".obs; // jenis hak
+  var rightNumber = "".obs; // nomor hak sertipikat
+
   String fallbackName = "";
   String fallbackPublicID = "";
   int transactionId = 0;
@@ -80,6 +115,12 @@ class DetailBerkasController extends GetxController {
     return formatter.format(amount);
   }
 
+  static String _formatUnixDate(int unixSeconds) {
+    if (unixSeconds <= 0) return "-";
+    final date = DateTime.fromMillisecondsSinceEpoch(unixSeconds * 1000);
+    return DateFormat('dd MMMM yyyy', 'id_ID').format(date);
+  }
+
   void initData(PpatDetailModel? data) {
     if (data != null) {
       fallbackName = data.client.name;
@@ -90,6 +131,41 @@ class DetailBerkasController extends GetxController {
       statusPengerjaan.value = labelFromBackendStatus(data.status);
 
       jenisTransaksi.value = data.caseData.caseName;
+
+      // isi awal dari data yang sudah ada, sebelum hasil fetch datang
+      description.value = data.description;
+      lifeStatus.value = data.lifeStatus;
+      namaInstitute.value = data.institute?.name ?? "";
+      notaryName.value = data.notaryName;
+
+      final ta = data.transactionAddress;
+      if (ta != null) {
+        transferorName.value = ta.transferorName;
+        transferorAddress.value = ta.transferorAddress;
+        transferorNpwp.value = ta.transferorNpwp;
+        transfereeName.value = ta.transfereeName;
+        transfereeAddress.value = ta.transfereeAddress;
+        transfereeNpwp.value = ta.transfereeNpwp;
+        hamlet.value = ta.hamlet;
+        village.value = ta.village;
+        landArea.value = ta.landArea;
+        buildingArea.value = ta.buildingArea;
+        book.value = ta.book;
+        number.value = ta.number;
+        taxYear.value = ta.taxYear;
+        nop.value = ta.nop;
+        njop.value = ta.njop;
+        bphtb.value = ta.bphtb;
+      }
+
+      final cert = data.certificate;
+      if (cert != null) {
+        deedNumber.value = cert.deedNumber;
+        deedDate.value = _formatUnixDate(cert.deedDate);
+        deedType.value = cert.deedType;
+        rightType.value = cert.rightType;
+        rightNumber.value = cert.rightNumber;
+      }
 
       fetchDetailBerkas(clientName: fallbackName, publicID: fallbackPublicID);
     }
@@ -158,6 +234,15 @@ class DetailBerkasController extends GetxController {
               (caseData?['case_name'] ?? caseData?['caseName'] ?? '')
                   .toString();
         }
+
+        // ==== Data umum transaksi ====
+        description.value = (data['description'] ?? '').toString();
+        lifeStatus.value = (data['life_status'] ?? '').toString();
+        notaryName.value = (data['notary_name'] ?? '').toString();
+
+        final institute = data['institute'];
+        namaInstitute.value =
+            (institute?['name'] ?? '').toString();
 
         final rawTitip = data['titip_biaya_input'];
         if (rawTitip is int) {
@@ -236,12 +321,60 @@ class DetailBerkasController extends GetxController {
         }
 
         dokumenList.value = fetchedDocs;
+
+        // ==== Data pihak I / II, objek tanah & pajak ====
+        final transactionAddress = data['transaction_address'];
+        if (transactionAddress is Map) {
+          transferorName.value =
+              (transactionAddress['transferor_name'] ?? '').toString();
+          transferorAddress.value =
+              (transactionAddress['transferor_address'] ?? '').toString();
+          transferorNpwp.value =
+              (transactionAddress['transferor_npwp'] ?? '').toString();
+
+          transfereeName.value =
+              (transactionAddress['transferee_name'] ?? '').toString();
+          transfereeAddress.value =
+              (transactionAddress['transferee_address'] ?? '').toString();
+          transfereeNpwp.value =
+              (transactionAddress['transferee_npwp'] ?? '').toString();
+
+          hamlet.value = (transactionAddress['hamlet'] ?? '').toString();
+          village.value = (transactionAddress['village'] ?? '').toString();
+
+          landArea.value = _toInt(transactionAddress['land_area']);
+          buildingArea.value = _toInt(transactionAddress['building_area']);
+
+          book.value = (transactionAddress['book'] ?? '').toString();
+          number.value = (transactionAddress['number'] ?? '').toString();
+          taxYear.value = _toInt(transactionAddress['tax_year']);
+          nop.value = (transactionAddress['nop'] ?? '').toString();
+          njop.value = _toInt(transactionAddress['njop']);
+          bphtb.value = _toInt(transactionAddress['bphtb']);
+        }
+
+        // ==== Data akta / sertipikat ====
+        final certificate = data['certificate'];
+        if (certificate is Map) {
+          deedNumber.value = (certificate['deed_number'] ?? '').toString();
+          deedDate.value = _formatUnixDate(_toInt(certificate['deed_date']));
+          deedType.value = (certificate['deed_type'] ?? '').toString();
+          rightType.value = (certificate['right_type'] ?? '').toString();
+          rightNumber.value = (certificate['right_number'] ?? '').toString();
+        }
       }
     } catch (e) {
       print("ERROR HANDLER: $e");
     } finally {
       isLoading.value = false;
     }
+  }
+
+  int _toInt(dynamic v) {
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is String) return int.tryParse(v.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    return 0;
   }
 
   Future<void> updateStatusPekerjaan(String label) async {

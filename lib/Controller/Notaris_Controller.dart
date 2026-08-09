@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:notaris_app/config/base_url.dart';
 import 'package:notaris_app/data/db_Helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -119,7 +120,19 @@ class NotarisController extends GetxController {
     }
   }
 
-  AktaItem _mapItem(Map<String, dynamic> item) {
+  // ✅ NEW: ubah "2026-08-05" jadi "5 Agustus 2026"
+  String _formatTanggalManusiawi(String? rawDate) {
+    if (rawDate == null || rawDate.trim().isEmpty) return '-';
+    try {
+      final parsed = DateTime.parse(rawDate);
+      return DateFormat('d MMMM yyyy', 'id_ID').format(parsed);
+    } catch (_) {
+      return rawDate;
+    }
+  }
+
+  // ✅ NEW: berkasId di-pass, dipakai buat cek cache lokal status pengerjaan
+  AktaItem _mapItem(Map<String, dynamic> item, SharedPreferences prefs) {
     final client = item['client'] as Map<String, dynamic>?;
     final nama = client?['name']?.toString() ?? '-';
     final rawTypes = item['transaction_types'];
@@ -129,9 +142,24 @@ class NotarisController extends GetxController {
     final jenis = types.isNotEmpty ? types.join(', ') : '-';
     final monthlyNumber = item['monthly_number'];
     final no = monthlyNumber != null ? monthlyNumber.toString() : '-';
-    final tanggal = item['akta_date']?.toString() ?? '-';
-    final status = _mapStatus(item['status']?.toString());
+    // ✅ CHANGED: format tanggal jadi human-readable, bukan yyyy-mm-dd lagi
+    final tanggal = _formatTanggalManusiawi(item['akta_date']?.toString());
     final berkasId = item['id']?.toString() ?? '';
+
+    // Status dari backend (source of truth default)
+    var status = _mapStatus(item['status']?.toString());
+
+    // ✅ NEW: kalau ada override lokal (mis. user pilih "PROSES" yang secara
+    // backend sebenarnya sama-sama tersimpan sebagai "pending"), pakai itu.
+    // Ini harus konsisten dengan key yang dipakai di DetailBerkasNotarisController:
+    // 'status_notaris_${currentLocalBerkasId.value}'
+    if (berkasId.isNotEmpty) {
+      final cachedStatus = prefs.getString('status_notaris_$berkasId');
+      if (cachedStatus != null && cachedStatus.isNotEmpty) {
+        status = cachedStatus;
+      }
+    }
+
     final rawPenghadap = item['penghadap'];
     final penghadapCount = (rawPenghadap is List) ? rawPenghadap.length : 0;
     final aktaNature = item['akta_nature']?.toString() ?? '';
@@ -190,9 +218,10 @@ class NotarisController extends GetxController {
       final decoded = jsonDecode(response.body) as Map<String, dynamic>;
       final List rawData = decoded['data'] ?? [];
 
+      // ✅ CHANGED: pass prefs biar _mapItem bisa cek override status lokal
       final mapped = rawData
           .whereType<Map<String, dynamic>>()
-          .map(_mapItem)
+          .map((raw) => _mapItem(raw, prefs))
           .toList();
 
       if (reset) {

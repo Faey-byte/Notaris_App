@@ -1,3 +1,3 @@
 class ApiConfig {
-  static const String baseUrl = "https://storage-earl-rest-pen.trycloudflare.com";
+  static const String baseUrl = "http://202.155.16.62";
 } 

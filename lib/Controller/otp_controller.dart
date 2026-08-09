@@ -8,19 +8,17 @@ import 'package:notaris_app/data/services/auth_service.dart';
 class OtpController extends GetxController {
   var isLoading = false.obs;
   String email = '';
-  bool isForgotPasswordFlow = false; // ✅ tambahan
+  bool isForgotPasswordFlow = false;
 
   @override
   void onInit() {
     super.onInit();
     if (Get.arguments != null) {
       if (Get.arguments is Map) {
-        // ✅ dipakai untuk alur forgot password
         final args = Get.arguments as Map;
         email = args['email'] ?? '';
         isForgotPasswordFlow = args['isForgotPassword'] ?? false;
       } else {
-        // Perilaku lama untuk signup (tidak diubah)
         email = Get.arguments as String;
       }
     }
@@ -40,12 +38,8 @@ class OtpController extends GetxController {
       Get.snackbar("Success", res["message"] ?? "Verifikasi berhasil!");
 
       if (isForgotPasswordFlow) {
-        // ✅ Alur lupa password → lanjut ke halaman reset password
-        Get.offNamed(AppRoutes.resetPasswordPage, arguments: {
-          'email': email,
-        });
+        Get.offNamed(AppRoutes.resetPasswordPage, arguments: {'email': email});
       } else {
-        // Alur signup (perilaku lama, tidak diubah)
         Get.delete<SignupController>();
         Get.delete<LoginController>();
         Get.offAllNamed(AppRoutes.loginpage);

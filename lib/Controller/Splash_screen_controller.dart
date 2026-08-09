@@ -197,8 +197,6 @@ class SplashController extends GetxController {
     }
   }
 
-  // ─── Notifikasi WS (dalam app) ────────────────────────────────────────────────
-
   Future<void> _startNotificationListening() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('user_id');
@@ -207,13 +205,12 @@ class SplashController extends GetxController {
 
     if (userId != null && userId.isNotEmpty) {
       print("🟣 [Splash] Memanggil NotificationController.startListening($userId)");
-      Get.find<NotificationController>().startListening(userId);
+      // Get.find<NotificationController>().startListening(userId);
     } else {
       print("⚠️ [Splash] userId NULL/kosong — startListening() TIDAK dipanggil!");
     }
   }
 
-  // ✅ Tambahan: Notifikasi background (Foreground Service)
   Future<void> _startForegroundService() async {
     print("🟡 [Splash] _startForegroundService() dipanggil");
 
@@ -229,13 +226,6 @@ class SplashController extends GetxController {
 
       print("🟡 [Splash] Memanggil FlutterForegroundTask.startService()...");
 
-      // final result = await FlutterForegroundTask.startService(
-      //   notificationTitle: 'Notaris App',
-      //   notificationText: 'Menjaga notifikasi tetap aktif',
-      //   callback: startForegroundTaskCallback,
-      // );
-
-      // print("✅ [Splash] startService() selesai, result: $result");
     } catch (e) {
       print("❌ [Splash] ERROR saat startForegroundService: $e");
     }

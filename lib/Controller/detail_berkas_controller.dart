@@ -62,10 +62,44 @@ class DetailBerkasController extends GetxController {
   var statusPengerjaan = "PENDING".obs;
   var namaStaff = "Sistem Otomatis".obs;
 
-  // Menggunakan PpatDocMetadata agar cocok dengan Widget PpatDocItem
   var dokumenList = <PpatDocMetadata>[].obs;
 
   var jenisTransaksi = "".obs;
+
+  // ==== Tambahan: data umum transaksi ====
+  var description = "".obs;
+  var lifeStatus = "".obs;
+  var namaInstitute = "".obs;
+  var notaryName = "".obs;
+
+  // ==== Tambahan: data pihak I (transferor / penjual) ====
+  var transferorName = "".obs;
+  var transferorAddress = "".obs;
+  var transferorNpwp = "".obs;
+
+  // ==== Tambahan: data pihak II (transferee / pembeli) ====
+  var transfereeName = "".obs;
+  var transfereeAddress = "".obs;
+  var transfereeNpwp = "".obs;
+
+  // ==== Tambahan: data objek tanah & pajak ====
+  var hamlet = "".obs; // dusun/kampung
+  var village = "".obs; // desa/kelurahan
+  var landArea = 0.obs; // luas tanah (m2)
+  var buildingArea = 0.obs; // luas bangunan (m2)
+  var book = "".obs; // buku tanah
+  var number = "".obs; // nomor hak
+  var taxYear = 0.obs; // tahun pajak
+  var nop = "".obs; // NOP PBB
+  var njop = 0.obs; // NJOP
+  var bphtb = 0.obs; // BPHTB
+
+  // ==== Tambahan: data akta / sertipikat ====
+  var deedNumber = "".obs; // nomor akta
+  var deedDate = "".obs; // tanggal akta (terformat)
+  var deedType = "".obs; // jenis akta
+  var rightType = "".obs; // jenis hak
+  var rightNumber = "".obs; // nomor hak sertipikat
 
   String fallbackName = "";
   String fallbackPublicID = "";
@@ -81,6 +115,12 @@ class DetailBerkasController extends GetxController {
     return formatter.format(amount);
   }
 
+  static String _formatUnixDate(int unixSeconds) {
+    if (unixSeconds <= 0) return "-";
+    final date = DateTime.fromMillisecondsSinceEpoch(unixSeconds * 1000);
+    return DateFormat('dd MMMM yyyy', 'id_ID').format(date);
+  }
+
   void initData(PpatDetailModel? data) {
     if (data != null) {
       fallbackName = data.client.name;
@@ -91,6 +131,41 @@ class DetailBerkasController extends GetxController {
       statusPengerjaan.value = labelFromBackendStatus(data.status);
 
       jenisTransaksi.value = data.caseData.caseName;
+
+      // isi awal dari data yang sudah ada, sebelum hasil fetch datang
+      description.value = data.description;
+      lifeStatus.value = data.lifeStatus;
+      namaInstitute.value = data.institute?.name ?? "";
+      notaryName.value = data.notaryName;
+
+      final ta = data.transactionAddress;
+      if (ta != null) {
+        transferorName.value = ta.transferorName;
+        transferorAddress.value = ta.transferorAddress;
+        transferorNpwp.value = ta.transferorNpwp;
+        transfereeName.value = ta.transfereeName;
+        transfereeAddress.value = ta.transfereeAddress;
+        transfereeNpwp.value = ta.transfereeNpwp;
+        hamlet.value = ta.hamlet;
+        village.value = ta.village;
+        landArea.value = ta.landArea;
+        buildingArea.value = ta.buildingArea;
+        book.value = ta.book;
+        number.value = ta.number;
+        taxYear.value = ta.taxYear;
+        nop.value = ta.nop;
+        njop.value = ta.njop;
+        bphtb.value = ta.bphtb;
+      }
+
+      final cert = data.certificate;
+      if (cert != null) {
+        deedNumber.value = cert.deedNumber;
+        deedDate.value = _formatUnixDate(cert.deedDate);
+        deedType.value = cert.deedType;
+        rightType.value = cert.rightType;
+        rightNumber.value = cert.rightNumber;
+      }
 
       fetchDetailBerkas(clientName: fallbackName, publicID: fallbackPublicID);
     }
@@ -130,10 +205,12 @@ class DetailBerkasController extends GetxController {
         if (data == null) return;
 
         final staff = data['staff'];
-        namaStaff.value = staff?['StaffName'] ?? staff?['name'] ?? "Sistem Otomatis";
+        namaStaff.value =
+            staff?['StaffName'] ?? staff?['name'] ?? "Sistem Otomatis";
 
         final client = data['client'];
-        publicId.value = client?['publicID'] ?? client?['public_id'] ?? fallbackPublicID;
+        publicId.value =
+            client?['publicID'] ?? client?['public_id'] ?? fallbackPublicID;
 
         final rawId = data['id'];
         if (rawId is int) {
@@ -151,11 +228,21 @@ class DetailBerkasController extends GetxController {
         );
 
         if (jenisTransaksi.value.isEmpty) {
-          final caseData = data['case_data'] ?? data['caseData'] ?? data['case'];
+          final caseData =
+              data['case_data'] ?? data['caseData'] ?? data['case'];
           jenisTransaksi.value =
               (caseData?['case_name'] ?? caseData?['caseName'] ?? '')
                   .toString();
         }
+
+        // ==== Data umum transaksi ====
+        description.value = (data['description'] ?? '').toString();
+        lifeStatus.value = (data['life_status'] ?? '').toString();
+        notaryName.value = (data['notary_name'] ?? '').toString();
+
+        final institute = data['institute'];
+        namaInstitute.value =
+            (institute?['name'] ?? '').toString();
 
         final rawTitip = data['titip_biaya_input'];
         if (rawTitip is int) {
@@ -172,10 +259,11 @@ class DetailBerkasController extends GetxController {
         final asset = docTransaction?['asset'];
         final metadata = asset?['metadata'];
 
-        final dynamic rawAmount = data['amount'] 
-            ?? (metadata is Map ? metadata['amount'] : null) 
-            ?? data['total_biaya'] 
-            ?? data['price'];
+        final dynamic rawAmount =
+            data['amount'] ??
+            (metadata is Map ? metadata['amount'] : null) ??
+            data['total_biaya'] ??
+            data['price'];
 
         int amountInt = 0;
         if (rawAmount is int) {
@@ -190,11 +278,8 @@ class DetailBerkasController extends GetxController {
           symbol: 'Rp ',
           decimalDigits: 0,
         );
-        totalBiaya.value = amountInt > 0
-            ? formatter.format(amountInt)
-            : "Rp 0";
+        totalBiaya.value = amountInt > 0 ? formatter.format(amountInt) : "Rp 0";
 
-        // Processing Metadata dokumen
         List<PpatDocMetadata> fetchedDocs = [];
 
         if (metadata != null) {
@@ -214,12 +299,8 @@ class DetailBerkasController extends GetxController {
             if (rawFiles is List) {
               for (var f in rawFiles) {
                 if (f is Map) {
-                  // 🔍 DEBUG: lihat field apa saja yang tersedia per file
-                  // dari backend, supaya kita tau nama field yang benar
-                  // buat 'id' yang dibutuhkan endpoint /api/v1/read-ppat.
                   print("🔍 [PPAT RAW FILE] $f");
 
-                  // ✅ DIUBAH DI SINI: Cast Map secara eksplisit
                   fetchedDocs.add(
                     PpatDocMetadata.fromJson(Map<String, dynamic>.from(f)),
                   );
@@ -229,11 +310,8 @@ class DetailBerkasController extends GetxController {
           } else if (metadata is List) {
             for (var item in metadata) {
               if (item is Map) {
-                // 🔍 DEBUG: sama seperti di atas, buat kasus metadata
-                // berbentuk List langsung (bukan Map berisi 'files').
                 print("🔍 [PPAT RAW FILE] $item");
 
-                // ✅ DIUBAH DI SINI: Cast Map secara eksplisit
                 fetchedDocs.add(
                   PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)),
                 );
@@ -243,12 +321,60 @@ class DetailBerkasController extends GetxController {
         }
 
         dokumenList.value = fetchedDocs;
+
+        // ==== Data pihak I / II, objek tanah & pajak ====
+        final transactionAddress = data['transaction_address'];
+        if (transactionAddress is Map) {
+          transferorName.value =
+              (transactionAddress['transferor_name'] ?? '').toString();
+          transferorAddress.value =
+              (transactionAddress['transferor_address'] ?? '').toString();
+          transferorNpwp.value =
+              (transactionAddress['transferor_npwp'] ?? '').toString();
+
+          transfereeName.value =
+              (transactionAddress['transferee_name'] ?? '').toString();
+          transfereeAddress.value =
+              (transactionAddress['transferee_address'] ?? '').toString();
+          transfereeNpwp.value =
+              (transactionAddress['transferee_npwp'] ?? '').toString();
+
+          hamlet.value = (transactionAddress['hamlet'] ?? '').toString();
+          village.value = (transactionAddress['village'] ?? '').toString();
+
+          landArea.value = _toInt(transactionAddress['land_area']);
+          buildingArea.value = _toInt(transactionAddress['building_area']);
+
+          book.value = (transactionAddress['book'] ?? '').toString();
+          number.value = (transactionAddress['number'] ?? '').toString();
+          taxYear.value = _toInt(transactionAddress['tax_year']);
+          nop.value = (transactionAddress['nop'] ?? '').toString();
+          njop.value = _toInt(transactionAddress['njop']);
+          bphtb.value = _toInt(transactionAddress['bphtb']);
+        }
+
+        // ==== Data akta / sertipikat ====
+        final certificate = data['certificate'];
+        if (certificate is Map) {
+          deedNumber.value = (certificate['deed_number'] ?? '').toString();
+          deedDate.value = _formatUnixDate(_toInt(certificate['deed_date']));
+          deedType.value = (certificate['deed_type'] ?? '').toString();
+          rightType.value = (certificate['right_type'] ?? '').toString();
+          rightNumber.value = (certificate['right_number'] ?? '').toString();
+        }
       }
     } catch (e) {
       print("ERROR HANDLER: $e");
     } finally {
       isLoading.value = false;
     }
+  }
+
+  int _toInt(dynamic v) {
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is String) return int.tryParse(v.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    return 0;
   }
 
   Future<void> updateStatusPekerjaan(String label) async {
@@ -457,6 +583,74 @@ class DetailBerkasController extends GetxController {
     }
   }
 
+  Future<List<Map<String, dynamic>>> _fetchAesEncFileTeam() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? "";
+    final teamKey = prefs.getString('teamkey') ?? "";
+
+    if (token.isEmpty) {
+      throw Exception("Token tidak ditemukan. Silakan login ulang.");
+    }
+    if (teamKey.isEmpty) {
+      throw Exception("TeamKey tidak ditemukan. Silakan login ulang.");
+    }
+
+    final uri = Uri.parse('$baseUrl/api/v1/show/aes/enc/fileTeam');
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({"aes_institute_key": teamKey}),
+    );
+
+    print("=== SHOW AES ENC FILE TEAM ===");
+    print("Status: ${response.statusCode}");
+    print("Body: ${response.body}");
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        "Gagal mengambil daftar file team (${response.statusCode})",
+      );
+    }
+
+    final decoded = json.decode(response.body);
+    if (decoded is Map &&
+        decoded['success'] == true &&
+        decoded['data'] is List) {
+      return List<Map<String, dynamic>>.from(
+        (decoded['data'] as List).map((e) => Map<String, dynamic>.from(e)),
+      );
+    }
+
+    return [];
+  }
+
+  String? _resolveIdFromTeamList(
+    List<Map<String, dynamic>> teamFiles,
+    String documentUrl,
+  ) {
+    final normalizedTarget = documentUrl.trim();
+
+    for (final item in teamFiles) {
+      final itemUrl = (item['url_file'] ?? '').toString().trim();
+      if (itemUrl.isNotEmpty && itemUrl == normalizedTarget) {
+        final aesKey = (item['file_aes_key'] ?? '').toString();
+        if (aesKey.isNotEmpty) {
+          print("✅ [MATCH TEAM FILE] url: $itemUrl -> file_aes_key: $aesKey");
+          return aesKey;
+        }
+      }
+    }
+
+    print(
+      "⚠️ [NO MATCH TEAM FILE] Tidak ada url_file yang cocok dengan: $normalizedTarget",
+    );
+    return null;
+  }
+
   Future<void> displayDocument({
     required BuildContext context,
     required String documentName,
@@ -478,12 +672,25 @@ class DetailBerkasController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? "";
+      String resolvedId = (fileId != null && fileId.isNotEmpty)
+          ? fileId
+          : clientId;
+
+      try {
+        final teamFiles = await _fetchAesEncFileTeam();
+        final matchedId = _resolveIdFromTeamList(teamFiles, documentUrl);
+        if (matchedId != null && matchedId.isNotEmpty) {
+          resolvedId = matchedId;
+        }
+      } catch (e) {
+        print("⚠️ [AES ENC FILE TEAM ERROR] Fallback ke id lama: $e");
+      }
 
       final uri = Uri.parse('$baseUrl/api/v1/read-ppat').replace(
         queryParameters: {
           'ppat_type': ppatType ?? '',
           'url': documentUrl,
-          'id': (fileId != null && fileId.isNotEmpty) ? fileId : clientId,
+          'id': resolvedId,
         },
       );
 
@@ -522,16 +729,16 @@ class DetailBerkasController extends GetxController {
   }
 
   void _tampilkanPopupGambar(BuildContext context, Uint8List bytes) {
-    // 1. Cek apakah Byte Data adalah PDF (PDF diawali dengan header ASCII '%PDF')
     bool isPdf = false;
     if (bytes.length >= 4) {
-      // String '%PDF' dalam byte/ASCII adalah [37, 80, 68, 70]
-      if (bytes[0] == 0x25 && bytes[1] == 0x50 && bytes[2] == 0x44 && bytes[3] == 0x46) {
+      if (bytes[0] == 0x25 &&
+          bytes[1] == 0x50 &&
+          bytes[2] == 0x44 &&
+          bytes[3] == 0x46) {
         isPdf = true;
       }
     }
 
-    // 2. Jika ternyata PDF, beritahu user (atau buka viewer PDF)
     if (isPdf) {
       Get.snackbar(
         "Format PDF Detected",
@@ -542,8 +749,6 @@ class DetailBerkasController extends GetxController {
       );
       return;
     }
-
-    // 3. Jika benar-benar Gambar, tampilkan Dialog
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -572,7 +777,11 @@ class DetailBerkasController extends GetxController {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.broken_image, size: 48, color: Colors.red),
+                              Icon(
+                                Icons.broken_image,
+                                size: 48,
+                                color: Colors.red,
+                              ),
                               SizedBox(height: 8),
                               Text(
                                 "Gagal menampilkan file.\nFormat file tidak didukung sebagai Gambar.",

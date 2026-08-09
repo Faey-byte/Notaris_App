@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:notaris_app/config/base_url.dart';
 import 'package:notaris_app/data/db_Helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,6 +25,10 @@ class AktaItem {
   final String no;
   final String tanggal;
   final String status;
+  final List<String> transactionTypes;
+  final String aktaNature;
+  final int penghadapCount;
+
   const AktaItem({
     required this.berkasId,
     required this.nama,
@@ -31,6 +36,9 @@ class AktaItem {
     required this.no,
     required this.tanggal,
     required this.status,
+    this.transactionTypes = const [],
+    this.aktaNature = '',
+    this.penghadapCount = 0,
   });
 }
 
@@ -89,8 +97,6 @@ class NotarisController extends GetxController {
     loadFromServer(reset: true);
   }
 
-  /// Maps the raw backend status string (e.g. "pending") to the
-  /// uppercase label used by [statusList] (e.g. "PENDING").
   String _mapStatus(String? rawStatus) {
     switch ((rawStatus ?? '').toLowerCase()) {
       case 'pending':
@@ -114,21 +120,49 @@ class NotarisController extends GetxController {
     }
   }
 
-  AktaItem _mapItem(Map<String, dynamic> item) {
+  // ✅ NEW: ubah "2026-08-05" jadi "5 Agustus 2026"
+  String _formatTanggalManusiawi(String? rawDate) {
+    if (rawDate == null || rawDate.trim().isEmpty) return '-';
+    try {
+      final parsed = DateTime.parse(rawDate);
+      return DateFormat('d MMMM yyyy', 'id_ID').format(parsed);
+    } catch (_) {
+      return rawDate;
+    }
+  }
+
+  // ✅ NEW: berkasId di-pass, dipakai buat cek cache lokal status pengerjaan
+  AktaItem _mapItem(Map<String, dynamic> item, SharedPreferences prefs) {
     final client = item['client'] as Map<String, dynamic>?;
-    final caseData = item['case'] as Map<String, dynamic>?;
-
     final nama = client?['name']?.toString() ?? '-';
-    final jenis = caseData?['case_name']?.toString() ?? '-';
-
-    // Backend doesn't return a manual "nomor akta" field — the closest
-    // equivalent is the auto-generated monthly running number.
+    final rawTypes = item['transaction_types'];
+    final types = (rawTypes is List)
+        ? rawTypes.map((e) => e.toString()).toList()
+        : <String>[];
+    final jenis = types.isNotEmpty ? types.join(', ') : '-';
     final monthlyNumber = item['monthly_number'];
     final no = monthlyNumber != null ? monthlyNumber.toString() : '-';
-
-    final tanggal = item['akta_date']?.toString() ?? '-';
-    final status = _mapStatus(item['status']?.toString());
+    // ✅ CHANGED: format tanggal jadi human-readable, bukan yyyy-mm-dd lagi
+    final tanggal = _formatTanggalManusiawi(item['akta_date']?.toString());
     final berkasId = item['id']?.toString() ?? '';
+
+    // Status dari backend (source of truth default)
+    var status = _mapStatus(item['status']?.toString());
+
+    // ✅ NEW: kalau ada override lokal (mis. user pilih "PROSES" yang secara
+    // backend sebenarnya sama-sama tersimpan sebagai "pending"), pakai itu.
+    // Ini harus konsisten dengan key yang dipakai di DetailBerkasNotarisController:
+    // 'status_notaris_${currentLocalBerkasId.value}'
+    if (berkasId.isNotEmpty) {
+      final cachedStatus = prefs.getString('status_notaris_$berkasId');
+      if (cachedStatus != null && cachedStatus.isNotEmpty) {
+        status = cachedStatus;
+      }
+    }
+
+    final rawPenghadap = item['penghadap'];
+    final penghadapCount = (rawPenghadap is List) ? rawPenghadap.length : 0;
+    final aktaNature = item['akta_nature']?.toString() ?? '';
 
     return AktaItem(
       berkasId: berkasId,
@@ -137,6 +171,9 @@ class NotarisController extends GetxController {
       no: no,
       tanggal: tanggal,
       status: status,
+      transactionTypes: types,
+      aktaNature: aktaNature,
+      penghadapCount: penghadapCount,
     );
   }
 
@@ -163,9 +200,9 @@ class NotarisController extends GetxController {
         throw Exception("Token tidak ditemukan. Silakan login ulang.");
       }
 
-      final uri = Uri.parse('$baseUrl/api/v1/show-all-notary').replace(
-        queryParameters: {'page': _currentPage.toString()},
-      );
+      final uri = Uri.parse(
+        '$baseUrl/api/v1/show-all-notary',
+      ).replace(queryParameters: {'page': _currentPage.toString()});
 
       final response = await http.post(
         uri,
@@ -181,9 +218,10 @@ class NotarisController extends GetxController {
       final decoded = jsonDecode(response.body) as Map<String, dynamic>;
       final List rawData = decoded['data'] ?? [];
 
+      // ✅ CHANGED: pass prefs biar _mapItem bisa cek override status lokal
       final mapped = rawData
           .whereType<Map<String, dynamic>>()
-          .map(_mapItem)
+          .map((raw) => _mapItem(raw, prefs))
           .toList();
 
       if (reset) {
@@ -192,8 +230,6 @@ class NotarisController extends GetxController {
         allItems.addAll(mapped);
       }
 
-      // If the server returned fewer items than the page limit,
-      // there's nothing more to load.
       hasMore.value = mapped.length >= _limit;
 
       if (mapped.isNotEmpty) {

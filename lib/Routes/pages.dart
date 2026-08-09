@@ -1,11 +1,12 @@
 import 'package:get/get.dart';
+import 'package:notaris_app/Controller/profile_controller.dart';
 import 'package:notaris_app/Pages/Otp_Pages.dart';
 import 'package:notaris_app/Pages/Splash_screen.dart';
 import 'package:notaris_app/Pages/Tambah_Berkas_Notaris.dart';
 import 'package:notaris_app/Pages/login_page.dart';
 import 'package:notaris_app/Pages/Calculator_Page.dart';
 import 'package:notaris_app/Pages/dynamic_form_page.dart';
-import 'package:notaris_app/Pages/Ppat_Page.dart'; // Memastikan case-sensitive folder aman
+import 'package:notaris_app/Pages/Ppat_Page.dart';
 import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
 import 'package:notaris_app/Pages/Profile_Page.dart';
 import 'package:notaris_app/Pages/Notaris_Page.dart';
@@ -39,14 +40,20 @@ class AppPages {
       page: () => TambahBerkasNotarisPage(),
     ),
     GetPage(name: AppRoutes.notaris, page: () => NotarisPage()),
-    GetPage(name: AppRoutes.profilepage, page: () => const ProfilePage()),
+    GetPage(
+  name: '/ProfilePage',
+  page: () => const ProfilePage(),
+  binding: BindingsBuilder(() {
+    Get.lazyPut<ProfileController>(() => ProfileController());
+  }),
+),
     GetPage(name: AppRoutes.calculator, page: () => CalculatorPage()),
     GetPage(
       name: AppRoutes.dynamicForm,
       page: () => DynamicFormPage(jenis: Get.parameters['jenis'] ?? 'default'),
     ),
     GetPage(name: AppRoutes.ppat, page: () => PpatPage()),
-    GetPage(name: AppRoutes.notificationPage, page: () => NotificationPage()),
+    // GetPage(name: AppRoutes.notificationPage, page: () => NotificationPage()),
     GetPage(name: AppRoutes.tambahPekerjaan, page: () => TambahPekerjaanPage()),
   ];
 }

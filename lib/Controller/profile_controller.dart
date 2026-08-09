@@ -3,12 +3,12 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:notaris_app/Controller/Notification_Controller.dart';
 import 'package:notaris_app/data/services/profile_service.dart';
-import 'package:notaris_app/config/base_url.dart'; // ← tambah import ini
+import 'package:notaris_app/config/base_url.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import '../Routes/routes.dart';
 
 class ProfileController extends GetxController {
-  static const String baseUrl = "${ApiConfig.baseUrl}"; // ← tambah ini
+  static const String baseUrl = "${ApiConfig.baseUrl}";
 
   final RxString nama = ''.obs;
   final RxString tanggalLahir = ''.obs;
@@ -37,10 +37,6 @@ class ProfileController extends GetxController {
       isLoading.value = false;
     }
   }
-
-  // ============================================================
-  // EDIT PROFIL
-  // ============================================================
 
   void openEditDialog() {
     final nameController = TextEditingController(text: nama.value);
@@ -83,8 +79,10 @@ class ProfileController extends GetxController {
                   TextField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       border: OutlineInputBorder(
@@ -117,7 +115,10 @@ class ProfileController extends GetxController {
                     },
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
@@ -142,14 +143,20 @@ class ProfileController extends GetxController {
                           onPressed: () => Get.back(),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                            side: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1.5,
+                            ),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                           child: const Text(
                             "Batal",
                             style: TextStyle(
-                                color: Color(0xFF475569), fontWeight: FontWeight.w700),
+                              color: Color(0xFF475569),
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
@@ -171,26 +178,33 @@ class ProfileController extends GetxController {
                                       return;
                                     }
                                     await _submitUpdate(
-                                        nameController.text.trim(), selectedBirthDay!);
+                                      nameController.text.trim(),
+                                      selectedBirthDay!,
+                                    );
                                   },
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               backgroundColor: const Color(0xFF913632),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14)),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                             ),
                             child: isUpdating.value
                                 ? const SizedBox(
                                     width: 18,
                                     height: 18,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2, color: Colors.white),
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
                                   )
                                 : const Text(
                                     "Simpan",
                                     style: TextStyle(
-                                        color: Colors.white, fontWeight: FontWeight.w700),
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                           ),
                         ),
@@ -248,10 +262,6 @@ class ProfileController extends GetxController {
       isUpdating.value = false;
     }
   }
-
-  // ============================================================
-  // LOGOUT
-  // ============================================================
 
   void confirmLogout() {
     Get.dialog(
@@ -314,7 +324,10 @@ class ProfileController extends GetxController {
                       onPressed: () => Get.back(),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                        side: const BorderSide(
+                          color: Color(0xFFE2E8F0),
+                          width: 1.5,
+                        ),
                         backgroundColor: const Color(0xFFF8FAFC),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -367,9 +380,9 @@ class ProfileController extends GetxController {
 
   Future<void> _logout() async {
     try {
-      if (Get.isRegistered<NotificationController>()) {
-        Get.find<NotificationController>().stopListening();
-      }
+      // if (Get.isRegistered<NotificationController>()) {
+      //   Get.find<NotificationController>().stopListening();
+      // }
 
       await FlutterForegroundTask.stopService();
 

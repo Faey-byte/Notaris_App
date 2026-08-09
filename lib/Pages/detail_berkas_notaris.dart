@@ -86,6 +86,42 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
 
+                    // ✅ NEW: Sifat Akta & Tanggal Akta
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Obx(
+                            () => DetailInfoCard(
+                              title: "SIFAT AKTA",
+                              content: controller.sifatAkta.value,
+                              icon: Icons.description_outlined,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Obx(
+                            () => DetailInfoCard(
+                              title: "TANGGAL AKTA",
+                              content: controller.tanggalAkta.value,
+                              icon: Icons.event_outlined,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ✅ NEW: Status Perkawinan
+                    Obx(
+                      () => DetailInfoCard(
+                        title: "STATUS PERKAWINAN",
+                        content: controller.statusPerkawinan.value,
+                        icon: Icons.person_outline,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
                     Row(
                       children: [
                         Expanded(
@@ -171,6 +207,118 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                         ],
                       );
                     }),
+
+                    // ✅ NEW: Keterangan (hanya tampil kalau ada isinya)
+                    Obx(() {
+                      if (controller.keterangan.value.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DetailInfoCard(
+                            title: "KETERANGAN",
+                            content: controller.keterangan.value,
+                            icon: Icons.notes_outlined,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      );
+                    }),
+
+                    // ✅ NEW: Daftar Penghadap
+                    const Text(
+                      "Daftar Penghadap",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Obx(() {
+                      if (controller.penghadapList.isEmpty) {
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "Belum ada penghadap terdaftar",
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        );
+                      }
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: controller.penghadapList.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final penghadap = controller.penghadapList[index];
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.grey.withOpacity(0.2),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor:
+                                      AppColors.primary.withOpacity(0.1),
+                                  child: Text(
+                                    "${penghadap.orderNumber}",
+                                    style: const TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        penghadap.name.isEmpty
+                                            ? '-'
+                                            : penghadap.name,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      if (penghadap.title.isNotEmpty)
+                                        Text(
+                                          penghadap.title,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    }),
+                    const SizedBox(height: 12),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

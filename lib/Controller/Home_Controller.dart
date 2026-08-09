@@ -12,7 +12,7 @@ class HomeController extends GetxController {
   static const String baseUrl = "${ApiConfig.baseUrl}";
 
   final RxString totalIncome = 'Rp 0'.obs;
-  final RxString incomeGrowth = '+12.5%'.obs;
+  final RxString incomeGrowth = '0%'.obs;
 
   final RxBool isLoadingIncome = false.obs;
 
@@ -32,8 +32,6 @@ class HomeController extends GetxController {
     fetchTotalIncome();
   }
 
-  /// Ambil total pemasukan dari /api/v1/get-total-amount.
-  /// Response: { "amount": 17510000 }
   Future<void> fetchTotalIncome() async {
     try {
       isLoadingIncome.value = true;
@@ -63,9 +61,14 @@ class HomeController extends GetxController {
       }
 
       final decoded = json.decode(response.body);
-      final dynamic rawAmount = decoded['amount'];
 
+      if (decoded['success'] != true) {
+        throw Exception("Response dari server menyatakan status gagal.");
+      }
+
+      final dynamic rawAmount = decoded['current_amount'];
       int amountInt = 0;
+
       if (rawAmount is int) {
         amountInt = rawAmount;
       } else if (rawAmount is double) {
@@ -81,6 +84,21 @@ class HomeController extends GetxController {
         decimalDigits: 0,
       );
       totalIncome.value = formatter.format(amountInt);
+
+      final dynamic rawPercentage = decoded['percentage'];
+      num percentageNum = 0;
+
+      if (rawPercentage is num) {
+        percentageNum = rawPercentage;
+      } else if (rawPercentage is String) {
+        percentageNum = num.tryParse(rawPercentage) ?? 0;
+      }
+
+      if (percentageNum > 0) {
+        incomeGrowth.value = '+$percentageNum%';
+      } else {
+        incomeGrowth.value = '$percentageNum%';
+      }
     } catch (e) {
       print("❌ [TOTAL INCOME ERROR]: $e");
     } finally {

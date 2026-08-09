@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +14,37 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:notaris_app/Model/dynamic_field_model.dart';
+
+/// Formatter untuk otomatis menambahkan titik ribuan saat user mengetik angka.
+/// Contoh: user ketik "1000000" -> tampil "1.000.000"
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Ambil angka murni saja (buang semua titik/karakter non-digit)
+    String digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digitsOnly.isEmpty) {
+      return const TextEditingValue(text: '');
+    }
+
+    // Format jadi 1.000.000
+    final formatted = digitsOnly.replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (match) => '${match[1]}.',
+    );
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 class DynamicField {
   final String label;
@@ -28,7 +60,6 @@ class DynamicField {
   var latitude = 0.0.obs;
   var longitude = 0.0.obs;
 
-  // holder for type == "date" fields (e.g. Tanggal Akta / deed_date)
   var dateValue = Rxn<DateTime>();
 
   bool get isImageFile => true;
@@ -79,9 +110,15 @@ class DynamicFormController extends GetxController {
   var lifeStatus = "".obs;
   var _token = "".obs;
 
+  var _teamKey = "".obs;
+
   var pendingUploads = <String, PendingUploadData>{}.obs;
 
   var uploadedFilesData = <String, Map<String, String>>{}.obs;
+
+  /// Jadi true setelah user pertama kali menekan tombol submit/lanjut.
+  /// Dipakai UI untuk menentukan kapan tanda bintang merah mulai muncul.
+  var attemptedSubmit = false.obs;
 
   final List<String> lifeStatusOptions = [
     "single",
@@ -91,13 +128,6 @@ class DynamicFormController extends GetxController {
   ];
 
   static const String baseUrl = "${ApiConfig.baseUrl}";
-
-  // =========================================================
-  // label constants for the additional uploadAsset fields
-  // (Transaction Address + Certificate section on the backend)
-  // Keeping them as constants avoids typos between generateForm()
-  // and submitForm() when reading values back out of `controllers`.
-  // =========================================================
   static const String labelTransferorName =
       "Nama Pihak yang Mengalihkan (Transferor)";
   static const String labelTransferorAddress = "Alamat Pihak yang Mengalihkan";
@@ -108,7 +138,6 @@ class DynamicFormController extends GetxController {
   static const String labelHamlet = "Dusun";
   static const String labelVillage = "Desa/Kelurahan";
   static const String labelLandArea = "Luas Tanah (m²)";
-  // NEW: building_area — required by backend, previously missing entirely.
   static const String labelBuildingArea = "Luas Bangunan (m²)";
   static const String labelBook = "Buku Tanah";
   static const String labelNumber = "Nomor Sertifikat/Buku";
@@ -121,9 +150,14 @@ class DynamicFormController extends GetxController {
   static const String labelDeedType = "Jenis Akta";
   static const String labelRightType = "Jenis Hak Atas Tanah";
   static const String labelRightNumber = "Nomor Hak";
-
-  // NEW: notary_name — required by backend, previously missing entirely.
   static const String labelNotaryName = "Nama Notaris";
+
+  /// Label field yang inputnya berupa uang dan perlu format titik ribuan.
+  static const List<String> moneyFieldLabels = [
+    "Total biaya layanan",
+    labelNjop,
+    labelBphtb,
+  ];
 
   @override
   void onInit() {
@@ -145,40 +179,28 @@ class DynamicFormController extends GetxController {
     controllers.clear();
   }
 
-  // fields shared by every ppat_type, mapped 1:1 to the extra
-  // uploadAsset GraphQL arguments (transferor/transferee, land, tax,
-  // certificate data, and notary name).
   List<Map<String, String>> _commonPpatFields() {
     return [
-      // NEW: notary_name — placed first since it's a top-level
-      // identifying field, same tier as "Nama Client/Perusahaan".
       {"label": labelNotaryName, "type": "text"},
-
       {"label": labelTransferorName, "type": "text"},
       {"label": labelTransferorAddress, "type": "text"},
       {"label": labelTransferorNpwp, "type": "text"},
       {"label": labelTransfereeName, "type": "text"},
       {"label": labelTransfereeAddress, "type": "text"},
       {"label": labelTransfereeNpwp, "type": "text"},
-
       {"label": labelHamlet, "type": "text"},
       {"label": labelVillage, "type": "text"},
       {"label": labelLandArea, "type": "number"},
-      // NEW: Luas Bangunan — persis di bawah Luas Tanah.
       {"label": labelBuildingArea, "type": "number"},
-
       {"label": labelBook, "type": "text"},
       {"label": labelNumber, "type": "text"},
       {"label": labelTaxYear, "type": "number"},
-
       {"label": labelNop, "type": "text"},
       {"label": labelNjop, "type": "number"},
       {"label": labelBphtb, "type": "number"},
-
       {"label": labelDeedNumber, "type": "text"},
       {"label": labelDeedDate, "type": "date"},
       {"label": labelDeedType, "type": "text"},
-
       {"label": labelRightType, "type": "text"},
       {"label": labelRightNumber, "type": "text"},
     ];
@@ -445,9 +467,6 @@ class DynamicFormController extends GetxController {
           ],
     );
 
-    // inject the shared notary_name/transferor/transferee/land/tax/certificate
-    // fields right before "Total biaya layanan" so the summary/cost
-    // fields stay last in every form, regardless of ppat_type.
     final insertIndex = requirementList.indexWhere(
       (item) => item["label"] == "Total biaya layanan",
     );
@@ -485,7 +504,11 @@ class DynamicFormController extends GetxController {
     try {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       _token.value = prefs.getString('auth_token') ?? "";
+      _teamKey.value = prefs.getString('teamkey') ?? "";
       debugPrint("Token SharedPreferences Berhasil Dimuat: ${_token.value}");
+      debugPrint(
+        "TeamKey SharedPreferences Berhasil Dimuat: ${_teamKey.value}",
+      );
     } catch (e) {
       debugPrint("Gagal mengambil token dari SharedPreferences: $e");
     }
@@ -494,12 +517,6 @@ class DynamicFormController extends GetxController {
     loadSavedDraft();
   }
 
-  // =========================================================
-  // SIMPLIFIED: sqflite lokal cuma dipakai buat cache url + matchkey
-  // hasil upload gambar. Semua data form lain (text, coordinate,
-  // date) sudah tersimpan penuh di server lewat mutation uploadAsset,
-  // jadi gak perlu di-restore dari db lokal lagi.
-  // =========================================================
   Future<void> loadSavedDraft() async {
     try {
       final savedData = await dbHelper.getDraftByJenis(jenis);
@@ -509,7 +526,6 @@ class DynamicFormController extends GetxController {
         final field = _findField(data['label'] ?? '');
         if (field == null) continue;
 
-        // hanya field bertipe upload yang punya cache lokal (url + matchkey)
         if (field.type == "upload") {
           field.fileValue.value = data['url'] ?? "";
           field.matchKey.value = data['matchkey'] ?? "";
@@ -538,8 +554,15 @@ class DynamicFormController extends GetxController {
       final currentToken = prefs.getString('auth_token') ?? "";
       _token.value = currentToken;
 
+      final currentTeamKey = prefs.getString('teamkey') ?? "";
+      _teamKey.value = currentTeamKey;
+
       if (currentToken.isEmpty) {
         throw Exception("Token tidak ditemukan. Silakan login ulang.");
+      }
+
+      if (currentTeamKey.isEmpty) {
+        throw Exception("TeamKey tidak ditemukan. Silakan login ulang.");
       }
 
       final request = http.MultipartRequest(
@@ -549,6 +572,8 @@ class DynamicFormController extends GetxController {
 
       request.headers['Authorization'] = 'Bearer $currentToken';
       request.fields['ppat_type'] = jenis;
+      request.fields['field_label'] = field.label;
+      request.fields['aes_institute_key'] = currentTeamKey;
 
       request.files.add(
         await http.MultipartFile.fromPath(
@@ -648,25 +673,19 @@ class DynamicFormController extends GetxController {
       field.isLoading.value = true;
       fields.refresh();
 
+      final bool hasSavedLocation =
+          field.latitude.value != 0.0 || field.longitude.value != 0.0;
+
       final pickedResult = await Get.to<LatLng>(
         () => MapPickerPage(
-          initialLat: field.latitude.value == 0.0
-              ? -6.175392
-              : field.latitude.value,
-          initialLng: field.longitude.value == 0.0
-              ? 106.827153
-              : field.longitude.value,
+          initialLat: hasSavedLocation ? field.latitude.value : null,
+          initialLng: hasSavedLocation ? field.longitude.value : null,
         ),
       );
 
       if (pickedResult != null) {
         field.latitude.value = pickedResult.latitude;
         field.longitude.value = pickedResult.longitude;
-
-        // NOTE: koordinat gak lagi disimpan ke sqflite lokal.
-        // Nilainya cukup dipegang di memory (field.latitude/longitude)
-        // dan akan ikut terkirim ke backend lewat mutation uploadAsset
-        // saat submitForm() dipanggil.
 
         fields.refresh();
 
@@ -692,10 +711,6 @@ class DynamicFormController extends GetxController {
     }
   }
 
-  // date picker for the "Tanggal Akta" (deed_date) field.
-  // Value hanya dipegang di memory (field.dateValue) — akan ikut
-  // terkirim ke backend sebagai epoch seconds saat submitForm().
-  // Gak lagi disimpan ke sqflite lokal.
   Future<void> pickDeedDate(DynamicField field) async {
     try {
       final context = Get.context;
@@ -724,74 +739,64 @@ class DynamicFormController extends GetxController {
     }
   }
 
-  bool validateFields() {
-    for (var field in fields) {
-      if (field.type == "text" || field.type == "number") {
+  /// Cek apakah sebuah field masih kosong (belum diisi), dipakai untuk
+  /// menampilkan bintang merah di UI.
+  bool isFieldEmpty(DynamicField field) {
+    switch (field.type) {
+      case "text":
+      case "number":
         final value = controllers[field.label]?.text ?? "";
-        if (value.length == 0) {
-          Get.snackbar(
-            "Peringatan",
-            "Tidak bisa lanjut, karena kolom kosong",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return false;
-        }
-      } else if (field.type == "upload") {
-        if (field.fileValue.value.length == 0) {
-          Get.snackbar(
-            "Peringatan",
-            "Tidak bisa lanjut, karena kolom kosong",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return false;
-        }
-      } else if (field.type == "coordinate") {
-        if (field.latitude.value == 0.0 && field.longitude.value == 0.0) {
-          Get.snackbar(
-            "Peringatan",
-            "Tidak bisa lanjut, karena kolom kosong",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return false;
-        }
-      } else if (field.type == "date") {
-        if (field.dateValue.value == null) {
-          Get.snackbar(
-            "Peringatan",
-            "Tidak bisa lanjut, karena kolom kosong",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return false;
-        }
-      }
+        return value.trim().isEmpty;
+      case "upload":
+        return field.fileValue.value.trim().isEmpty;
+      case "coordinate":
+        return field.latitude.value == 0.0 && field.longitude.value == 0.0;
+      case "date":
+        return field.dateValue.value == null;
+      default:
+        return false;
     }
-    return true;
   }
 
-  // small helpers so submitForm() stays readable when pulling the
-  // extra text/number fields back out of `controllers`.
+  bool validateFields() {
+    // Tandai bahwa user sudah pernah mencoba submit, supaya UI mulai
+    // menampilkan bintang merah pada field yang masih kosong.
+    attemptedSubmit.value = true;
+
+    bool allValid = true;
+
+    for (var field in fields) {
+      if (isFieldEmpty(field)) {
+        allValid = false;
+      }
+    }
+
+    if (!allValid) {
+      Get.snackbar(
+        "Peringatan",
+        "Tidak bisa lanjut, karena masih ada kolom wajib yang kosong",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+
+    fields.refresh();
+    return allValid;
+  }
+
   String _text(String label) => controllers[label]?.text.trim() ?? "";
 
-  double _number(String label) =>
-      double.tryParse(controllers[label]?.text.trim() ?? "") ?? 0.0;
+  double _number(String label) => double.tryParse(
+        (controllers[label]?.text.trim() ?? "").replaceAll('.', ''),
+      ) ??
+      0.0;
 
-  int _intNumber(String label) =>
-      int.tryParse(controllers[label]?.text.trim() ?? "") ?? 0;
+  int _intNumber(String label) => int.tryParse(
+        (controllers[label]?.text.trim() ?? "").replaceAll('.', ''),
+      ) ??
+      0;
 
-  // =========================================================
-  // konversi token -> institude_id (user_id)
-  // GET /api/v1/convert/tokenTo/ID
-  // Header: Authorization: Bearer <token>
-  // Response: { "user_id": 1 }
-  // =========================================================
   Future<int> _fetchInstitudeId(String token) async {
     final response = await http.get(
       Uri.parse('$baseUrl/api/v1/convert/tokenTo/ID'),
@@ -813,12 +818,60 @@ class DynamicFormController extends GetxController {
     final userId = decoded['user_id'];
 
     if (userId == null) {
-      throw Exception(
-        "user_id tidak ditemukan di response convert/tokenTo/ID",
-      );
+      throw Exception("user_id tidak ditemukan di response convert/tokenTo/ID");
     }
 
     return userId is int ? userId : int.tryParse(userId.toString()) ?? 0;
+  }
+
+  Future<void> _updateAesEncKeyFileTeam({
+    required String token,
+    required String teamKey,
+    required String ppatType,
+    required String clientId,
+    required String publicId,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/v1/update/aes/encKey/fileTeam'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "aes_institute_key": teamKey,
+          "ppat_type": ppatType,
+          "client_id": clientId,
+          "public_id": publicId,
+        }),
+      );
+
+      print("🔐 === RESPONS update/aes/encKey/fileTeam ===");
+      print("Status : ${response.statusCode}");
+      print("Body   : ${response.body}");
+      print("=============================================");
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          "Gagal update AES enc key (${response.statusCode}): ${response.body}",
+        );
+      }
+
+      final decoded = jsonDecode(response.body);
+      if (decoded['success'] != true) {
+        throw Exception(
+          decoded['message'] ?? "Update AES enc key gagal tanpa pesan error",
+        );
+      }
+    } catch (e) {
+      print("❌ [UPDATE AES ENC KEY ERROR]: $e");
+      Get.snackbar(
+        "Peringatan",
+        "Data tersimpan, tapi gagal sinkronkan team key: ${e.toString().replaceAll("Exception: ", "")}",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+    }
   }
 
   Future<void> submitForm() async {
@@ -833,44 +886,37 @@ class DynamicFormController extends GetxController {
         throw Exception("Token tidak ditemukan. Silakan login ulang.");
       }
 
-      // convert token -> institude_id sebelum submit ke uploadAsset
       final int institudeId = await _fetchInstitudeId(currentToken);
 
-// ✅ KODE PERBAIKAN (PPAT):
-// ✅ KODE PERBAIKAN DI SUBMITFORM
-final files = fields
-    .where((f) => f.type == "upload" && f.fileValue.value.isNotEmpty)
-    .map((f) {
-      // Ambil data file dari Map uploadedFilesData
-      final fileData = uploadedFilesData[f.label.trim()] ?? {};
-      
-      // Ambil fileId & matchKey (gunakan f.fileId.value sebagai fallback)
-      final fileId = fileData['id']?.toString() ?? f.fileId.value;
-      final matchKey = fileData['matchkey'] ?? f.matchKey.value;
+      final files = fields
+          .where((f) => f.type == "upload" && f.fileValue.value.isNotEmpty)
+          .map((f) {
+            final fileData = uploadedFilesData[f.label.trim()] ?? {};
 
-      return {
-        "id": fileId,             // Kunci dekripsi backend
-        "name": f.label,
-        "url": f.fileValue.value,
-        "matchkey": matchKey,
+            final fileId = fileData['id']?.toString() ?? f.fileId.value;
+            final matchKey = fileData['matchkey'] ?? f.matchKey.value;
+
+            return {
+              "id": fileId,
+              "name": f.label,
+              "url": f.fileValue.value,
+              "matchkey": matchKey,
+            };
+          })
+          .toList();
+
+      final coordinateField = fields.firstWhereOrNull(
+        (f) => f.type == "coordinate",
+      );
+      double targetLat = coordinateField?.latitude.value ?? -6.175392;
+      double targetLng = coordinateField?.longitude.value ?? 106.827153;
+
+      final metadata = {
+        "amount": _intNumber("Total biaya layanan"),
+        "files": files,
+        "location": {"latitude": targetLat, "longitude": targetLng},
       };
-    })
-    .toList();
 
-final coordinateField = fields.firstWhereOrNull(
-  (f) => f.type == "coordinate",
-);
-double targetLat = coordinateField?.latitude.value ?? -6.175392;
-double targetLng = coordinateField?.longitude.value ?? 106.827153;
-
-final metadata = {
-  "amount":
-      int.tryParse(controllers["Total biaya layanan"]?.text ?? "0") ?? 0,
-  "files": files,
-  "location": {"latitude": targetLat, "longitude": targetLng},
-};
-
-      // read deed_date from the "date" typed field
       final deedDateField = fields.firstWhereOrNull(
         (f) => f.label == labelDeedDate,
       );
@@ -886,43 +932,26 @@ final metadata = {
         "metadata": metadata,
         "staff_name": controllers["Nama Staff"]?.text ?? "Staff Notaris",
         "institude_id": institudeId,
-
-        // ==================
-        // Notary
-        // ==================
         "notary_name": _text(labelNotaryName),
-
-        // ==================
-        // Transaction Address
-        // ==================
         "transferor_name": _text(labelTransferorName),
         "transferor_address": _text(labelTransferorAddress),
         "transferor_npwp": _text(labelTransferorNpwp),
-
         "transferee_name": _text(labelTransfereeName),
         "transferee_address": _text(labelTransfereeAddress),
         "transferee_npwp": _text(labelTransfereeNpwp),
-
         "hamlet": _text(labelHamlet),
         "village": _text(labelVillage),
         "land_area": _number(labelLandArea),
         "building_area": _number(labelBuildingArea),
-
         "book": _text(labelBook),
         "number": _text(labelNumber),
         "tax_year": _intNumber(labelTaxYear),
-
         "nop": _text(labelNop),
         "njop": _number(labelNjop),
         "bphtb": _number(labelBphtb),
-
-        // ==================
-        // Certificate
-        // ==================
         "deed_number": _text(labelDeedNumber),
         "deed_date": deedDateEpoch,
         "deed_type": _text(labelDeedType),
-
         "right_type": _text(labelRightType),
         "right_number": _text(labelRightNumber),
       };
@@ -936,9 +965,7 @@ final metadata = {
             $life_status: String!,
             $staff_name: String!,
             $institude_id: Int!,
-
             $notary_name: String!,
-
             $transferor_name: String!,
             $transferor_address: String!,
             $transferor_npwp: String!,
@@ -955,7 +982,6 @@ final metadata = {
             $nop: String!,
             $njop: Float!,
             $bphtb: Float!,
-
             $deed_number: String!,
             $deed_date: Int!,
             $deed_type: String!,
@@ -970,9 +996,7 @@ final metadata = {
               life_status: $life_status,
               staff_name: $staff_name,
               institude_id: $institude_id,
-
               notary_name: $notary_name,
-
               transferor_name: $transferor_name,
               transferor_address: $transferor_address,
               transferor_npwp: $transferor_npwp,
@@ -989,7 +1013,6 @@ final metadata = {
               nop: $nop,
               njop: $njop,
               bphtb: $bphtb,
-
               deed_number: $deed_number,
               deed_date: $deed_date,
               deed_type: $deed_type,
@@ -1052,13 +1075,14 @@ final metadata = {
       if (clientId.isEmpty) {
         throw Exception("ClientID tidak valid dari public_ids");
       }
+      await _updateAesEncKeyFileTeam(
+        token: currentToken,
+        teamKey: _teamKey.value,
+        ppatType: ppatType,
+        clientId: clientId,
+        publicId: clientId,
+      );
 
-      // =========================================================
-      // SIMPLIFIED: setelah mutation sukses, semua data form
-      // (text, coordinate, date, dst) SUDAH tersimpan di server.
-      // sqflite lokal cuma nyimpen url + matchkey buat file yang
-      // diupload, biar bisa dipakai preview cepat / offline cache.
-      // =========================================================
       print("💾 === PROSES SIMPAN CACHE FILE (url + matchkey) ===");
 
       for (var entry in uploadedFilesData.entries) {

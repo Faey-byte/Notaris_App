@@ -35,10 +35,10 @@ class ForgotPasswordController extends GetxController {
         colorText: const Color(0xFF15803D),
       );
 
-      Get.toNamed(AppRoutes.otppage, arguments: {
-        'email': trimmed,
-        'isForgotPassword': true,
-      });
+      Get.toNamed(
+        AppRoutes.otppage,
+        arguments: {'email': trimmed, 'isForgotPassword': true},
+      );
     } catch (e) {
       Get.snackbar(
         "Gagal",

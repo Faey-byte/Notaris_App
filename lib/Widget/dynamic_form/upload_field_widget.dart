@@ -28,10 +28,32 @@ class UploadFieldWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            field.label,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Obx(() {
+            // Bintang merah muncul kalau field ini wajib diisi, masih
+            // kosong, dan user sudah pernah menekan tombol submit/lanjut.
+            final bool showStar = controller.attemptedSubmit.value &&
+                controller.isFieldEmpty(field);
+
+            return RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                children: [
+                  TextSpan(text: field.label),
+                  if (showStar)
+                    const TextSpan(
+                      text: ' *',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
           const SizedBox(height: 10),
 
           Obx(() {

@@ -8,7 +8,6 @@ class DbHelper {
   Future<Database> get db async {
     if (_db != null) return _db!;
     _db = await initDb();
-
     return _db!;
   }
 
@@ -20,16 +19,13 @@ class DbHelper {
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE ppat_draft (
-            id_field TEXT PRIMARY KEY,
+            id_field TEXT PRIMARY KEY, 
             jenis_pekerjaan TEXT,
             label TEXT,
             text_value TEXT,
             file_id TEXT,
             matchkey TEXT,
-            url TEXT,
-            local_path TEXT,
-            client_id TEXT,
-            publicID TEXT
+            url TEXT
           )
         ''');
 
@@ -142,7 +138,6 @@ class DbHelper {
       whereArgs: [jenis],
     );
   }
-
   Future<void> deleteDraftByJenis(String jenis) async {
     final dbClient = await db;
     await dbClient.delete(

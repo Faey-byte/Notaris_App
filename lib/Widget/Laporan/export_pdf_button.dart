@@ -4,10 +4,7 @@ import 'package:notaris_app/utils/app_colors.dart';
 class ExportPdfButton extends StatelessWidget {
   final VoidCallback? onTap;
 
-  const ExportPdfButton({
-    super.key,
-    this.onTap,
-  });
+  const ExportPdfButton({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +15,7 @@ class ExportPdfButton extends StatelessWidget {
         icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
         label: const Text(
           'Export PDF',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,

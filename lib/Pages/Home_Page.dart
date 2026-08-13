@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Home_Controller.dart';
+import 'package:notaris_app/Controller/home_controller.dart';
 import 'package:notaris_app/Controller/rekap_laporan_controller.dart';
-import 'package:notaris_app/Model/rekap_laporan_model.dart';
-import 'package:notaris_app/Pages/Calculator_Page.dart';
-import 'package:notaris_app/Pages/Notaris_Page.dart';
+import 'package:notaris_app/Pages/calculator_page.dart';
+import 'package:notaris_app/Pages/notaris_page.dart';
 import 'package:notaris_app/Pages/ppat_page.dart';
-import 'package:notaris_app/Pages/Profile_Page.dart';
-import 'package:notaris_app/Pages/rekap_laporan_page.dart';
-import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
-import 'package:notaris_app/Widget/Home/Home_Income_Card.dart';
-import 'package:notaris_app/Widget/Home/Home_Managemen_service.dart';
-import 'package:notaris_app/Widget/Home/Home_Quick_Overview.dart';
-import 'package:notaris_app/Widget/Home/Home_Top_Nav.dart';
-import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
+import 'package:notaris_app/Widget/app_bottom_navbar.dart';
+import 'package:notaris_app/Widget/Home/home_income_card.dart';
+import 'package:notaris_app/Widget/Home/home_managemen_service.dart';
+import 'package:notaris_app/Widget/Home/home_quick_overview.dart';
+import 'package:notaris_app/Widget/Home/home_top_nav.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});

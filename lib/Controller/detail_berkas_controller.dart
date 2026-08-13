@@ -9,9 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:notaris_app/data/services/logging_service.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class DetailBerkasController extends GetxController {
-  static const String baseUrl = "${ApiConfig.baseUrl}";
+  static const String baseUrl = ApiConfig.baseUrl;
 
   static const Map<String, String> statusLabelToAction = {
     "PENDING": "pending",
@@ -52,7 +53,6 @@ class DetailBerkasController extends GetxController {
   var isLoading = false.obs;
   var isUpdatingStatus = false.obs;
   var isUpdatingStatusPajak = false.obs;
-
   var publicId = "".obs;
   var alamat = "Tidak ada lokasi".obs;
   var totalBiaya = "Rp 0".obs;
@@ -61,45 +61,33 @@ class DetailBerkasController extends GetxController {
   var titipBiayaAmountFormatted = "".obs;
   var statusPengerjaan = "PENDING".obs;
   var namaStaff = "Sistem Otomatis".obs;
-
   var dokumenList = <PpatDocMetadata>[].obs;
-
   var jenisTransaksi = "".obs;
-
-  // ==== Tambahan: data umum transaksi ====
   var description = "".obs;
   var lifeStatus = "".obs;
   var namaInstitute = "".obs;
   var notaryName = "".obs;
-
-  // ==== Tambahan: data pihak I (transferor / penjual) ====
   var transferorName = "".obs;
   var transferorAddress = "".obs;
   var transferorNpwp = "".obs;
-
-  // ==== Tambahan: data pihak II (transferee / pembeli) ====
   var transfereeName = "".obs;
   var transfereeAddress = "".obs;
   var transfereeNpwp = "".obs;
-
-  // ==== Tambahan: data objek tanah & pajak ====
-  var hamlet = "".obs; // dusun/kampung
-  var village = "".obs; // desa/kelurahan
-  var landArea = 0.obs; // luas tanah (m2)
-  var buildingArea = 0.obs; // luas bangunan (m2)
-  var book = "".obs; // buku tanah
-  var number = "".obs; // nomor hak
-  var taxYear = 0.obs; // tahun pajak
-  var nop = "".obs; // NOP PBB
-  var njop = 0.obs; // NJOP
-  var bphtb = 0.obs; // BPHTB
-
-  // ==== Tambahan: data akta / sertipikat ====
-  var deedNumber = "".obs; // nomor akta
-  var deedDate = "".obs; // tanggal akta (terformat)
-  var deedType = "".obs; // jenis akta
-  var rightType = "".obs; // jenis hak
-  var rightNumber = "".obs; // nomor hak sertipikat
+  var hamlet = "".obs;
+  var village = "".obs;
+  var landArea = 0.obs;
+  var buildingArea = 0.obs;
+  var book = "".obs;
+  var number = "".obs;
+  var taxYear = 0.obs;
+  var nop = "".obs;
+  var njop = 0.obs;
+  var bphtb = 0.obs;
+  var deedNumber = "".obs;
+  var deedDate = "".obs;
+  var deedType = "".obs;
+  var rightType = "".obs;
+  var rightNumber = "".obs;
 
   String fallbackName = "";
   String fallbackPublicID = "";
@@ -132,7 +120,6 @@ class DetailBerkasController extends GetxController {
 
       jenisTransaksi.value = data.caseData.caseName;
 
-      // isi awal dari data yang sudah ada, sebelum hasil fetch datang
       description.value = data.description;
       lifeStatus.value = data.lifeStatus;
       namaInstitute.value = data.institute?.name ?? "";
@@ -190,13 +177,13 @@ class DetailBerkasController extends GetxController {
           '?clientName=${Uri.encodeComponent(clientName)}'
           '&publicID=${Uri.encodeComponent(publicID)}';
 
-      print("=== REQUEST URL ===");
-      print(fullUrl);
+      AppLogger.log("=== REQUEST URL ===");
+      AppLogger.log(fullUrl);
 
       final response = await http.get(Uri.parse(fullUrl), headers: headers);
 
-      print("Status: ${response.statusCode}");
-      print("Body: ${response.body}");
+      AppLogger.log("Status: ${response.statusCode}");
+      AppLogger.log("Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final resBody = json.decode(response.body);
@@ -235,14 +222,12 @@ class DetailBerkasController extends GetxController {
                   .toString();
         }
 
-        // ==== Data umum transaksi ====
         description.value = (data['description'] ?? '').toString();
         lifeStatus.value = (data['life_status'] ?? '').toString();
         notaryName.value = (data['notary_name'] ?? '').toString();
 
         final institute = data['institute'];
-        namaInstitute.value =
-            (institute?['name'] ?? '').toString();
+        namaInstitute.value = (institute?['name'] ?? '').toString();
 
         final rawTitip = data['titip_biaya_input'];
         if (rawTitip is int) {
@@ -299,7 +284,7 @@ class DetailBerkasController extends GetxController {
             if (rawFiles is List) {
               for (var f in rawFiles) {
                 if (f is Map) {
-                  print("🔍 [PPAT RAW FILE] $f");
+                  AppLogger.log("🔍 [PPAT RAW FILE] $f");
 
                   fetchedDocs.add(
                     PpatDocMetadata.fromJson(Map<String, dynamic>.from(f)),
@@ -310,7 +295,7 @@ class DetailBerkasController extends GetxController {
           } else if (metadata is List) {
             for (var item in metadata) {
               if (item is Map) {
-                print("🔍 [PPAT RAW FILE] $item");
+                AppLogger.log("🔍 [PPAT RAW FILE] $item");
 
                 fetchedDocs.add(
                   PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)),
@@ -322,22 +307,21 @@ class DetailBerkasController extends GetxController {
 
         dokumenList.value = fetchedDocs;
 
-        // ==== Data pihak I / II, objek tanah & pajak ====
         final transactionAddress = data['transaction_address'];
         if (transactionAddress is Map) {
-          transferorName.value =
-              (transactionAddress['transferor_name'] ?? '').toString();
+          transferorName.value = (transactionAddress['transferor_name'] ?? '')
+              .toString();
           transferorAddress.value =
               (transactionAddress['transferor_address'] ?? '').toString();
-          transferorNpwp.value =
-              (transactionAddress['transferor_npwp'] ?? '').toString();
+          transferorNpwp.value = (transactionAddress['transferor_npwp'] ?? '')
+              .toString();
 
-          transfereeName.value =
-              (transactionAddress['transferee_name'] ?? '').toString();
+          transfereeName.value = (transactionAddress['transferee_name'] ?? '')
+              .toString();
           transfereeAddress.value =
               (transactionAddress['transferee_address'] ?? '').toString();
-          transfereeNpwp.value =
-              (transactionAddress['transferee_npwp'] ?? '').toString();
+          transfereeNpwp.value = (transactionAddress['transferee_npwp'] ?? '')
+              .toString();
 
           hamlet.value = (transactionAddress['hamlet'] ?? '').toString();
           village.value = (transactionAddress['village'] ?? '').toString();
@@ -353,7 +337,6 @@ class DetailBerkasController extends GetxController {
           bphtb.value = _toInt(transactionAddress['bphtb']);
         }
 
-        // ==== Data akta / sertipikat ====
         final certificate = data['certificate'];
         if (certificate is Map) {
           deedNumber.value = (certificate['deed_number'] ?? '').toString();
@@ -364,7 +347,7 @@ class DetailBerkasController extends GetxController {
         }
       }
     } catch (e) {
-      print("ERROR HANDLER: $e");
+      AppLogger.log("ERROR HANDLER: $e");
     } finally {
       isLoading.value = false;
     }
@@ -373,7 +356,9 @@ class DetailBerkasController extends GetxController {
   int _toInt(dynamic v) {
     if (v is int) return v;
     if (v is double) return v.toInt();
-    if (v is String) return int.tryParse(v.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    if (v is String) {
+      return int.tryParse(v.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    }
     return 0;
   }
 
@@ -606,9 +591,9 @@ class DetailBerkasController extends GetxController {
       body: json.encode({"aes_institute_key": teamKey}),
     );
 
-    print("=== SHOW AES ENC FILE TEAM ===");
-    print("Status: ${response.statusCode}");
-    print("Body: ${response.body}");
+    AppLogger.log("=== SHOW AES ENC FILE TEAM ===");
+    AppLogger.log("Status: ${response.statusCode}");
+    AppLogger.log("Body: ${response.body}");
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -639,34 +624,34 @@ class DetailBerkasController extends GetxController {
       if (itemUrl.isNotEmpty && itemUrl == normalizedTarget) {
         final aesKey = (item['file_aes_key'] ?? '').toString();
         if (aesKey.isNotEmpty) {
-          print("✅ [MATCH TEAM FILE] url: $itemUrl -> file_aes_key: $aesKey");
+          AppLogger.log(
+            "✅ [MATCH TEAM FILE] url: $itemUrl -> file_aes_key: $aesKey",
+          );
           return aesKey;
         }
       }
     }
 
-    print(
+    AppLogger.log(
       "⚠️ [NO MATCH TEAM FILE] Tidak ada url_file yang cocok dengan: $normalizedTarget",
     );
     return null;
   }
 
   Future<void> displayDocument({
-    required BuildContext context,
     required String documentName,
     required String documentUrl,
     required String clientId,
     required String? fileId,
     required String? ppatType,
   }) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
+    Get.dialog(
+      const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
         ),
       ),
+      barrierDismissible: false,
     );
 
     try {
@@ -683,7 +668,7 @@ class DetailBerkasController extends GetxController {
           resolvedId = matchedId;
         }
       } catch (e) {
-        print("⚠️ [AES ENC FILE TEAM ERROR] Fallback ke id lama: $e");
+        AppLogger.log("⚠️ [AES ENC FILE TEAM ERROR] Fallback ke id lama: $e");
       }
 
       final uri = Uri.parse('$baseUrl/api/v1/read-ppat').replace(
@@ -694,23 +679,23 @@ class DetailBerkasController extends GetxController {
         },
       );
 
-      print("=== READ PPAT (displayDocument) ===");
-      print("URL: $uri");
+      AppLogger.log("=== READ PPAT (displayDocument) ===");
+      AppLogger.log("URL: $uri");
 
       final response = await http.get(
         uri,
         headers: {if (token.isNotEmpty) 'Authorization': 'Bearer $token'},
       );
 
-      print("Status: ${response.statusCode}");
+      AppLogger.log("Status: ${response.statusCode}");
       if (response.statusCode != 200) {
-        print("Body: ${response.body}");
+        AppLogger.log("Body: ${response.body}");
       }
 
-      if (Navigator.canPop(context)) Navigator.pop(context);
+      if (Get.isDialogOpen == true) Get.back();
 
       if (response.statusCode == 200) {
-        _tampilkanPopupGambar(context, response.bodyBytes);
+        _tampilkanPopupGambar(response.bodyBytes);
       } else {
         String message = "Gagal memuat berkas (Status: ${response.statusCode})";
         try {
@@ -722,13 +707,13 @@ class DetailBerkasController extends GetxController {
         Get.snackbar("Error", message);
       }
     } catch (e) {
-      if (Navigator.canPop(context)) Navigator.pop(context);
-      print("ERROR READ PPAT (displayDocument): $e");
+      if (Get.isDialogOpen == true) Get.back();
+      AppLogger.log("ERROR READ PPAT (displayDocument): $e");
       Get.snackbar("Error", "Gagal memuat berkas: $e");
     }
   }
 
-  void _tampilkanPopupGambar(BuildContext context, Uint8List bytes) {
+  void _tampilkanPopupGambar(Uint8List bytes) {
     bool isPdf = false;
     if (bytes.length >= 4) {
       if (bytes[0] == 0x25 &&
@@ -749,9 +734,8 @@ class DetailBerkasController extends GetxController {
       );
       return;
     }
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
+    Get.dialog(
+      Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(15),
         child: Stack(
@@ -804,9 +788,9 @@ class DetailBerkasController extends GetxController {
               top: 10,
               right: 10,
               child: GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: () => Get.back(),
                 child: CircleAvatar(
-                  backgroundColor: Colors.black.withOpacity(0.5),
+                  backgroundColor: Colors.black.withValues(alpha: 0.5),
                   child: const Icon(Icons.close, color: Colors.white),
                 ),
               ),

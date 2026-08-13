@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// Search bar mengambang buat cari alamat di atas peta.
-/// Widget ini murni UI — semua logic pencarian ada di parent lewat [onSearch].
 class MapSearchField extends StatelessWidget {
   final TextEditingController controller;
   final bool isSearching;
   final ValueChanged<String> onSearch;
 
   const MapSearchField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.isSearching,
     required this.onSearch,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

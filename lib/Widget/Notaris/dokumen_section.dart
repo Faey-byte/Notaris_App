@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:notaris_app/Controller/Form_Notaris_controller.dart';
+import 'package:notaris_app/Controller/form_notaris_controller.dart';
 import 'package:notaris_app/Widget/common/section_title.dart';
 
 class DokumenSection extends StatelessWidget {
@@ -62,24 +62,26 @@ class _DokumenItem extends StatelessWidget {
                 border: Border.all(color: const Color(0xFFCBD5E1), width: 2),
               ),
               child: field.isLoading.value
-                  ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : field.localFilePath.value.isNotEmpty
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: Image.file(
-                            File(field.localFilePath.value),
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Icon(
-                          field.fileValue.value.isNotEmpty
-                              ? Icons.check_circle
-                              : Icons.camera_alt_outlined,
-                          color: field.fileValue.value.isNotEmpty
-                              ? Colors.green
-                              : const Color(0xFF94A3B8),
-                          size: 28,
-                        ),
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.file(
+                        File(field.localFilePath.value),
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Icon(
+                      field.fileValue.value.isNotEmpty
+                          ? Icons.check_circle
+                          : Icons.camera_alt_outlined,
+                      color: field.fileValue.value.isNotEmpty
+                          ? Colors.green
+                          : const Color(0xFF94A3B8),
+                      size: 28,
+                    ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -88,7 +90,11 @@ class _DokumenItem extends StatelessWidget {
                 children: [
                   Text(
                     field.label,
-                    style: const TextStyle(color: Color(0xFF334155), fontSize: 14, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      color: Color(0xFF334155),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -97,7 +103,10 @@ class _DokumenItem extends StatelessWidget {
                         child: _UploadButton(
                           icon: Icons.photo_camera_outlined,
                           label: 'Ambil',
-                          onTap: () => controller.pickAndUploadFile(field, ImageSource.camera),
+                          onTap: () => controller.pickAndUploadFile(
+                            field,
+                            ImageSource.camera,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -105,7 +114,10 @@ class _DokumenItem extends StatelessWidget {
                         child: _UploadButton(
                           icon: Icons.image_outlined,
                           label: 'Galeri',
-                          onTap: () => controller.pickAndUploadFile(field, ImageSource.gallery),
+                          onTap: () => controller.pickAndUploadFile(
+                            field,
+                            ImageSource.gallery,
+                          ),
                         ),
                       ),
                     ],
@@ -125,7 +137,11 @@ class _UploadButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _UploadButton({required this.icon, required this.label, required this.onTap});
+  const _UploadButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +159,14 @@ class _UploadButton extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: const Color(0xFF334155)),
             const SizedBox(width: 4),
-            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF334155))),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF334155),
+              ),
+            ),
           ],
         ),
       ),
@@ -166,7 +189,10 @@ class _TambahDokumenButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFCBD5E1), style: BorderStyle.solid),
+          border: Border.all(
+            color: const Color(0xFFCBD5E1),
+            style: BorderStyle.solid,
+          ),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -175,7 +201,11 @@ class _TambahDokumenButton extends StatelessWidget {
             SizedBox(width: 8),
             Text(
               'Kelengkapan Tambahan',
-              style: TextStyle(color: Color(0xFF64748B), fontSize: 14, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -183,7 +213,10 @@ class _TambahDokumenButton extends StatelessWidget {
     );
   }
 
-  void _showTambahDokumenDialog(BuildContext context, NotarisFormController controller) {
+  void _showTambahDokumenDialog(
+    BuildContext context,
+    NotarisFormController controller,
+  ) {
     final textController = TextEditingController();
     showDialog(
       context: context,
@@ -191,7 +224,9 @@ class _TambahDokumenButton extends StatelessWidget {
         title: const Text('Tambah Dokumen'),
         content: TextField(
           controller: textController,
-          decoration: const InputDecoration(hintText: 'Nama dokumen, misal: Akta Pendirian'),
+          decoration: const InputDecoration(
+            hintText: 'Nama dokumen, misal: Akta Pendirian',
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Get.back(), child: const Text('Batal')),

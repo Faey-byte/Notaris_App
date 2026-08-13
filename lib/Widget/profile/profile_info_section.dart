@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:notaris_app/Controller/profile_controller.dart';
 import 'package:notaris_app/Widget/common/thin_divider.dart';
 
@@ -16,18 +17,22 @@ class ProfileInfoSection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _InfoRow(
-            icon: Icons.person_outline,
-            label: 'NAMA LENGKAP',
-            value: controller.nama.value,
-            isFirst: true,
+          Obx(
+            () => _InfoRow(
+              icon: Icons.person_outline,
+              label: 'NAMA LENGKAP',
+              value: controller.nama.value,
+              isFirst: true,
+            ),
           ),
           const ThinDivider(),
-          _InfoRow(
-            icon: Icons.cake_outlined,
-            label: 'TANGGAL LAHIR',
-            value: controller.tanggalLahir.value,
-            isLast: true,
+          Obx(
+            () => _InfoRow(
+              icon: Icons.cake_outlined,
+              label: 'TANGGAL LAHIR',
+              value: controller.tanggalLahir.value,
+              isLast: true,
+            ),
           ),
         ],
       ),
@@ -88,7 +93,11 @@ class _InfoRow extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        trailing: const Icon(Icons.chevron_right, color: Color(0xFFCBD5E1), size: 20),
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: Color(0xFFCBD5E1),
+          size: 20,
+        ),
       ),
     );
   }

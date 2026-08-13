@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:notaris_app/Controller/dynamic_form_controller.dart';
+import 'package:notaris_app/Formatter/thousands_separator_input_formatter.dart';
+import 'package:notaris_app/Model/dynamic_field_model.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 import '../../Widget/dynamic_form/upload_field_widget.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class FieldBuilder extends StatefulWidget {
   final DynamicField field;
@@ -56,21 +58,15 @@ class _FieldBuilderState extends State<FieldBuilder> {
     }
   }
 
-  // =========================================================
-  // LABEL dengan bintang merah (*) kalau field wajib masih kosong
-  // dan user sudah pernah menekan tombol submit/lanjut.
-  // =========================================================
   Widget _buildLabel(DynamicField field) {
     return Obx(() {
-      final bool showStar = widget.controller.attemptedSubmit.value &&
+      final bool showStar =
+          widget.controller.attemptedSubmit.value &&
           widget.controller.isFieldEmpty(field);
 
       return RichText(
         text: TextSpan(
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
           children: [
             TextSpan(text: field.label),
             if (showStar)
@@ -88,8 +84,9 @@ class _FieldBuilderState extends State<FieldBuilder> {
   }
 
   Widget buildTextField() {
-    final bool isMoneyField =
-        DynamicFormController.moneyFieldLabels.contains(widget.field.label);
+    final bool isMoneyField = DynamicFormController.moneyFieldLabels.contains(
+      widget.field.label,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,8 +105,6 @@ class _FieldBuilderState extends State<FieldBuilder> {
                 ]
               : null,
           onChanged: (_) {
-            // Supaya bintang merah langsung update (hilang/muncul)
-            // secara real-time saat user mengetik, tanpa menunggu submit.
             setState(() {});
           },
           decoration: InputDecoration(
@@ -128,16 +123,9 @@ class _FieldBuilderState extends State<FieldBuilder> {
   }
 
   Widget buildUpload() {
-    return UploadFieldWidget(
-      widget.field,
-      controller: widget.controller,
-    );
+    return UploadFieldWidget(widget.field, controller: widget.controller);
   }
 
-  // =========================================================
-  // DATE (NEW) — e.g. "Tanggal Akta" / deed_date
-  // Styled to match buildCoordinate(): icon + status text + action button.
-  // =========================================================
   Widget buildDate() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,9 +146,9 @@ class _FieldBuilderState extends State<FieldBuilder> {
                 final hasDate = selectedDate != null;
 
                 final displayText = hasDate
-                    ? "${selectedDate!.day.toString().padLeft(2, '0')}/"
-                        "${selectedDate.month.toString().padLeft(2, '0')}/"
-                        "${selectedDate.year}"
+                    ? "${selectedDate.day.toString().padLeft(2, '0')}/"
+                          "${selectedDate.month.toString().padLeft(2, '0')}/"
+                          "${selectedDate.year}"
                     : "Tanggal Belum Dipilih";
 
                 return Column(
@@ -176,7 +164,9 @@ class _FieldBuilderState extends State<FieldBuilder> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: hasDate ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: hasDate
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                         color: Colors.black,
                       ),
                     ),
@@ -191,7 +181,6 @@ class _FieldBuilderState extends State<FieldBuilder> {
                 child: OutlinedButton.icon(
                   onPressed: () async {
                     await widget.controller.pickDeedDate(widget.field);
-                    // Update bintang merah setelah tanggal dipilih.
                     setState(() {});
                   },
                   icon: const Icon(Icons.edit_calendar),
@@ -227,9 +216,9 @@ class _FieldBuilderState extends State<FieldBuilder> {
           ),
           child: Column(
             children: [
-
               Obx(() {
-                final bool hasData = widget.field.latitude.value != 0.0 &&
+                final bool hasData =
+                    widget.field.latitude.value != 0.0 &&
                     widget.field.longitude.value != 0.0;
 
                 if (widget.field.isLoading.value) {
@@ -254,7 +243,9 @@ class _FieldBuilderState extends State<FieldBuilder> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: hasData ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: hasData
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                         color: hasData ? Colors.black : Colors.black,
                       ),
                     ),
@@ -325,7 +316,8 @@ class _FieldBuilderState extends State<FieldBuilder> {
                       TextField(
                         controller: latitudeController,
                         keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                          decimal: true,
+                        ),
                         decoration: InputDecoration(
                           hintText: "-6.175392",
                           labelText: "Latitude",
@@ -345,7 +337,8 @@ class _FieldBuilderState extends State<FieldBuilder> {
                       TextField(
                         controller: longitudeController,
                         keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                          decimal: true,
+                        ),
                         decoration: InputDecoration(
                           hintText: "106.827153",
                           labelText: "Longitude",
@@ -386,9 +379,9 @@ class _FieldBuilderState extends State<FieldBuilder> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () async {
-                    await widget.controller
-                        .openManualLocationPicker(widget.field);
-                    // Update bintang merah setelah lokasi dipilih dari map.
+                    await widget.controller.openManualLocationPicker(
+                      widget.field,
+                    );
                     setState(() {});
                   },
                   icon: const Icon(Icons.map),
@@ -400,7 +393,7 @@ class _FieldBuilderState extends State<FieldBuilder> {
                     side: BorderSide(color: Colors.grey.shade400),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -411,7 +404,6 @@ class _FieldBuilderState extends State<FieldBuilder> {
 
   Future<void> _saveCoordinateFromInput() async {
     try {
-
       final latitudeText = latitudeController.text.trim();
       final longitudeText = longitudeController.text.trim();
 
@@ -468,11 +460,11 @@ class _FieldBuilderState extends State<FieldBuilder> {
         'text_value': "$latitude,$longitude",
       });
 
-      print("✅ === KOORDINAT BERHASIL DISIMPAN ===");
-      print("Latitude  : $latitude");
-      print("Longitude : $longitude");
-      print("Format    : $latitude,$longitude");
-      print("=====================================\n");
+      AppLogger.log("✅ === KOORDINAT BERHASIL DISIMPAN ===");
+      AppLogger.log("Latitude  : $latitude");
+      AppLogger.log("Longitude : $longitude");
+      AppLogger.log("Format    : $latitude,$longitude");
+      AppLogger.log("=====================================\n");
 
       latitudeController.clear();
       longitudeController.clear();
@@ -489,7 +481,7 @@ class _FieldBuilderState extends State<FieldBuilder> {
 
       widget.controller.fields.refresh();
     } catch (e) {
-      print("❌ [COORDINATE INPUT ERROR]: $e");
+      AppLogger.log("❌ [COORDINATE INPUT ERROR]: $e");
       Get.snackbar(
         "Error",
         e.toString(),

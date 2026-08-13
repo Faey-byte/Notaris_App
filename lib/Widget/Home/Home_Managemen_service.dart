@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Home_Controller.dart';
+import 'package:notaris_app/Controller/home_controller.dart';
 
 class HomeManagementServices extends StatelessWidget {
   const HomeManagementServices({super.key});
@@ -141,7 +141,11 @@ class HomeManagementServices extends StatelessWidget {
                     color: const Color(0xFFEF4444),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.logout, color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.logout,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 const Expanded(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Form_Notaris_controller.dart';
+import 'package:notaris_app/Controller/form_notaris_controller.dart';
 import 'package:notaris_app/Widget/Notaris/akta_date_field.dart';
 import 'package:notaris_app/Widget/Notaris/biaya_field.dart';
 import 'package:notaris_app/Widget/Notaris/dokumen_section.dart';
@@ -42,7 +42,11 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: const Color(0xFFF1F5F9)),
                         boxShadow: const [
-                          BoxShadow(color: Color(0x0C000000), blurRadius: 2, offset: Offset(0, 1)),
+                          BoxShadow(
+                            color: Color(0x0C000000),
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                          ),
                         ],
                       ),
                       child: Column(
@@ -55,12 +59,18 @@ class TambahBerkasNotarisPage extends StatelessWidget {
 
                           const FormLabel('Nama Klien / Nama Perusahaan'),
                           const SizedBox(height: 8),
-                          AppTextField(controller: c.namaKlienCtrl, hint: 'Masukkan nama lengkap'),
+                          AppTextField(
+                            controller: c.namaKlienCtrl,
+                            hint: 'Masukkan nama lengkap',
+                          ),
                           const SizedBox(height: 20),
 
                           const FormLabel('Nomor Akta'),
                           const SizedBox(height: 8),
-                          AppTextField(controller: c.nomorAktaCtrl, hint: 'Masukkan nomor akta'),
+                          AppTextField(
+                            controller: c.nomorAktaCtrl,
+                            hint: 'Masukkan nomor akta',
+                          ),
                           const SizedBox(height: 20),
 
                           const FormLabel('Tanggal Akta'),
@@ -72,7 +82,8 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                           const SizedBox(height: 8),
                           AppTextField(
                             controller: c.aktaNatureCtrl,
-                            hint: 'Contoh: Akta Kuasa Menjual, Akta Pendirian, dll',
+                            hint:
+                                'Contoh: Akta Kuasa Menjual, Akta Pendirian, dll',
                           ),
                           const SizedBox(height: 20),
 
@@ -83,7 +94,10 @@ class TambahBerkasNotarisPage extends StatelessWidget {
 
                           const FormLabel('Nama Staff'),
                           const SizedBox(height: 8),
-                          AppTextField(controller: c.namaStaffCtrl, hint: 'Masukkan nama staff'),
+                          AppTextField(
+                            controller: c.namaStaffCtrl,
+                            hint: 'Masukkan nama staff',
+                          ),
                           const SizedBox(height: 24),
 
                           const Divider(color: Color(0xFFF1F5F9)),

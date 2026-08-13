@@ -7,25 +7,16 @@ class NotarisDetailModel {
   final String status;
   final String? paymentStatus;
   final int? titipBiayaInput;
-
-  // ✅ nominal total biaya layanan dari backend
   final int amount;
-
-  // CHANGED: backend udah nggak punya relasi "case" (caseId/caseData
-  // dihapus). Sekarang jenis pekerjaan itu array of string.
   final List<String> transactionTypes;
   final String aktaNature;
   final String aktaDate;
-
   final int createdAt;
   final int updatedAt;
   final int monthlyNumber;
-
   final NotarisClientModel client;
   final NotarisStaffModel staff;
   final NotarisDocumentTransactionModel? documentTransaction;
-
-  // NEW: daftar penghadap, sesuai response backend
   final List<NotarisPenghadapModel> penghadap;
 
   NotarisDetailModel({
@@ -50,7 +41,6 @@ class NotarisDetailModel {
     required this.penghadap,
   });
 
-  // helper parse int dari berbagai kemungkinan tipe (int/String/double/null)
   static int _parseInt(dynamic raw) {
     if (raw == null) return 0;
     if (raw is int) return raw;
@@ -67,17 +57,17 @@ class NotarisDetailModel {
     if (rawTitip is int) {
       titipBiayaInput = rawTitip;
     } else if (rawTitip is String) {
-      titipBiayaInput = int.tryParse(rawTitip.replaceAll(RegExp(r'[^0-9]'), ''));
+      titipBiayaInput = int.tryParse(
+        rawTitip.replaceAll(RegExp(r'[^0-9]'), ''),
+      );
     }
 
-    // Coba beberapa kemungkinan nama key dari backend buat "amount".
-    final dynamic rawAmount = json['amount'] ??
+    final dynamic rawAmount =
+        json['amount'] ??
         json['total_biaya'] ??
         json['totalBiaya'] ??
         json['service_amount'];
 
-    // CHANGED: transaction_types (array of string), ganti dari
-    // json['case'] yang sudah tidak ada.
     final rawTypes = json['transaction_types'];
     final types = (rawTypes is List)
         ? rawTypes.map((e) => e.toString()).toList()
@@ -86,9 +76,9 @@ class NotarisDetailModel {
     final rawPenghadap = json['penghadap'];
     final penghadapList = (rawPenghadap is List)
         ? rawPenghadap
-            .whereType<Map<String, dynamic>>()
-            .map((e) => NotarisPenghadapModel.fromJson(e))
-            .toList()
+              .whereType<Map<String, dynamic>>()
+              .map((e) => NotarisPenghadapModel.fromJson(e))
+              .toList()
         : <NotarisPenghadapModel>[];
 
     return NotarisDetailModel(

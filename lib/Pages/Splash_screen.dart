@@ -1,8 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Splash_screen_controller.dart';
-
+import 'package:notaris_app/Controller/splash_screen_controller.dart';
 
 class SplashScreen extends GetView<SplashController> {
   const SplashScreen({super.key});
@@ -13,8 +12,6 @@ class SplashScreen extends GetView<SplashController> {
   }
 }
 
-// ─── Body (StatefulWidget untuk animasi) ─────────────────────────────────────
-
 class _SplashBody extends StatefulWidget {
   const _SplashBody();
 
@@ -24,12 +21,9 @@ class _SplashBody extends StatefulWidget {
 
 class _SplashBodyState extends State<_SplashBody>
     with TickerProviderStateMixin {
-  // Logo entrance
   late final AnimationController _logoCtrl;
   late final Animation<double> _fadeAnim;
   late final Animation<double> _scaleAnim;
-
-  // Loading dots
   late final AnimationController _dotCtrl;
 
   @override
@@ -70,14 +64,13 @@ class _SplashBodyState extends State<_SplashBody>
     super.dispose();
   }
 
-  // ─── Loading dot ─────────────────────────────────────────────────────────────
-
   Widget _dot(int index) {
     return AnimatedBuilder(
       animation: _dotCtrl,
       builder: (_, __) {
-        final double phase =
-            math.sin((_dotCtrl.value * 2 * math.pi) - (index * 0.7));
+        final double phase = math.sin(
+          (_dotCtrl.value * 2 * math.pi) - (index * 0.7),
+        );
         final double opacity = ((phase + 1) / 2).clamp(0.15, 1.0);
         final double dy = phase * 5.0;
 
@@ -100,15 +93,12 @@ class _SplashBodyState extends State<_SplashBody>
     );
   }
 
-  // ─── Build ───────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: Stack(
         children: [
-          // Warm radial glow di belakang logo
           Center(
             child: Container(
               width: 320,
@@ -117,7 +107,7 @@ class _SplashBodyState extends State<_SplashBody>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFA63020).withOpacity(0.09),
+                    const Color(0xFFA63020).withValues(alpha: 0.09),
                     const Color.fromARGB(0, 255, 255, 255),
                   ],
                 ),
@@ -125,7 +115,6 @@ class _SplashBodyState extends State<_SplashBody>
             ),
           ),
 
-          // Logo tengah layar
           Center(
             child: FadeTransition(
               opacity: _fadeAnim,
@@ -141,7 +130,6 @@ class _SplashBodyState extends State<_SplashBody>
             ),
           ),
 
-          // Loading dots bawah
           Positioned(
             bottom: 60,
             left: 0,

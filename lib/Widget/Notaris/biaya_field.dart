@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:notaris_app/Controller/Form_Notaris_controller.dart';
+import 'package:notaris_app/Controller/form_notaris_controller.dart';
 
 class BiayaField extends StatelessWidget {
   final NotarisFormController controller;
@@ -21,7 +21,11 @@ class BiayaField extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: const Text(
               'Rp.',
-              style: TextStyle(color: Color(0xFF64748B), fontSize: 16, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const VerticalDivider(color: Color(0xFFE2E8F0), width: 1),
@@ -33,7 +37,10 @@ class BiayaField extends StatelessWidget {
                 hintText: '0',
                 hintStyle: TextStyle(color: Color(0xFF94A3B8)),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
               ),
             ),
           ),

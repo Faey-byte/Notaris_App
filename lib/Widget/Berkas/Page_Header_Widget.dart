@@ -49,10 +49,11 @@ class PageHeaderWidget extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              textStyle:
-                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
             ),
           ),
         ],

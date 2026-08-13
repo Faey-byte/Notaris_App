@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Pages/Profile_Page.dart';
+import '../../Routes/routes.dart';
 
 class HomeTopNav extends StatelessWidget {
   const HomeTopNav({super.key});
@@ -58,7 +58,7 @@ class HomeTopNav extends StatelessWidget {
                 ),
               ),
               InkWell(
-                onTap: () => Get.to(() => ProfilePage()),
+                onTap: () => Get.toNamed(AppRoutes.profilepage),
                 borderRadius: BorderRadius.circular(24),
                 child: Container(
                   width: 44,

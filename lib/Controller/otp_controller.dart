@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/login_controller.dart';
 import 'package:notaris_app/Controller/signup_controller.dart';
-import 'package:notaris_app/Pages/login_page.dart';
 import 'package:notaris_app/Routes/routes.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
 

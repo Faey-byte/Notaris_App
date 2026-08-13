@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Home_Controller.dart';
+import 'package:notaris_app/Controller/home_controller.dart';
 
 class HomeIncomeCard extends StatelessWidget {
   const HomeIncomeCard({super.key});
 
   String _currentMonth() {
     const months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
     ];
     final now = DateTime.now();
     return '${months[now.month - 1]} ${now.year}';
@@ -48,7 +58,7 @@ class HomeIncomeCard extends StatelessWidget {
                   width: 130,
                   height: 130,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
+                    color: Colors.white.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -65,7 +75,7 @@ class HomeIncomeCard extends StatelessWidget {
                         Text(
                           'Total Pemasukan Bulanan',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.85),
+                            color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -76,13 +86,16 @@ class HomeIncomeCard extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(9999),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.calendar_today,
-                                  color: Colors.white, size: 12),
+                              const Icon(
+                                Icons.calendar_today,
+                                color: Colors.white,
+                                size: 12,
+                              ),
                               const SizedBox(width: 5),
                               Text(
                                 _currentMonth(),
@@ -118,13 +131,16 @@ class HomeIncomeCard extends StatelessWidget {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.20),
+                            color: Colors.white.withValues(alpha: 0.20),
                             borderRadius: BorderRadius.circular(9999),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.trending_up,
-                                  color: Colors.white, size: 14),
+                              const Icon(
+                                Icons.trending_up,
+                                color: Colors.white,
+                                size: 14,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 controller.incomeGrowth.value,
@@ -141,7 +157,7 @@ class HomeIncomeCard extends StatelessWidget {
                         Text(
                           'dibanding bulan lalu',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.65),
+                            color: Colors.white.withValues(alpha: 0.65),
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),

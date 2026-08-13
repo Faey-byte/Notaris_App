@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:notaris_app/Controller/Notification_Controller.dart';
 import 'package:notaris_app/data/services/profile_service.dart';
 import 'package:notaris_app/config/base_url.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import '../Routes/routes.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class ProfileController extends GetxController {
-  static const String baseUrl = "${ApiConfig.baseUrl}";
+  static const String baseUrl = ApiConfig.baseUrl;
 
   final RxString nama = ''.obs;
   final RxString tanggalLahir = ''.obs;
@@ -32,7 +31,7 @@ class ProfileController extends GetxController {
       nama.value = prefs.getString('nama') ?? '-';
       tanggalLahir.value = prefs.getString('tanggal_lahir') ?? '-';
     } catch (e) {
-      print("❌ [PROFILE] Gagal memuat data profil: $e");
+      AppLogger.log("❌ [PROFILE] Gagal memuat data profil: $e");
     } finally {
       isLoading.value = false;
     }
@@ -275,7 +274,7 @@ class ProfileController extends GetxController {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -380,11 +379,6 @@ class ProfileController extends GetxController {
 
   Future<void> _logout() async {
     try {
-      // if (Get.isRegistered<NotificationController>()) {
-      //   Get.find<NotificationController>().stopListening();
-      // }
-
-      await FlutterForegroundTask.stopService();
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('auth_token');
@@ -392,7 +386,7 @@ class ProfileController extends GetxController {
       await prefs.remove('nama');
       await prefs.remove('tanggal_lahir');
 
-      print("✅ [PROFILE] Logout berhasil, data lokal dibersihkan");
+      AppLogger.log("✅ [PROFILE] Logout berhasil, data lokal dibersihkan");
 
       Get.snackbar(
         "Logout Berhasil",
@@ -403,7 +397,7 @@ class ProfileController extends GetxController {
 
       Get.offAllNamed(AppRoutes.loginpage);
     } catch (e) {
-      print("❌ [PROFILE] ERROR LOGOUT: $e");
+      AppLogger.log("❌ [PROFILE] ERROR LOGOUT: $e");
       Get.snackbar("Error", "Gagal melakukan logout, coba lagi.");
     }
   }

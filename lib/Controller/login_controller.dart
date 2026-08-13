@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
-import 'package:notaris_app/Controller/Notification_Controller.dart';
-import 'package:notaris_app/data/services/foreground_task_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import '../Routes/routes.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class LoginController extends GetxController {
   var isLoading = false.obs;
@@ -28,7 +26,7 @@ class LoginController extends GetxController {
 
     bool isValid = true;
 
-    if (email.length < 1) {
+    if (email.isEmpty) {
       emailError.value = "Email wajib diisi";
       isValid = false;
     } else if (!GetUtils.isEmail(email)) {
@@ -36,7 +34,7 @@ class LoginController extends GetxController {
       isValid = false;
     }
 
-    if (pass.length < 1) {
+    if (pass.isEmpty) {
       passwordError.value = "Password wajib diisi";
       isValid = false;
     } else if (pass.length < 8) {
@@ -51,7 +49,7 @@ class LoginController extends GetxController {
     try {
       final parts = token.split('.');
       if (parts.length != 3) {
-        print(
+        AppLogger.log(
           "⚠️ [Login] Token bukan format JWT valid (bagian: ${parts.length})",
         );
         return null;
@@ -61,10 +59,10 @@ class LoginController extends GetxController {
       payload = base64Url.normalize(payload);
       final decoded = utf8.decode(base64Url.decode(payload));
       final map = jsonDecode(decoded) as Map<String, dynamic>;
-      print("🔓 [Login] JWT payload berhasil di-decode: $map");
+      AppLogger.log("🔓 [Login] JWT payload berhasil di-decode: $map");
       return map;
     } catch (e) {
-      print("❌ [Login] Gagal decode JWT payload: $e");
+      AppLogger.log("❌ [Login] Gagal decode JWT payload: $e");
       return null;
     }
   }
@@ -83,7 +81,7 @@ class LoginController extends GetxController {
         password: passC.text.trim(),
       );
 
-      print("DATA LOGIN: $data");
+      AppLogger.log("DATA LOGIN: $data");
 
       String? token = data["token"];
       String? teamKey = data["teamkey"];
@@ -96,8 +94,8 @@ class LoginController extends GetxController {
         }
       }
 
-      print("USER ID FINAL: $userId");
-      print("TEAM KEY FINAL: $teamKey");
+      AppLogger.log("USER ID FINAL: $userId");
+      AppLogger.log("TEAM KEY FINAL: $teamKey");
 
       if (token != null && token.isNotEmpty) {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -109,38 +107,19 @@ class LoginController extends GetxController {
 
         if (teamKey != null && teamKey.isNotEmpty) {
           await prefs.setString('teamkey', teamKey);
-          print("TEAMKEY BERHASIL DISIMPAN: $teamKey");
+          AppLogger.log("TEAMKEY BERHASIL DISIMPAN: $teamKey");
         }
 
-        print("TOKEN BERHASIL DISIMPAN: $token");
+        AppLogger.log("TOKEN BERHASIL DISIMPAN: $token");
       }
 
       Get.snackbar("Success", data["message"] ?? "Login berhasil");
       Get.offAllNamed(AppRoutes.homepage);
     } catch (e) {
-      print("ERROR LOGIN: $e");
+      AppLogger.log("ERROR LOGIN: $e");
       Get.snackbar("Error", e.toString().replaceAll("Exception: ", ""));
     } finally {
       isLoading.value = false;
     }
-  }
-
-  Future<void> _startForegroundService() async {
-    final NotificationPermission notificationPermission =
-        await FlutterForegroundTask.checkNotificationPermission();
-    if (notificationPermission != NotificationPermission.granted) {
-      await FlutterForegroundTask.requestNotificationPermission();
-    }
-
-    await FlutterForegroundTask.startService(
-      notificationTitle: 'Notaris App',
-      notificationText: 'Menjaga notifikasi tetap aktif',
-      callback: startForegroundTaskCallback,
-    );
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
   }
 }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/login_controller.dart';
 import 'package:notaris_app/Routes/routes.dart';
-import 'package:notaris_app/Widget/Button_Filds.dart';
-import 'package:notaris_app/Widget/Text_Field_Widget.dart';
+import 'package:notaris_app/Widget/button_filds.dart';
+import 'package:notaris_app/Widget/text_field_widget.dart';
 import '../utils/app_colors.dart';
 
 class LoginPage extends StatelessWidget {
@@ -64,67 +64,37 @@ class LoginPage extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Email/Username",
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
                 Obx(
-                  () => CustomTextField(
+                  () => TextfieldsWidget(
+                    label: "Email/Username",
                     controller: controller.emailC,
-                    hint: "Masukkan Email",
-                    icon: Icons.mail_outline,
-                    isPassword: false,
-                    showToggle: false,
-                    obscure: false,
-                    onToggle: () {},
+                    prefixIconData: Icons.mail_outline,
+                    keyboardType: TextInputType.emailAddress,
                     errorText: controller.emailError.value,
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 4),
 
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Password",
-                    style: TextStyle(color: AppColors.primary),
+                Obx(
+                  () => TextfieldsWidget(
+                    label: "Password",
+                    controller: controller.passC,
+                    obscureText: controller.obscure.value,
+                    prefixIconData: Icons.lock_outline,
+                    suffixIcon: IconButton(
+                      onPressed: controller.togglePassword,
+                      icon: Icon(
+                        controller.obscure.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                    ),
+                    errorText: controller.passwordError.value,
                   ),
                 ),
 
                 const SizedBox(height: 8),
-
-                Obx(
-                  () => TextFormField(
-                    controller: controller.passC,
-                    obscureText: controller.obscure.value,
-                    decoration: InputDecoration(
-                      hintText: "Masukkan Password",
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        onPressed: controller.togglePassword,
-                        icon: Icon(
-                          controller.obscure.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                      ),
-                      errorText: controller.passwordError.value,
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
 
                 Obx(
                   () => PrimaryButton(

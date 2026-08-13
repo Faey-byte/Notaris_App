@@ -13,7 +13,7 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(ProfileController());
+    final controller = Get.find<ProfileController>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
@@ -24,23 +24,21 @@ class ProfilePage extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
-                child: Obx(
-                  () => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ProfileHeader(controller: controller),
-                      const SizedBox(height: 28),
-                      const SectionLabel(label: 'INFORMASI AKUN'),
-                      const SizedBox(height: 8),
-                      ProfileInfoSection(controller: controller),
-                      const SizedBox(height: 24),
-                      const SectionLabel(label: 'PENGATURAN'),
-                      const SizedBox(height: 8),
-                      const ProfileSettingsSection(),
-                      const SizedBox(height: 28),
-                      ProfileLogoutButton(controller: controller),
-                    ],
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ProfileHeader(controller: controller),
+                    const SizedBox(height: 28),
+                    const SectionLabel(label: 'INFORMASI AKUN'),
+                    const SizedBox(height: 8),
+                    ProfileInfoSection(controller: controller),
+                    const SizedBox(height: 24),
+                    const SectionLabel(label: 'PENGATURAN'),
+                    const SizedBox(height: 8),
+                    const ProfileSettingsSection(),
+                    const SizedBox(height: 28),
+                    ProfileLogoutButton(controller: controller),
+                  ],
                 ),
               ),
             ),

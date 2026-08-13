@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/detail_berkas_notaris_controller.dart';
-import 'package:notaris_app/Widget/Detail_Berkas/doc_item.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/detail_info_card.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/detail_dropdown_card.dart';
+import 'package:notaris_app/Widget/Detail_Berkas/conditional_detail_card.dart';
+import 'package:notaris_app/Widget/Detail_Berkas/info_box.dart';
+import 'package:notaris_app/Widget/Detail_Berkas/label.dart';
 import 'package:notaris_app/Widget/Detail_Berkas/notaris_doc_item.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
@@ -86,7 +88,6 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
 
-                    // ✅ NEW: Sifat Akta & Tanggal Akta
                     Row(
                       children: [
                         Expanded(
@@ -112,7 +113,6 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
 
-                    // ✅ NEW: Status Perkawinan
                     Obx(
                       () => DetailInfoCard(
                         title: "STATUS PERKAWINAN",
@@ -168,7 +168,6 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                                 child: DetailDropdownCard(
                                   title: "STATUS PAJAK",
                                   currentValue: controller.statusPajak.value,
-
                                   items: const [
                                     "Belum Lunas",
                                     "Lunas",
@@ -191,42 +190,21 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
 
-                    Obx(() {
-                      if (controller.titipBiayaAmount.value <= 0) {
-                        return const SizedBox.shrink();
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DetailInfoCard(
-                            title: "NOMINAL TITIP BIAYA",
-                            content: controller.titipBiayaAmountFormatted.value,
-                            icon: Icons.savings_outlined,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                      );
-                    }),
+                    ConditionalDetailCard(
+                      title: "NOMINAL TITIP BIAYA",
+                      icon: Icons.savings_outlined,
+                      hasData: () => controller.titipBiayaAmount.value > 0,
+                      linesBuilder: () =>
+                          [controller.titipBiayaAmountFormatted.value],
+                    ),
 
-                    // ✅ NEW: Keterangan (hanya tampil kalau ada isinya)
-                    Obx(() {
-                      if (controller.keterangan.value.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DetailInfoCard(
-                            title: "KETERANGAN",
-                            content: controller.keterangan.value,
-                            icon: Icons.notes_outlined,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                      );
-                    }),
+                    ConditionalDetailCard(
+                      title: "KETERANGAN",
+                      icon: Icons.notes_outlined,
+                      hasData: () => controller.keterangan.value.isNotEmpty,
+                      linesBuilder: () => [controller.keterangan.value],
+                    ),
 
-                    // ✅ NEW: Daftar Penghadap
                     const Text(
                       "Daftar Penghadap",
                       style: TextStyle(
@@ -267,15 +245,16 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                               color: AppColors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Colors.grey.withOpacity(0.2),
+                                color: Colors.grey.withValues(alpha: 0.2),
                               ),
                             ),
                             child: Row(
                               children: [
                                 CircleAvatar(
                                   radius: 16,
-                                  backgroundColor:
-                                      AppColors.primary.withOpacity(0.1),
+                                  backgroundColor: AppColors.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   child: Text(
                                     "${penghadap.orderNumber}",
                                     style: const TextStyle(
@@ -320,18 +299,13 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                     }),
                     const SizedBox(height: 12),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Dokumen Persyaratan",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
+                    const Text(
+                      "Dokumen Persyaratan",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                     const SizedBox(height: 8),
 
@@ -362,74 +336,52 @@ class DetailBerkasNotarisPage extends StatelessWidget {
               ),
             ),
 
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, -4),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: InfoBox(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const LabelText("TOTAL BIAYA LAYANAN"),
+                          const SizedBox(height: 4),
+                          Obx(
+                            () => Text(
+                              controller.totalBiaya.value,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const LabelText("NAMA STAFF"),
+                          const SizedBox(height: 4),
+                          Obx(
+                            () => Text(
+                              controller.namaStaff.value,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: SafeArea(
-                top: false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "TOTAL BIAYA LAYANAN",
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Obx(
-                          () => Text(
-                            controller.totalBiaya.value,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "NAMA STAFF",
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Obx(
-                          () => Text(
-                            controller.namaStaff.value,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
                 ),
               ),
             ),

@@ -4,11 +4,7 @@ class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int>? onTap;
 
-  const AppBottomNavBar({
-    super.key,
-    required this.currentIndex,
-    this.onTap,
-  });
+  const AppBottomNavBar({super.key, required this.currentIndex, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +12,10 @@ class AppBottomNavBar extends StatelessWidget {
       currentIndex: currentIndex,
       selectedItemColor: const Color(0xFF913632),
       unselectedItemColor: const Color(0xFF9E9E9E),
-      selectedLabelStyle:
-          const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+      selectedLabelStyle: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+      ),
       unselectedLabelStyle: const TextStyle(fontSize: 11),
       type: BottomNavigationBarType.fixed,
       backgroundColor: Colors.white,

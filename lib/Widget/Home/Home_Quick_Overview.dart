@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Home_Controller.dart';
+import 'package:notaris_app/Controller/home_controller.dart';
 
 class HomeQuickOverview extends StatelessWidget {
   const HomeQuickOverview({super.key});

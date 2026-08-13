@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class DbHelper {
   static Database? _db;
@@ -48,14 +49,18 @@ class DbHelper {
             await db.execute(
               'ALTER TABLE ppat_draft ADD COLUMN local_path TEXT;',
             );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.log('DB migration v1->v2 failed: $e');
+          }
         }
         if (oldVersion < 3) {
           try {
             await db.execute(
               'ALTER TABLE ppat_draft ADD COLUMN client_id TEXT;',
             );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.log('DB migration v2->v3 failed: $e');
+          }
         }
         if (oldVersion < 4) {
           try {
@@ -90,7 +95,9 @@ class DbHelper {
             ''');
             await db.execute('DROP TABLE ppat_draft');
             await db.execute('ALTER TABLE ppat_draft_new RENAME TO ppat_draft');
-          } catch (e) {}
+          } catch (e) {
+            AppLogger.log('DB migration v3->v4 failed: $e');
+          }
         }
         if (oldVersion < 5) {
           try {
@@ -106,7 +113,9 @@ class DbHelper {
                 local_path TEXT
               )
             ''');
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.log('DB migration v4->v5 failed: $e');
+          }
         }
       },
     );
@@ -219,16 +228,18 @@ class DbHelper {
       final List<Map<String, dynamic>> hasil = await dbClient.query(
         'ppat_draft',
       );
-      print("📊 === TOTAL DATA PPAT DI SQLITE: ${hasil.length} BARIS ===");
+      AppLogger.log(
+        "📊 === TOTAL DATA PPAT DI SQLITE: ${hasil.length} BARIS ===",
+      );
       for (int i = 0; i < hasil.length; i++) {
-        print(
+        AppLogger.log(
           "--------------------------------------------------\n"
           "Baris ke-${i + 1}: ${hasil[i]}\n"
           "--------------------------------------------------",
         );
       }
     } catch (e) {
-      print("❌ Gagal membaca database ppat_draft: $e");
+      AppLogger.log("❌ Gagal membaca database ppat_draft: $e");
     }
   }
 
@@ -238,16 +249,18 @@ class DbHelper {
       final List<Map<String, dynamic>> hasil = await dbClient.query(
         'notaris_draft',
       );
-      print("📊 === TOTAL DATA NOTARIS DI SQLITE: ${hasil.length} BARIS ===");
+      AppLogger.log(
+        "📊 === TOTAL DATA NOTARIS DI SQLITE: ${hasil.length} BARIS ===",
+      );
       for (int i = 0; i < hasil.length; i++) {
-        print(
+        AppLogger.log(
           "--------------------------------------------------\n"
           "Baris ke-${i + 1}: ${hasil[i]}\n"
           "--------------------------------------------------",
         );
       }
     } catch (e) {
-      print("❌ Gagal membaca database notaris_draft: $e");
+      AppLogger.log("❌ Gagal membaca database notaris_draft: $e");
     }
   }
 

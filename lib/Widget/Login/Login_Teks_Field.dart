@@ -32,7 +32,9 @@ class LoginTextField extends StatelessWidget {
             color: const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: hasError ? const Color(0xFFE53E3E) : const Color(0xFFE2E8F0),
+              color: hasError
+                  ? const Color(0xFFE53E3E)
+                  : const Color(0xFFE2E8F0),
               width: hasError ? 1.5 : 1,
             ),
           ),
@@ -41,22 +43,34 @@ class LoginTextField extends StatelessWidget {
             obscureText: obscure,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-            prefixIcon: Icon(prefixIcon,
-                color: hasError ? const Color(0xFFE53E3E) : const Color(0xFF913632),
-                size: 20),
+              hintStyle: const TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 14,
+              ),
+              prefixIcon: Icon(
+                prefixIcon,
+                color: hasError
+                    ? const Color(0xFFE53E3E)
+                    : const Color(0xFF913632),
+                size: 20,
+              ),
               suffixIcon: showToggle
                   ? GestureDetector(
                       onTap: onToggle,
                       child: Icon(
-                        obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        obscure
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         color: const Color(0xFF94A3B8),
                         size: 20,
                       ),
                     )
                   : null,
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
           ),
         ),
@@ -64,10 +78,16 @@ class LoginTextField extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.error_outline, size: 13, color: Color(0xFFE53E3E)),
+              const Icon(
+                Icons.error_outline,
+                size: 13,
+                color: Color(0xFFE53E3E),
+              ),
               const SizedBox(width: 4),
-              Text(errorText!,
-                style: const TextStyle(color: Color(0xFFE53E3E), fontSize: 12)),
+              Text(
+                errorText!,
+                style: const TextStyle(color: Color(0xFFE53E3E), fontSize: 12),
+              ),
             ],
           ),
         ],

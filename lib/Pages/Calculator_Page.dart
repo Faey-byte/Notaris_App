@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Calculator_Controller.dart';
+import 'package:notaris_app/Controller/calculator_controller.dart';
 import 'package:notaris_app/Controller/rekap_laporan_controller.dart';
-import 'package:notaris_app/Model/rekap_laporan_model.dart';
-import 'package:notaris_app/Pages/Home_Page.dart';
-import 'package:notaris_app/Pages/Notaris_Page.dart';
+import 'package:notaris_app/Pages/home_page.dart';
+import 'package:notaris_app/Pages/notaris_page.dart';
 import 'package:notaris_app/Pages/ppat_page.dart';
-import 'package:notaris_app/Pages/Profile_Page.dart';
-import 'package:notaris_app/Pages/rekap_laporan_page.dart';
-import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
-import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
+import 'package:notaris_app/Widget/app_bottom_navbar.dart';
 import 'package:notaris_app/utils/app_colors.dart';
-import '../Widget/Text_Field_Widget.dart';
+import '../Widget/text_field_widget.dart';
 
 class CalculatorPage extends StatelessWidget {
   CalculatorPage({super.key});
@@ -205,10 +201,10 @@ class CalculatorPage extends StatelessWidget {
         onTap: (index) {
           switch (index) {
             case 0:
-              Get.offAll(() =>  HomePage());
+              Get.offAll(() => HomePage());
               break;
             case 1:
-              Get.offAll(() =>  NotarisPage());
+              Get.offAll(() => NotarisPage());
               break;
             case 2:
               Get.offAll(() => PpatPage());

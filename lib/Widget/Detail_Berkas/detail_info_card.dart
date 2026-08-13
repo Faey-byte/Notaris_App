@@ -7,11 +7,11 @@ class DetailInfoCard extends StatelessWidget {
   final IconData? icon;
 
   const DetailInfoCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.content,
     this.icon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,12 @@ class DetailInfoCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.5),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 8),
           Row(
@@ -41,7 +46,11 @@ class DetailInfoCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   content,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
             ],

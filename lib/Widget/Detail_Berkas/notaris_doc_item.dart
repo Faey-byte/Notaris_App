@@ -14,8 +14,8 @@ class NotarisDocItem extends StatelessWidget {
 
   const NotarisDocItem({super.key, required this.doc});
 
-  void _bukaPratinjauGambar(BuildContext context) {
-    _getLocalPathAndDisplay(context);
+  void _bukaPratinjauGambar() {
+    _getLocalPathAndDisplay();
   }
 
   // =========================================================
@@ -24,34 +24,41 @@ class NotarisDocItem extends StatelessWidget {
   List<int> _decryptData(List<int> encryptedBytes, String matchKey) {
     try {
       if (matchKey.isEmpty) {
-        debugPrint("[NOTARIS DEC] ⚠️ Matchkey kosong, mencoba render langsung.");
+        debugPrint(
+          "[NOTARIS DEC] ⚠️ Matchkey kosong, mencoba render langsung.",
+        );
         return encryptedBytes;
       }
 
       // Backend Go biasanya menggunakan AES-256 mode CBC atau ECB dengan matchkey sebagai key & IV.
       // Sesuaikan padding & key length jika diperlukan.
-      final keyBytes = encrypt.Key.fromUtf8(matchKey.padRight(32, '0').substring(0, 32));
-      final ivBytes = encrypt.IV.fromUtf8(matchKey.padRight(16, '0').substring(0, 16));
+      final keyBytes = encrypt.Key.fromUtf8(
+        matchKey.padRight(32, '0').substring(0, 32),
+      );
+      final ivBytes = encrypt.IV.fromUtf8(
+        matchKey.padRight(16, '0').substring(0, 16),
+      );
 
-      final encrypter = encrypt.Encrypter(encrypt.AES(keyBytes, mode: encrypt.AESMode.cbc));
+      final encrypter = encrypt.Encrypter(
+        encrypt.AES(keyBytes, mode: encrypt.AESMode.cbc),
+      );
       final encrypted = encrypt.Encrypted(Uint8List.fromList(encryptedBytes));
 
-      return encrypter.decryptBytes(encrypted);
+      return encrypter.decryptBytes(encrypted, iv: ivBytes);
     } catch (e) {
       debugPrint("[NOTARIS DEC] ❌ Gagal melakukan dekripsi AES: $e");
       return encryptedBytes; // Fallback biner mentah jika gagal dekripsi
     }
   }
 
-  Future<void> _getLocalPathAndDisplay(BuildContext context) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
+  Future<void> _getLocalPathAndDisplay() async {
+    Get.dialog(
+      const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
         ),
       ),
+      barrierDismissible: false,
     );
 
     try {
@@ -78,9 +85,11 @@ class NotarisDocItem extends StatelessWidget {
       }
 
       if (result.isEmpty) {
-        if (Navigator.canPop(context)) Navigator.pop(context);
+        if (Get.isDialogOpen == true) {
+          Get.back();
+        }
         // Jika data tidak ada di SQLite lokal (misal karena ganti HP), tampilkan fallback online langsung
-        _tampilkanPopupGambarOnline(context, doc.url);
+        _tampilkanPopupGambarOnline(doc.url);
         return;
       }
 
@@ -89,7 +98,8 @@ class NotarisDocItem extends StatelessWidget {
       final String matchKey = selectedRow['matchkey']?.toString() ?? "";
       String? localPath = selectedRow['local_path']?.toString();
 
-      bool isLocalFileValid = localPath != null &&
+      bool isLocalFileValid =
+          localPath != null &&
           localPath.isNotEmpty &&
           localPath != 'null' &&
           File(localPath).existsSync();
@@ -100,13 +110,14 @@ class NotarisDocItem extends StatelessWidget {
       if (!isLocalFileValid) {
         debugPrint("[NOTARIS DOC] 🌐 Mendownload berkas online...");
         final response = await http.get(Uri.parse(doc.url));
-        
+
         if (response.statusCode == 200) {
           // Lakukan dekripsi biner menggunakan matchkey hasil query SQLite
           final decryptedBytes = _decryptData(response.bodyBytes, matchKey);
 
           final tempDir = await getTemporaryDirectory();
-          final String fileName = "decrypted_${DateTime.now().millisecondsSinceEpoch}.jpg";
+          final String fileName =
+              "decrypted_${DateTime.now().millisecondsSinceEpoch}.jpg";
           final String newSavedPath = "${tempDir.path}/$fileName";
 
           final file = File(newSavedPath);
@@ -123,27 +134,32 @@ class NotarisDocItem extends StatelessWidget {
             whereArgs: [idField],
           );
         } else {
-          throw Exception("Gagal mengunduh berkas (Status: ${response.statusCode})");
+          throw Exception(
+            "Gagal mengunduh berkas (Status: ${response.statusCode})",
+          );
         }
       }
 
-      if (Navigator.canPop(context)) Navigator.pop(context);
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
 
-      if (isLocalFileValid && localPath != null) {
-        _tampilkanPopupGambarLokal(context, localPath);
+      if (isLocalFileValid) {
+        _tampilkanPopupGambarLokal(localPath);
       } else {
         Get.snackbar("Error", "Gagal memproses penayangan file lokal.");
       }
     } catch (e) {
-      if (Navigator.canPop(context)) Navigator.pop(context);
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
       Get.snackbar("Error", "Gagal memuat berkas: $e");
     }
   }
 
-  void _tampilkanPopupGambarLokal(BuildContext context, String path) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
+  void _tampilkanPopupGambarLokal(String path) {
+    Get.dialog(
+      Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(15),
         child: Stack(
@@ -167,7 +183,10 @@ class NotarisDocItem extends StatelessWidget {
                         child: Text(
                           "Format gambar tidak kompatibel atau kunci dekripsi tidak sesuai.",
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     );
@@ -179,9 +198,9 @@ class NotarisDocItem extends StatelessWidget {
               top: 10,
               right: 10,
               child: GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: Get.back,
                 child: CircleAvatar(
-                  backgroundColor: Colors.black.withOpacity(0.5),
+                  backgroundColor: Colors.black.withValues(alpha: 0.5),
                   child: const Icon(Icons.close, color: Colors.white),
                 ),
               ),
@@ -192,10 +211,9 @@ class NotarisDocItem extends StatelessWidget {
     );
   }
 
-  void _tampilkanPopupGambarOnline(BuildContext context, String url) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
+  void _tampilkanPopupGambarOnline(String url) {
+    Get.dialog(
+      Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
           color: Colors.white,
@@ -203,7 +221,8 @@ class NotarisDocItem extends StatelessWidget {
           child: Image.network(
             url,
             fit: BoxFit.contain,
-            errorBuilder: (context, err, stack) => const Text("Gagal memuat gambar online."),
+            errorBuilder: (context, err, stack) =>
+                const Text("Gagal memuat gambar online."),
           ),
         ),
       ),
@@ -213,7 +232,7 @@ class NotarisDocItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => _bukaPratinjauGambar(context),
+      onTap: _bukaPratinjauGambar,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
@@ -248,8 +267,11 @@ class NotarisDocItem extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.visibility_outlined, color: AppColors.primary),
-              onPressed: () => _bukaPratinjauGambar(context),
+              icon: const Icon(
+                Icons.visibility_outlined,
+                color: AppColors.primary,
+              ),
+              onPressed: _bukaPratinjauGambar,
             ),
           ],
         ),

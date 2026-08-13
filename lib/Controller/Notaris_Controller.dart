@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:notaris_app/config/base_url.dart';
 import 'package:notaris_app/data/db_Helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class StatusItem {
   final String label;
@@ -44,7 +45,7 @@ class AktaItem {
 
 class NotarisController extends GetxController {
   late final DbHelper dbHelper;
-  static const String baseUrl = "${ApiConfig.baseUrl}";
+  static const String baseUrl = ApiConfig.baseUrl;
 
   final RxString searchQuery = ''.obs;
   final RxString selectedStatus = 'SEMUA'.obs;
@@ -120,7 +121,6 @@ class NotarisController extends GetxController {
     }
   }
 
-  // ✅ NEW: ubah "2026-08-05" jadi "5 Agustus 2026"
   String _formatTanggalManusiawi(String? rawDate) {
     if (rawDate == null || rawDate.trim().isEmpty) return '-';
     try {
@@ -131,7 +131,6 @@ class NotarisController extends GetxController {
     }
   }
 
-  // ✅ NEW: berkasId di-pass, dipakai buat cek cache lokal status pengerjaan
   AktaItem _mapItem(Map<String, dynamic> item, SharedPreferences prefs) {
     final client = item['client'] as Map<String, dynamic>?;
     final nama = client?['name']?.toString() ?? '-';
@@ -142,17 +141,10 @@ class NotarisController extends GetxController {
     final jenis = types.isNotEmpty ? types.join(', ') : '-';
     final monthlyNumber = item['monthly_number'];
     final no = monthlyNumber != null ? monthlyNumber.toString() : '-';
-    // ✅ CHANGED: format tanggal jadi human-readable, bukan yyyy-mm-dd lagi
     final tanggal = _formatTanggalManusiawi(item['akta_date']?.toString());
     final berkasId = item['id']?.toString() ?? '';
-
-    // Status dari backend (source of truth default)
     var status = _mapStatus(item['status']?.toString());
 
-    // ✅ NEW: kalau ada override lokal (mis. user pilih "PROSES" yang secara
-    // backend sebenarnya sama-sama tersimpan sebagai "pending"), pakai itu.
-    // Ini harus konsisten dengan key yang dipakai di DetailBerkasNotarisController:
-    // 'status_notaris_${currentLocalBerkasId.value}'
     if (berkasId.isNotEmpty) {
       final cachedStatus = prefs.getString('status_notaris_$berkasId');
       if (cachedStatus != null && cachedStatus.isNotEmpty) {
@@ -217,8 +209,6 @@ class NotarisController extends GetxController {
 
       final decoded = jsonDecode(response.body) as Map<String, dynamic>;
       final List rawData = decoded['data'] ?? [];
-
-      // ✅ CHANGED: pass prefs biar _mapItem bisa cek override status lokal
       final mapped = rawData
           .whereType<Map<String, dynamic>>()
           .map((raw) => _mapItem(raw, prefs))
@@ -236,7 +226,7 @@ class NotarisController extends GetxController {
         _currentPage += 1;
       }
     } catch (e) {
-      print("❌ [NOTARIS LIST] Gagal ambil data dari server: $e");
+      AppLogger.log("❌ [NOTARIS LIST] Gagal ambil data dari server: $e");
       Get.snackbar(
         "Error",
         "Gagal memuat data berkas notaris",
@@ -254,6 +244,7 @@ class NotarisController extends GetxController {
     await loadFromServer(reset: false);
   }
 
+  @override
   Future<void> refresh() async {
     await loadFromServer(reset: true);
   }
@@ -266,7 +257,6 @@ class NotarisController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? "";
-
       final uri = Uri.parse('$baseUrl/api/v1/read-notary').replace(
         queryParameters: {'notary_type': notaryType, 'url': url, 'id': id},
       );
@@ -284,7 +274,7 @@ class NotarisController extends GetxController {
 
       return response.bodyBytes;
     } catch (e) {
-      print("❌ [NOTARIS READ IMAGE ERROR]: $e");
+      AppLogger.log("❌ [NOTARIS READ IMAGE ERROR]: $e");
       return null;
     }
   }
@@ -307,10 +297,8 @@ class NotarisController extends GetxController {
           )
           .toList();
     }
-
     return hasil;
   }
-
   void setStatus(String val) => selectedStatus.value = val;
   void setSearch(String val) => searchQuery.value = val;
 }

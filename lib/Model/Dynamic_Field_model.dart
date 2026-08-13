@@ -5,11 +5,11 @@ class DynamicField {
   final String type;
   final String? placeholder;
 
-  var fileValue = ''.obs;      
-  var fileId = ''.obs;        
-  var matchKey = ''.obs;   
-  var localFilePath = ''.obs;  
-  var isLoading = false.obs;   
+  var fileValue = ''.obs;
+  var fileId = ''.obs;
+  var matchKey = ''.obs;
+  var localFilePath = ''.obs;
+  var isLoading = false.obs;
 
   var latitude = (-6.175392).obs;
   var longitude = (106.827153).obs;

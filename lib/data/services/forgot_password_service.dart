@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:notaris_app/config/base_url.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class ForgotPasswordService {
   static const String baseUrl = "${ApiConfig.baseUrl}/api/v1";
@@ -14,10 +15,10 @@ class ForgotPasswordService {
       body: jsonEncode({"email": email}),
     );
 
-    print("=== REQUEST RESET PASSWORD ===");
-    print("URL: $uri");
-    print("Status: ${response.statusCode}");
-    print("Body: ${response.body}");
+    AppLogger.log("=== REQUEST RESET PASSWORD ===");
+    AppLogger.log("URL: $uri");
+    AppLogger.log("Status: ${response.statusCode}");
+    AppLogger.log("Body: ${response.body}");
 
     final decoded = jsonDecode(response.body);
 
@@ -25,7 +26,9 @@ class ForgotPasswordService {
       return decoded['message'] ?? "Reset password code sent to your email";
     }
 
-    throw Exception(decoded['message'] ?? decoded['error'] ?? "Gagal mengirim kode reset");
+    throw Exception(
+      decoded['message'] ?? decoded['error'] ?? "Gagal mengirim kode reset",
+    );
   }
 
   static Future<String> verifyCode(String email, String otpCode) async {
@@ -37,10 +40,10 @@ class ForgotPasswordService {
       body: jsonEncode({"email": email, "otpCode": otpCode}),
     );
 
-    print("=== VERIFY CODE ===");
-    print("URL: $uri");
-    print("Status: ${response.statusCode}");
-    print("Body: ${response.body}");
+    AppLogger.log("=== VERIFY CODE ===");
+    AppLogger.log("URL: $uri");
+    AppLogger.log("Status: ${response.statusCode}");
+    AppLogger.log("Body: ${response.body}");
 
     final decoded = jsonDecode(response.body);
 
@@ -48,7 +51,9 @@ class ForgotPasswordService {
       return decoded['message'] ?? "Email verified successfully";
     }
 
-    throw Exception(decoded['message'] ?? decoded['error'] ?? "Kode verifikasi tidak valid");
+    throw Exception(
+      decoded['message'] ?? decoded['error'] ?? "Kode verifikasi tidak valid",
+    );
   }
 
   static Future<String> resetPassword({
@@ -68,10 +73,10 @@ class ForgotPasswordService {
       }),
     );
 
-    print("=== RESET PASSWORD ===");
-    print("URL: $uri");
-    print("Status: ${response.statusCode}");
-    print("Body: ${response.body}");
+    AppLogger.log("=== RESET PASSWORD ===");
+    AppLogger.log("URL: $uri");
+    AppLogger.log("Status: ${response.statusCode}");
+    AppLogger.log("Body: ${response.body}");
 
     final decoded = jsonDecode(response.body);
 
@@ -79,6 +84,8 @@ class ForgotPasswordService {
       return decoded['message'] ?? "Password reset success, please login";
     }
 
-    throw Exception(decoded['message'] ?? decoded['error'] ?? "Gagal reset password");
+    throw Exception(
+      decoded['message'] ?? decoded['error'] ?? "Gagal reset password",
+    );
   }
 }

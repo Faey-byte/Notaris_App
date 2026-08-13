@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Judul section kapital seperti "PENGHADAP" / "DOKUMEN PERSYARATAN".
 class SectionTitle extends StatelessWidget {
   final String title;
   final String? trailingText;

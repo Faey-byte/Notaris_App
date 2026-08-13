@@ -23,8 +23,9 @@ class JenisFilterChip extends StatelessWidget {
           color: isSelected ? const Color(0xFF8B1A1A) : const Color(0xFFF0F2F5),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color:
-                isSelected ? const Color(0xFF8B1A1A) : const Color(0xFFE0E0E0),
+            color: isSelected
+                ? const Color(0xFF8B1A1A)
+                : const Color(0xFFE0E0E0),
             width: 1,
           ),
         ),

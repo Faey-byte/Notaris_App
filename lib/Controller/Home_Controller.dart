@@ -3,26 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:notaris_app/Pages/login_page.dart';
 import 'package:notaris_app/config/base_url.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Routes/routes.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class HomeController extends GetxController {
-  static const String baseUrl = "${ApiConfig.baseUrl}";
+  static const String baseUrl = ApiConfig.baseUrl;
 
   final RxString totalIncome = 'Rp 0'.obs;
   final RxString incomeGrowth = '0%'.obs;
-
   final RxBool isLoadingIncome = false.obs;
-
   final RxString notarisFiles = '0'.obs;
   final RxString ppatFiles = '0'.obs;
   final RxString inProcess = '0'.obs;
   final RxString completed = '0'.obs;
-
   final RxBool isLoadingSummary = false.obs;
-
   final RxBool hasNotification = true.obs;
 
   @override
@@ -49,10 +45,10 @@ class HomeController extends GetxController {
         },
       );
 
-      print("=== TOTAL INCOME ===");
-      print("URL: $uri");
-      print("Status: ${response.statusCode}");
-      print("Body: ${response.body}");
+      AppLogger.log("=== TOTAL INCOME ===");
+      AppLogger.log("URL: $uri");
+      AppLogger.log("Status: ${response.statusCode}");
+      AppLogger.log("Body: ${response.body}");
 
       if (response.statusCode != 200) {
         throw Exception(
@@ -100,7 +96,7 @@ class HomeController extends GetxController {
         incomeGrowth.value = '$percentageNum%';
       }
     } catch (e) {
-      print("❌ [TOTAL INCOME ERROR]: $e");
+      AppLogger.log("❌ [TOTAL INCOME ERROR]: $e");
     } finally {
       isLoadingIncome.value = false;
     }
@@ -112,9 +108,7 @@ class HomeController extends GetxController {
 
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? "";
-
       final uri = Uri.parse('$baseUrl/api/v1/dashboard/summary');
-
       final response = await http.get(
         uri,
         headers: {
@@ -123,10 +117,10 @@ class HomeController extends GetxController {
         },
       );
 
-      print("=== DASHBOARD SUMMARY ===");
-      print("URL: $uri");
-      print("Status: ${response.statusCode}");
-      print("Body: ${response.body}");
+      AppLogger.log("=== DASHBOARD SUMMARY ===");
+      AppLogger.log("URL: $uri");
+      AppLogger.log("Status: ${response.statusCode}");
+      AppLogger.log("Body: ${response.body}");
 
       if (response.statusCode != 200) {
         throw Exception(
@@ -149,7 +143,7 @@ class HomeController extends GetxController {
       inProcess.value = (data['process'] ?? 0).toString();
       completed.value = (data['finished'] ?? 0).toString();
     } catch (e) {
-      print("❌ [DASHBOARD SUMMARY ERROR]: $e");
+      AppLogger.log("❌ [DASHBOARD SUMMARY ERROR]: $e");
     } finally {
       isLoadingSummary.value = false;
     }
@@ -170,7 +164,7 @@ class HomeController extends GetxController {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
 
           await prefs.remove('auth_token');
-          print("TOKEN BERHASIL DIHAPUS DARI STORAGE");
+          AppLogger.log("TOKEN BERHASIL DIHAPUS DARI STORAGE");
 
           Get.deleteAll(force: true);
 
@@ -183,7 +177,7 @@ class HomeController extends GetxController {
 
           Get.offAllNamed(AppRoutes.loginpage);
         } catch (e) {
-          print("ERROR LOGOUT: $e");
+          AppLogger.log("ERROR LOGOUT: $e");
           Get.snackbar("Error", "Gagal melakukan logout, coba lagi.");
         }
       },

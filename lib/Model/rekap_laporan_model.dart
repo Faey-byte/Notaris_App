@@ -32,10 +32,6 @@ class RekapLaporanModel {
     List<dynamic> rawList, {
     DateTime? startDate,
     DateTime? endDate,
-    // NEW: kalau backend sudah kasih total_amount di root response,
-    // pakai itu langsung buat "pemasukan" — lebih akurat daripada
-    // hitung manual per-item (yang gampang meleset kalau ada mismatch
-    // casing/whitespace status, atau item ke-exclude filter tanggal).
     double? totalAmountOverride,
   }) {
     final items = rawList.whereType<Map<String, dynamic>>().toList();
@@ -101,7 +97,6 @@ class RekapLaporanModel {
     List<dynamic> rawList, {
     DateTime? startDate,
     DateTime? endDate,
-    // NEW: sama seperti PPAT — pakai total_amount dari backend kalau ada.
     double? totalAmountOverride,
   }) {
     var items = rawList.whereType<Map<String, dynamic>>().toList();
@@ -575,8 +570,9 @@ class NotarisTransactionDetail {
     final penghadapRaw = _decodeNestedList(json['penghadap']);
 
     final rawAktaDate = json['akta_date'];
-    final aktaDateStr =
-        (rawAktaDate == null) ? null : rawAktaDate.toString().trim();
+    final aktaDateStr = (rawAktaDate == null)
+        ? null
+        : rawAktaDate.toString().trim();
 
     return NotarisTransactionDetail(
       id: _parseInt(json['id']),
@@ -589,11 +585,14 @@ class NotarisTransactionDetail {
       caseName: json['case_name']?.toString() ?? '',
       aktaNature: json['akta_nature']?.toString() ?? '',
       lifeStatus: json['life_status']?.toString() ?? '',
-      penghadap: (penghadapRaw
-            ..sort((a, b) => _parseInt(a['order_number'])
-                .compareTo(_parseInt(b['order_number']))))
-          .map((e) => NotarisPenghadapDetail.fromJson(e))
-          .toList(),
+      penghadap:
+          (penghadapRaw..sort(
+                (a, b) => _parseInt(
+                  a['order_number'],
+                ).compareTo(_parseInt(b['order_number'])),
+              ))
+              .map((e) => NotarisPenghadapDetail.fromJson(e))
+              .toList(),
     );
   }
 

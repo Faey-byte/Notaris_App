@@ -33,10 +33,13 @@ class LogoutCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Keluar",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red)),
+                  Text(
+                    "Keluar",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
                   Text("Logout dari aplikasi", style: TextStyle(fontSize: 12)),
                 ],
               ),

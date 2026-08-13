@@ -9,10 +9,11 @@ import 'package:notaris_app/Model/notaris_detail_model.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:notaris_app/utils/app_colors.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class DetailBerkasNotarisController extends GetxController {
   late final DbHelper dbHelper;
-  static const String baseUrl = "${ApiConfig.baseUrl}";
+  static const String baseUrl = ApiConfig.baseUrl;
 
   final RxBool isLoading = true.obs;
   final RxBool isUpdatingStatus = false.obs;
@@ -30,8 +31,6 @@ class DetailBerkasNotarisController extends GetxController {
   final RxString namaStaff = '-'.obs;
   final RxString jenisPekerjaan = '-'.obs;
   final RxList<NotarisDocMetadata> dokumenList = <NotarisDocMetadata>[].obs;
-
-  // ✅ NEW: field tambahan dari detail berkas
   final RxString sifatAkta = '-'.obs;
   final RxString tanggalAkta = '-'.obs;
   final RxString statusPerkawinan = '-'.obs;
@@ -88,7 +87,6 @@ class DetailBerkasNotarisController extends GetxController {
     return formatter.format(amount);
   }
 
-  // ✅ NEW: kapitalisasi tiap kata, contoh "pendirian cv" -> "Pendirian Cv"
   static String _capitalizeWords(String value) {
     if (value.trim().isEmpty) return '-';
     return value
@@ -98,7 +96,6 @@ class DetailBerkasNotarisController extends GetxController {
         .join(' ');
   }
 
-  // ✅ NEW: format tanggal akta "2026-08-05" -> "05 Agustus 2026"
   static String _formatTanggalAkta(String rawDate) {
     if (rawDate.trim().isEmpty) return '-';
     try {
@@ -157,7 +154,7 @@ class DetailBerkasNotarisController extends GetxController {
         headers: {if (token.isNotEmpty) 'Authorization': 'Bearer $token'},
       );
 
-      print("🚀 [NOTARIS DETAIL] Response mentah: ${response.body}");
+      AppLogger.log("🚀 [NOTARIS DETAIL] Response mentah: ${response.body}");
 
       final decoded = jsonDecode(response.body);
 
@@ -193,7 +190,7 @@ class DetailBerkasNotarisController extends GetxController {
       titipBiayaAmount.value = model.titipBiayaInput ?? 0;
       titipBiayaAmountFormatted.value = _formatRupiah(titipBiayaAmount.value);
       totalBiaya.value = model.amount > 0 ? _formatRupiah(model.amount) : '-';
-      print("💰 [NOTARIS DETAIL] amount dari backend: ${model.amount}");
+      AppLogger.log("💰 [NOTARIS DETAIL] amount dari backend: ${model.amount}");
 
       namaStaff.value = model.staff.staffName.isEmpty
           ? '-'
@@ -216,7 +213,7 @@ class DetailBerkasNotarisController extends GetxController {
         ..sort((a, b) => a.orderNumber.compareTo(b.orderNumber));
       penghadapList.value = sortedPenghadap;
     } catch (e) {
-      print("❌ [NOTARIS DETAIL ERROR]: $e");
+      AppLogger.log("❌ [NOTARIS DETAIL ERROR]: $e");
       Get.snackbar(
         "Error",
         e.toString().replaceAll("Exception: ", ""),
@@ -270,11 +267,11 @@ class DetailBerkasNotarisController extends GetxController {
         body: json.encode({"action": action}),
       );
 
-      print("=== UPDATE STATUS NOTARIS ===");
-      print("URL: $url");
-      print("Action dikirim: $action");
-      print("Status code: ${response.statusCode}");
-      print("Body: ${response.body}");
+      AppLogger.log("=== UPDATE STATUS NOTARIS ===");
+      AppLogger.log("URL: $url");
+      AppLogger.log("Action dikirim: $action");
+      AppLogger.log("Status code: ${response.statusCode}");
+      AppLogger.log("Body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         if (currentLocalBerkasId.value.isNotEmpty) {
@@ -282,7 +279,7 @@ class DetailBerkasNotarisController extends GetxController {
             'status_notaris_${currentLocalBerkasId.value}',
             label,
           );
-          print(
+          AppLogger.log(
             "💾 [LOCAL CACHE] Berhasil menyimpan status baru ($label) untuk ID: ${currentLocalBerkasId.value}",
           );
         }
@@ -303,7 +300,7 @@ class DetailBerkasNotarisController extends GetxController {
       }
     } catch (e) {
       statusPengerjaan.value = previousLabel;
-      print("ERROR UPDATE STATUS NOTARIS: $e");
+      AppLogger.log("ERROR UPDATE STATUS NOTARIS: $e");
       Get.snackbar("Gagal", "Terjadi kesalahan saat memperbarui status");
     } finally {
       isUpdatingStatus.value = false;
@@ -364,11 +361,13 @@ class DetailBerkasNotarisController extends GetxController {
         }),
       );
 
-      print("=== UPDATE STATUS PAJAK NOTARIS ===");
-      print("URL: $url");
-      print("Status dikirim: $backendStatus, titipBiayaAmount: $amount");
-      print("Status code: ${response.statusCode}");
-      print("Body: ${response.body}");
+      AppLogger.log("=== UPDATE STATUS PAJAK NOTARIS ===");
+      AppLogger.log("URL: $url");
+      AppLogger.log(
+        "Status dikirim: $backendStatus, titipBiayaAmount: $amount",
+      );
+      AppLogger.log("Status code: ${response.statusCode}");
+      AppLogger.log("Body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         if (currentLocalBerkasId.value.isNotEmpty) {
@@ -398,7 +397,7 @@ class DetailBerkasNotarisController extends GetxController {
       statusPajak.value = previousLabel;
       titipBiayaAmount.value = previousAmount;
       titipBiayaAmountFormatted.value = _formatRupiah(previousAmount);
-      print("ERROR UPDATE STATUS PAJAK NOTARIS: $e");
+      AppLogger.log("ERROR UPDATE STATUS PAJAK NOTARIS: $e");
       Get.snackbar(
         "Gagal",
         "Terjadi kesalahan saat memperbarui status pembayaran",
@@ -521,9 +520,9 @@ class DetailBerkasNotarisController extends GetxController {
       body: json.encode({"aes_institute_key": teamKey}),
     );
 
-    print("=== SHOW AES ENC FILE TEAM (NOTARIS) ===");
-    print("Status: ${response.statusCode}");
-    print("Body: ${response.body}");
+    AppLogger.log("=== SHOW AES ENC FILE TEAM (NOTARIS) ===");
+    AppLogger.log("Status: ${response.statusCode}");
+    AppLogger.log("Body: ${response.body}");
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -554,30 +553,30 @@ class DetailBerkasNotarisController extends GetxController {
       if (itemUrl.isNotEmpty && itemUrl == normalizedTarget) {
         final aesKey = (item['file_aes_key'] ?? '').toString();
         if (aesKey.isNotEmpty) {
-          print("✅ [MATCH TEAM FILE] url: $itemUrl -> file_aes_key: $aesKey");
+          AppLogger.log(
+            "✅ [MATCH TEAM FILE] url: $itemUrl -> file_aes_key: $aesKey",
+          );
           return aesKey;
         }
       }
     }
 
-    print(
+    AppLogger.log(
       "⚠️ [NO MATCH TEAM FILE] Tidak ada url_file yang cocok dengan: $normalizedTarget",
     );
     return null;
   }
 
   Future<void> displayNotarisDocument({
-    required BuildContext context,
     required NotarisDocMetadata document,
   }) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
+    Get.dialog(
+      const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
         ),
       ),
+      barrierDismissible: false,
     );
 
     try {
@@ -592,7 +591,7 @@ class DetailBerkasNotarisController extends GetxController {
           resolvedId = matchedId;
         }
       } catch (e) {
-        print("⚠️ [AES ENC FILE TEAM ERROR] $e");
+        AppLogger.log("⚠️ [AES ENC FILE TEAM ERROR] $e");
       }
 
       final uri = Uri.parse('$baseUrl/api/v1/read-notary').replace(
@@ -605,23 +604,23 @@ class DetailBerkasNotarisController extends GetxController {
         },
       );
 
-      print("=== READ NOTARIS (displayNotarisDocument) ===");
-      print("URL: $uri");
+      AppLogger.log("=== READ NOTARIS (displayNotarisDocument) ===");
+      AppLogger.log("URL: $uri");
 
       final response = await http.get(
         uri,
         headers: {if (token.isNotEmpty) 'Authorization': 'Bearer $token'},
       );
 
-      print("Status: ${response.statusCode}");
+      AppLogger.log("Status: ${response.statusCode}");
       if (response.statusCode != 200) {
-        print("Body: ${response.body}");
+        AppLogger.log("Body: ${response.body}");
       }
 
-      if (Navigator.canPop(context)) Navigator.pop(context);
+      if (Get.isDialogOpen == true) Get.back();
 
       if (response.statusCode == 200) {
-        _tampilkanPopupGambar(context, response.bodyBytes);
+        _tampilkanPopupGambar(response.bodyBytes);
       } else {
         String message = "Gagal memuat berkas (Status: ${response.statusCode})";
         try {
@@ -633,13 +632,13 @@ class DetailBerkasNotarisController extends GetxController {
         Get.snackbar("Error", message);
       }
     } catch (e) {
-      if (Navigator.canPop(context)) Navigator.pop(context);
-      print("ERROR READ NOTARIS (displayNotarisDocument): $e");
+      if (Get.isDialogOpen == true) Get.back();
+      AppLogger.log("ERROR READ NOTARIS (displayNotarisDocument): $e");
       Get.snackbar("Error", "Gagal memuat berkas: $e");
     }
   }
 
-  void _tampilkanPopupGambar(BuildContext context, Uint8List bytes) {
+  void _tampilkanPopupGambar(Uint8List bytes) {
     bool isPdf = false;
     if (bytes.length >= 4) {
       if (bytes[0] == 0x25 &&
@@ -661,9 +660,8 @@ class DetailBerkasNotarisController extends GetxController {
       return;
     }
 
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
+    Get.dialog(
+      Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(15),
         child: Stack(
@@ -716,9 +714,9 @@ class DetailBerkasNotarisController extends GetxController {
               top: 10,
               right: 10,
               child: GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: () => Get.back(),
                 child: CircleAvatar(
-                  backgroundColor: Colors.black.withOpacity(0.5),
+                  backgroundColor: Colors.black.withValues(alpha: 0.5),
                   child: const Icon(Icons.close, color: Colors.white),
                 ),
               ),

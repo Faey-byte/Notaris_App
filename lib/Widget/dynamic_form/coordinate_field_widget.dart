@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/dynamic_form_controller.dart';
+import 'package:notaris_app/Model/dynamic_field_model.dart';
 import 'package:notaris_app/utils/app_colors.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class CoordinateFieldWidget extends StatefulWidget {
   final DynamicField field;
@@ -55,7 +57,8 @@ class _CoordinateFieldWidgetState extends State<CoordinateFieldWidget> {
           const SizedBox(height: 10),
 
           Obx(() {
-            final hasData = widget.field.latitude.value != 0.0 &&
+            final hasData =
+                widget.field.latitude.value != 0.0 &&
                 widget.field.longitude.value != 0.0;
 
             return Container(
@@ -85,8 +88,9 @@ class _CoordinateFieldWidgetState extends State<CoordinateFieldWidget> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight:
-                                  hasData ? FontWeight.w600 : FontWeight.normal,
+                              fontWeight: hasData
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
                               color: hasData
                                   ? Colors.black87
                                   : Colors.grey[600],
@@ -122,8 +126,9 @@ class _CoordinateFieldWidgetState extends State<CoordinateFieldWidget> {
 
                 TextField(
                   controller: latitudeController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: InputDecoration(
                     hintText: "-6.175392",
                     labelText: "Latitude",
@@ -142,8 +147,9 @@ class _CoordinateFieldWidgetState extends State<CoordinateFieldWidget> {
 
                 TextField(
                   controller: longitudeController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: InputDecoration(
                     hintText: "106.827153",
                     labelText: "Longitude",
@@ -190,7 +196,7 @@ class _CoordinateFieldWidgetState extends State<CoordinateFieldWidget> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -254,11 +260,11 @@ class _CoordinateFieldWidgetState extends State<CoordinateFieldWidget> {
         'text_value': "$latitude,$longitude",
       });
 
-      print("✅ === KOORDINAT BERHASIL DISIMPAN ===");
-      print("Latitude  : $latitude");
-      print("Longitude : $longitude");
-      print("Format    : $latitude,$longitude");
-      print("=====================================\n");
+      AppLogger.log("✅ === KOORDINAT BERHASIL DISIMPAN ===");
+      AppLogger.log("Latitude  : $latitude");
+      AppLogger.log("Longitude : $longitude");
+      AppLogger.log("Format    : $latitude,$longitude");
+      AppLogger.log("=====================================\n");
 
       latitudeController.clear();
       longitudeController.clear();
@@ -272,7 +278,7 @@ class _CoordinateFieldWidgetState extends State<CoordinateFieldWidget> {
 
       widget.controller.fields.refresh();
     } catch (e) {
-      print("❌ [COORDINATE INPUT ERROR]: $e");
+      AppLogger.log("❌ [COORDINATE INPUT ERROR]: $e");
       Get.snackbar(
         "Error",
         e.toString(),

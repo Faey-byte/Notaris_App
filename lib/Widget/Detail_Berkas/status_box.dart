@@ -32,10 +32,7 @@ class StatusBox extends StatelessWidget {
             ),
             child: Text(
               value,
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
             ),
           ),
         ],

@@ -38,11 +38,7 @@ class StatCardWidget extends StatelessWidget {
               color: iconBgColor,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              size: 18,
-              color: iconColor,
-            ),
+            child: Icon(icon, size: 18, color: iconColor),
           ),
           const SizedBox(height: 12),
           Text(
@@ -53,12 +49,22 @@ class StatCardWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: isHighlighted ? AppColors.primary : AppColors.textPrimary,
+          SizedBox(
+            width: double.infinity,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: isHighlighted
+                      ? AppColors.primary
+                      : AppColors.textPrimary,
+                ),
+              ),
             ),
           ),
         ],

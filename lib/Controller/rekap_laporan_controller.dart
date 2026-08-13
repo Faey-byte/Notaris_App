@@ -9,6 +9,7 @@ import 'package:notaris_app/config/base_url.dart';
 import 'package:notaris_app/Model/rekap_laporan_model.dart';
 import 'package:notaris_app/Pages/rekap_laporan_page.dart';
 import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class RekapLaporanController extends StatefulWidget {
   const RekapLaporanController({super.key});
@@ -18,7 +19,7 @@ class RekapLaporanController extends StatefulWidget {
 }
 
 class _RekapLaporanControllerState extends State<RekapLaporanController> {
-  static const String baseUrl = "${ApiConfig.baseUrl}";
+  static const String baseUrl = ApiConfig.baseUrl;
 
   static const List<String> _bulanIndonesia = [
     'Januari',
@@ -119,16 +120,16 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         '$baseUrl/api/v1/generate/report/PPAT',
       ).replace(queryParameters: queryParams);
 
-      print("🌐 [LAPORAN PPAT] Target URL   : $uri");
-      print("🌐 [LAPORAN PPAT] Query Params : $queryParams");
+      AppLogger.log("🌐 [LAPORAN PPAT] Target URL   : $uri");
+      AppLogger.log("🌐 [LAPORAN PPAT] Query Params : $queryParams");
 
       final response = await http.get(
         uri,
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      print("🚀 [LAPORAN PPAT] Status Code  : ${response.statusCode}");
-      print("🚀 [LAPORAN PPAT] Response mentah: ${response.body}");
+      AppLogger.log("🚀 [LAPORAN PPAT] Status Code  : ${response.statusCode}");
+      AppLogger.log("🚀 [LAPORAN PPAT] Response mentah: ${response.body}");
 
       if (response.statusCode != 200) {
         throw Exception(
@@ -139,7 +140,9 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       final decoded = jsonDecode(response.body);
 
       if (decoded == null) {
-        print("⚠️ [LAPORAN PPAT] Response null — tidak ada data dari server.");
+        AppLogger.log(
+          "⚠️ [LAPORAN PPAT] Response null — tidak ada data dari server.",
+        );
         setState(() {
           _ppatFetchedData = const RekapLaporanModel(
             totalBerkas: 0,
@@ -154,13 +157,12 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       }
 
       final rawList = PpatReportResponse.rawItemsFrom(decoded);
-      print("📦 [LAPORAN PPAT] Total item mentah dari API: ${rawList.length}");
+      AppLogger.log(
+        "📦 [LAPORAN PPAT] Total item mentah dari API: ${rawList.length}",
+      );
 
-      // NEW: ambil total_amount langsung dari root response, biar
-      // "Pemasukan" akurat sesuai perhitungan backend, bukan hasil
-      // hitung ulang manual di Flutter yang gampang meleset.
-      final double? totalAmountFromApi = (decoded is Map &&
-              decoded['total_amount'] != null)
+      final double? totalAmountFromApi =
+          (decoded is Map && decoded['total_amount'] != null)
           ? ((decoded['total_amount'] as num).toDouble())
           : null;
 
@@ -173,7 +175,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
 
       final detailedResponse = PpatReportResponse.fromDecoded(decoded);
 
-      print(
+      AppLogger.log(
         "✅ [LAPORAN PPAT] Total Berkas: ${model.totalBerkas}, "
         "Selesai: ${model.totalSelesai}, Proses: ${model.totalProses}, "
         "Pemasukan: ${model.pemasukan}, DetailRows: ${detailedResponse.items.length}",
@@ -184,7 +186,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         _ppatDetailItems = detailedResponse.items;
       });
     } catch (e) {
-      print("❌ [LAPORAN PPAT ERROR]: $e");
+      AppLogger.log("❌ [LAPORAN PPAT ERROR]: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -218,16 +220,18 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         '$baseUrl/api/v1/generate/report/Notary',
       ).replace(queryParameters: queryParams);
 
-      print("🌐 [LAPORAN NOTARIS] Target URL   : $uri");
-      print("🌐 [LAPORAN NOTARIS] Query Params : $queryParams");
+      AppLogger.log("🌐 [LAPORAN NOTARIS] Target URL   : $uri");
+      AppLogger.log("🌐 [LAPORAN NOTARIS] Query Params : $queryParams");
 
       final response = await http.get(
         uri,
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      print("🚀 [LAPORAN NOTARIS] Status Code  : ${response.statusCode}");
-      print("🚀 [LAPORAN NOTARIS] Response mentah: ${response.body}");
+      AppLogger.log(
+        "🚀 [LAPORAN NOTARIS] Status Code  : ${response.statusCode}",
+      );
+      AppLogger.log("🚀 [LAPORAN NOTARIS] Response mentah: ${response.body}");
 
       if (response.statusCode != 200) {
         throw Exception(
@@ -238,7 +242,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       final decoded = jsonDecode(response.body);
 
       if (decoded == null) {
-        print(
+        AppLogger.log(
           "⚠️ [LAPORAN NOTARIS] Response null — tidak ada data dari server.",
         );
         setState(() {
@@ -255,14 +259,12 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       }
 
       final rawList = NotarisReportResponse.rawItemsFrom(decoded);
-      print(
+      AppLogger.log(
         "📦 [LAPORAN NOTARIS] Total item mentah dari API: ${rawList.length}",
       );
 
-      // NEW: sama seperti PPAT — pakai total_amount dari root
-      // response backend buat "Pemasukan".
-      final double? totalAmountFromApi = (decoded is Map &&
-              decoded['total_amount'] != null)
+      final double? totalAmountFromApi =
+          (decoded is Map && decoded['total_amount'] != null)
           ? ((decoded['total_amount'] as num).toDouble())
           : null;
 
@@ -275,7 +277,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
 
       final detailedResponse = NotarisReportResponse.fromDecoded(decoded);
 
-      print(
+      AppLogger.log(
         "✅ [LAPORAN NOTARIS] Total Berkas: ${model.totalBerkas}, "
         "Selesai: ${model.totalSelesai}, Proses: ${model.totalProses}, "
         "Pemasukan: ${model.pemasukan}, DetailRows: ${detailedResponse.items.length}",
@@ -286,7 +288,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         _notarisDetailItems = detailedResponse.items;
       });
     } catch (e) {
-      print("❌ [LAPORAN NOTARIS ERROR]: $e");
+      AppLogger.log("❌ [LAPORAN NOTARIS ERROR]: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -351,7 +353,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       return hasCertificate || hasParties;
     }).toList();
 
-    print(
+    AppLogger.log(
       "🖨️ [EXPORT PPAT] Total item dari API: ${_ppatDetailItems.length}, "
       "setelah filter (buang yang kosong): ${validItems.length}",
     );
@@ -712,7 +714,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
       return da.compareTo(db);
     });
 
-    print(
+    AppLogger.log(
       "🖨️ [EXPORT NOTARIS] Total item dari API: ${_notarisDetailItems.length}, "
       "setelah filter (hanya yang punya tanggal akta): ${validItems.length}",
     );
@@ -991,7 +993,7 @@ class _RekapLaporanControllerState extends State<RekapLaporanController> {
         ),
         if (_isLoading)
           Container(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             child: const Center(child: CircularProgressIndicator()),
           ),
       ],

@@ -24,7 +24,7 @@ class StatusChip extends StatelessWidget {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? bgColor : bgColor.withOpacity(0.3),
+          color: isSelected ? bgColor : bgColor.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? textColor : Colors.transparent,

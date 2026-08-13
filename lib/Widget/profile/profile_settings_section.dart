@@ -81,10 +81,7 @@ class _SettingsRow extends StatelessWidget {
             if (trailing != null)
               Text(
                 trailing!,
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
               ),
             const SizedBox(width: 4),
             const Icon(Icons.chevron_right, color: Color(0xFFCBD5E1), size: 20),

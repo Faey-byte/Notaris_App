@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:notaris_app/config/base_url.dart';
 import 'package:notaris_app/data/db_Helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class NotarisDocField {
   final String label;
@@ -53,9 +53,9 @@ class NotarisFormController extends GetxController {
 
   late final String berkasId;
 
-  var _token = "".obs;
+  final _token = "".obs;
 
-  var _teamKey = "".obs;
+  final _teamKey = "".obs;
 
   var jenisPekerjaanList = <String>[].obs;
   final manualJenisCtrl = TextEditingController();
@@ -84,7 +84,6 @@ class NotarisFormController extends GetxController {
 
   var penghadapList = <NotarisPenghadap>[].obs;
 
-
   @override
   void onInit() {
     dbHelper = DbHelper();
@@ -98,8 +97,8 @@ class NotarisFormController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     _token.value = prefs.getString('auth_token') ?? "";
     _teamKey.value = prefs.getString('teamkey') ?? "";
-    print("🔑 [TOKEN LOADED]: ${_token.value}");
-    print("🔑 [TEAMKEY LOADED]: ${_teamKey.value}");
+    AppLogger.log("🔑 [TOKEN LOADED]: ${_token.value}");
+    AppLogger.log("🔑 [TEAMKEY LOADED]: ${_teamKey.value}");
   }
 
   Future<int?> _fetchUserId(String token) async {
@@ -113,13 +112,13 @@ class NotarisFormController extends GetxController {
         final decoded = jsonDecode(response.body);
         return decoded['user_id'] as int?;
       } else {
-        print(
+        AppLogger.log(
           "❌ [CONVERT TOKEN FAILED]: (${response.statusCode}) ${response.body}",
         );
         return null;
       }
     } catch (e) {
-      print("❌ [CONVERT TOKEN ERROR]: $e");
+      AppLogger.log("❌ [CONVERT TOKEN ERROR]: $e");
       return null;
     }
   }
@@ -273,8 +272,8 @@ class NotarisFormController extends GetxController {
       final currentTeamKey = prefs.getString('teamkey') ?? "";
       _teamKey.value = currentTeamKey;
 
-      print("🔑 [NOTARIS UPLOAD TOKEN]: $currentToken");
-      print("🔑 [NOTARIS UPLOAD TEAMKEY]: $currentTeamKey");
+      AppLogger.log("🔑 [NOTARIS UPLOAD TOKEN]: $currentToken");
+      AppLogger.log("🔑 [NOTARIS UPLOAD TEAMKEY]: $currentTeamKey");
 
       if (currentToken.isEmpty) {
         throw Exception("Token tidak ditemukan. Silakan login ulang.");
@@ -315,7 +314,7 @@ class NotarisFormController extends GetxController {
         );
       }
 
-      print("🚀 [NOTARIS UPLOAD] Response mentah: ${response.body}");
+      AppLogger.log("🚀 [NOTARIS UPLOAD] Response mentah: ${response.body}");
 
       final decoded = jsonDecode(response.body);
       Map<String, dynamic>? targetFileData;
@@ -375,14 +374,14 @@ class NotarisFormController extends GetxController {
         'text_value': null,
       });
 
-      print(
+      AppLogger.log(
         "💾 [NOTARIS] Tersimpan -> label: ${field.label}, "
         "url: $extractedUrl, matchkey: $extractedMatchKey, publicId: $extractedFileId",
       );
 
       Get.snackbar("Sukses", "${field.label} berhasil diupload");
     } catch (e) {
-      print("❌ [NOTARIS UPLOAD ERROR]: $e");
+      AppLogger.log("❌ [NOTARIS UPLOAD ERROR]: $e");
       Get.snackbar(
         "Upload Gagal",
         e.toString().replaceAll("Exception: ", ""),
@@ -519,9 +518,9 @@ class NotarisFormController extends GetxController {
 
     final body = jsonEncode(bodyMap);
 
-    print("========== NOTARY REQUEST ==========");
-    print(body);
-    print("====================================");
+    AppLogger.log("========== NOTARY REQUEST ==========");
+    AppLogger.log(body);
+    AppLogger.log("====================================");
 
     final response = await http.post(
       Uri.parse('http://202.155.16.62/api/v1/upload-notary'),
@@ -532,8 +531,8 @@ class NotarisFormController extends GetxController {
       body: body,
     );
 
-    print("🚀 [NOTARIS SUBMIT] Response mentah:");
-    print(response.body);
+    AppLogger.log("🚀 [NOTARIS SUBMIT] Response mentah:");
+    AppLogger.log(response.body);
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -547,11 +546,11 @@ class NotarisFormController extends GetxController {
     final isExisting = decoded['is_existing'] ?? false;
     final publicIDs = decoded['public_ids'] ?? [];
 
-    print("========== NOTARY RESPONSE ==========");
-    print("message      : $message");
-    print("is_existing  : $isExisting");
-    print("public_ids   : $publicIDs");
-    print("====================================");
+    AppLogger.log("========== NOTARY RESPONSE ==========");
+    AppLogger.log("message      : $message");
+    AppLogger.log("is_existing  : $isExisting");
+    AppLogger.log("public_ids   : $publicIDs");
+    AppLogger.log("====================================");
   }
 
   Future<void> submitForm() async {
@@ -560,7 +559,7 @@ class NotarisFormController extends GetxController {
     try {
       await _submitToServer();
 
-      print("🎊 [NOTARIS] DATA TERKIRIM. berkasId: $berkasId");
+      AppLogger.log("🎊 [NOTARIS] DATA TERKIRIM. berkasId: $berkasId");
 
       Get.snackbar(
         "Sukses",
@@ -571,7 +570,7 @@ class NotarisFormController extends GetxController {
 
       Get.offAllNamed('/Notaris');
     } catch (e) {
-      print("❌ [NOTARIS SUBMIT ERROR]: $e");
+      AppLogger.log("❌ [NOTARIS SUBMIT ERROR]: $e");
       Get.snackbar(
         "Error",
         e.toString().replaceAll("Exception: ", ""),

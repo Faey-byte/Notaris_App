@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -11,91 +10,9 @@ import 'package:notaris_app/data/db_Helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:notaris_app/Model/dynamic_field_model.dart';
-
-/// Formatter untuk otomatis menambahkan titik ribuan saat user mengetik angka.
-/// Contoh: user ketik "1000000" -> tampil "1.000.000"
-class ThousandsSeparatorInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (newValue.text.isEmpty) {
-      return newValue;
-    }
-
-    // Ambil angka murni saja (buang semua titik/karakter non-digit)
-    String digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digitsOnly.isEmpty) {
-      return const TextEditingValue(text: '');
-    }
-
-    // Format jadi 1.000.000
-    final formatted = digitsOnly.replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (match) => '${match[1]}.',
-    );
-
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-}
-
-class DynamicField {
-  final String label;
-  final String type;
-  final String placeholder;
-
-  var fileValue = ''.obs;
-  var fileId = ''.obs;
-  var matchKey = ''.obs;
-  var isLoading = false.obs;
-  var localFilePath = ''.obs;
-
-  var latitude = 0.0.obs;
-  var longitude = 0.0.obs;
-
-  var dateValue = Rxn<DateTime>();
-
-  bool get isImageFile => true;
-
-  DynamicField({
-    required this.label,
-    required this.type,
-    required this.placeholder,
-  });
-}
-
-class PendingUploadData {
-  final String label;
-  final String fileId;
-  final String matchKey;
-  final String url;
-  final String localFilePath;
-
-  PendingUploadData({
-    required this.label,
-    required this.fileId,
-    required this.matchKey,
-    required this.url,
-    required this.localFilePath,
-  });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'label': label,
-      'file_id': fileId,
-      'matchkey': matchKey,
-      'url': url,
-      'local_path': localFilePath,
-    };
-  }
-}
+import 'package:notaris_app/utils/logger.dart';
 
 class DynamicFormController extends GetxController {
   final String jenis;
@@ -103,21 +20,12 @@ class DynamicFormController extends GetxController {
 
   var fields = <DynamicField>[].obs;
   var controllers = <String, TextEditingController>{};
-
   final ImagePicker _picker = ImagePicker();
   late final DbHelper dbHelper;
-
   var lifeStatus = "".obs;
-  var _token = "".obs;
-
-  var _teamKey = "".obs;
-
-  var pendingUploads = <String, PendingUploadData>{}.obs;
-
+  final _token = "".obs;
+  final _teamKey = "".obs;
   var uploadedFilesData = <String, Map<String, String>>{}.obs;
-
-  /// Jadi true setelah user pertama kali menekan tombol submit/lanjut.
-  /// Dipakai UI untuk menentukan kapan tanda bintang merah mulai muncul.
   var attemptedSubmit = false.obs;
 
   final List<String> lifeStatusOptions = [
@@ -127,7 +35,7 @@ class DynamicFormController extends GetxController {
     "widowed",
   ];
 
-  static const String baseUrl = "${ApiConfig.baseUrl}";
+  static const String baseUrl = ApiConfig.baseUrl;
   static const String labelTransferorName =
       "Nama Pihak yang Mengalihkan (Transferor)";
   static const String labelTransferorAddress = "Alamat Pihak yang Mengalihkan";
@@ -152,7 +60,6 @@ class DynamicFormController extends GetxController {
   static const String labelRightNumber = "Nomor Hak";
   static const String labelNotaryName = "Nama Notaris";
 
-  /// Label field yang inputnya berupa uang dan perlu format titik ribuan.
   static const List<String> moneyFieldLabels = [
     "Total biaya layanan",
     labelNjop,
@@ -164,7 +71,7 @@ class DynamicFormController extends GetxController {
     dbHelper = DbHelper();
     super.onInit();
 
-    print("🔥 [CONTROLLER] jenis masuk: '$jenis'");
+    AppLogger.log("🔥 [CONTROLLER] jenis masuk: '$jenis'");
 
     if (jenis.isEmpty) {
       throw Exception("❌ jenis / ppat_type kosong dari halaman sebelumnya!");
@@ -592,9 +499,9 @@ class DynamicFormController extends GetxController {
         );
       }
 
-      print("🚀 === RESPONS MENTAH DARI SERVER UPLOAD FILE ===");
-      print(response.body);
-      print("=================================================");
+      AppLogger.log("🚀 === RESPONS MENTAH DARI SERVER UPLOAD FILE ===");
+      AppLogger.log(response.body);
+      AppLogger.log("=================================================");
 
       final decoded = jsonDecode(response.body);
       Map<String, dynamic>? targetFileData;
@@ -639,12 +546,12 @@ class DynamicFormController extends GetxController {
           'url': extractedUrl,
         };
 
-        print("🌐 === SIMPAN FILE DATA KE GLOBAL STATE ===");
-        print("Label        : $normalizedLabel");
-        print("File ID      : $extractedFileId");
-        print("Matchkey     : $extractedMatchKey");
-        print("URL          : $extractedUrl");
-        print("=========================================\n");
+        AppLogger.log("🌐 === SIMPAN FILE DATA KE GLOBAL STATE ===");
+        AppLogger.log("Label        : $normalizedLabel");
+        AppLogger.log("File ID      : $extractedFileId");
+        AppLogger.log("Matchkey     : $extractedMatchKey");
+        AppLogger.log("URL          : $extractedUrl");
+        AppLogger.log("=========================================\n");
 
         field.fileValue.value = extractedUrl;
         field.fileId.value = extractedFileId;
@@ -656,7 +563,7 @@ class DynamicFormController extends GetxController {
         throw Exception("Gagal mengekstrak struktur file.");
       }
     } catch (e) {
-      print("❌ [UPLOAD ERROR LOG]: $e");
+      AppLogger.log("❌ [UPLOAD ERROR LOG]: $e");
       Get.snackbar(
         "Upload Gagal",
         e.toString().replaceAll("Exception: ", ""),
@@ -739,8 +646,6 @@ class DynamicFormController extends GetxController {
     }
   }
 
-  /// Cek apakah sebuah field masih kosong (belum diisi), dipakai untuk
-  /// menampilkan bintang merah di UI.
   bool isFieldEmpty(DynamicField field) {
     switch (field.type) {
       case "text":
@@ -759,12 +664,8 @@ class DynamicFormController extends GetxController {
   }
 
   bool validateFields() {
-    // Tandai bahwa user sudah pernah mencoba submit, supaya UI mulai
-    // menampilkan bintang merah pada field yang masih kosong.
     attemptedSubmit.value = true;
-
     bool allValid = true;
-
     for (var field in fields) {
       if (isFieldEmpty(field)) {
         allValid = false;
@@ -787,12 +688,14 @@ class DynamicFormController extends GetxController {
 
   String _text(String label) => controllers[label]?.text.trim() ?? "";
 
-  double _number(String label) => double.tryParse(
+  double _number(String label) =>
+      double.tryParse(
         (controllers[label]?.text.trim() ?? "").replaceAll('.', ''),
       ) ??
       0.0;
 
-  int _intNumber(String label) => int.tryParse(
+  int _intNumber(String label) =>
+      int.tryParse(
         (controllers[label]?.text.trim() ?? "").replaceAll('.', ''),
       ) ??
       0;
@@ -803,10 +706,10 @@ class DynamicFormController extends GetxController {
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    print("🔑 === RESPONS convert/tokenTo/ID ===");
-    print("Status : ${response.statusCode}");
-    print("Body   : ${response.body}");
-    print("=====================================");
+    AppLogger.log("🔑 === RESPONS convert/tokenTo/ID ===");
+    AppLogger.log("Status : ${response.statusCode}");
+    AppLogger.log("Body   : ${response.body}");
+    AppLogger.log("=====================================");
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -846,10 +749,10 @@ class DynamicFormController extends GetxController {
         }),
       );
 
-      print("🔐 === RESPONS update/aes/encKey/fileTeam ===");
-      print("Status : ${response.statusCode}");
-      print("Body   : ${response.body}");
-      print("=============================================");
+      AppLogger.log("🔐 === RESPONS update/aes/encKey/fileTeam ===");
+      AppLogger.log("Status : ${response.statusCode}");
+      AppLogger.log("Body   : ${response.body}");
+      AppLogger.log("=============================================");
 
       if (response.statusCode != 200) {
         throw Exception(
@@ -864,7 +767,7 @@ class DynamicFormController extends GetxController {
         );
       }
     } catch (e) {
-      print("❌ [UPDATE AES ENC KEY ERROR]: $e");
+      AppLogger.log("❌ [UPDATE AES ENC KEY ERROR]: $e");
       Get.snackbar(
         "Peringatan",
         "Data tersimpan, tapi gagal sinkronkan team key: ${e.toString().replaceAll("Exception: ", "")}",
@@ -1043,7 +946,7 @@ class DynamicFormController extends GetxController {
       );
 
       if (result.hasException) {
-        print("❌ GraphQL Error: ${result.exception}");
+        AppLogger.log("❌ GraphQL Error: ${result.exception}");
         Get.snackbar("Error", result.exception.toString());
         return;
       }
@@ -1064,13 +967,13 @@ class DynamicFormController extends GetxController {
       final String ppatType = responseData['ppat_type'] ?? jenis;
       final String notaryName = responseData['notaryName'] ?? "";
 
-      print("🎉 === GRAPHQL RESPONSE BERHASIL ===");
-      print("Message       : $message");
-      print("ClientID      : $clientId");
-      print("PPAT Type     : $ppatType");
-      print("Notary Name   : $notaryName");
-      print("Public IDs    : $publicIds");
-      print("====================================\n");
+      AppLogger.log("🎉 === GRAPHQL RESPONSE BERHASIL ===");
+      AppLogger.log("Message       : $message");
+      AppLogger.log("ClientID      : $clientId");
+      AppLogger.log("PPAT Type     : $ppatType");
+      AppLogger.log("Notary Name   : $notaryName");
+      AppLogger.log("Public IDs    : $publicIds");
+      AppLogger.log("====================================\n");
 
       if (clientId.isEmpty) {
         throw Exception("ClientID tidak valid dari public_ids");
@@ -1083,7 +986,7 @@ class DynamicFormController extends GetxController {
         publicId: clientId,
       );
 
-      print("💾 === PROSES SIMPAN CACHE FILE (url + matchkey) ===");
+      AppLogger.log("💾 === PROSES SIMPAN CACHE FILE (url + matchkey) ===");
 
       for (var entry in uploadedFilesData.entries) {
         final label = entry.key.trim();
@@ -1102,18 +1005,17 @@ class DynamicFormController extends GetxController {
 
         await dbHelper.saveDraft(draftRow);
 
-        print("✅ Saved (local cache): $label");
-        print("   - URL      : $url");
-        print("   - Matchkey : $matchKey");
-        print("");
+        AppLogger.log("✅ Saved (local cache): $label");
+        AppLogger.log("   - URL      : $url");
+        AppLogger.log("   - Matchkey : $matchKey");
+        AppLogger.log("");
       }
 
-      print("====================================");
-      print("🎊 SUBMIT SELESAI — data lengkap ada di server,");
-      print("   sqflite cuma menyimpan url + matchkey gambar.\n");
+      AppLogger.log("====================================");
+      AppLogger.log("🎊 SUBMIT SELESAI — data lengkap ada di server,");
+      AppLogger.log("   sqflite cuma menyimpan url + matchkey gambar.\n");
 
       uploadedFilesData.clear();
-      pendingUploads.clear();
 
       Get.snackbar(
         "Sukses",
@@ -1124,7 +1026,7 @@ class DynamicFormController extends GetxController {
 
       Get.offAllNamed('/PPAT');
     } catch (e) {
-      print("❌ [SUBMIT ERROR]: $e");
+      AppLogger.log("❌ [SUBMIT ERROR]: $e");
       Get.snackbar(
         "Error",
         e.toString().replaceAll("Exception: ", ""),

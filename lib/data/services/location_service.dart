@@ -43,12 +43,13 @@ class LocationService {
 
     try {
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 12),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 12),
+        ),
       );
       return LocationResult(LatLng(position.latitude, position.longitude));
     } catch (e) {
-      // Fresh position gagal/timeout -> coba fallback ke posisi terakhir yang diketahui
       final last = await Geolocator.getLastKnownPosition();
       if (last != null) {
         return LocationResult(LatLng(last.latitude, last.longitude));
@@ -59,9 +60,6 @@ class LocationService {
     }
   }
 
-  /// Cari koordinat dari teks alamat pakai Nominatim (OpenStreetMap).
-  /// Dipakai daripada geocoder native Android karena geocoder bawaan
-  /// suka gagal / gak tersedia walau alamatnya sebenarnya valid.
   Future<LocationResult> searchAddress(String query) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) {

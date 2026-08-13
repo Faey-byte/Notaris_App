@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:notaris_app/Controller/profile_controller.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -19,10 +20,17 @@ class ProfileHeader extends StatelessWidget {
                 height: 88,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF1E293B), width: 2.5),
+                  border: Border.all(
+                    color: const Color(0xFF1E293B),
+                    width: 2.5,
+                  ),
                   color: Colors.white,
                 ),
-                child: const Icon(Icons.person, size: 54, color: Color(0xFF1E293B)),
+                child: const Icon(
+                  Icons.person,
+                  size: 54,
+                  color: Color(0xFF1E293B),
+                ),
               ),
               Positioned(
                 bottom: 0,
@@ -35,18 +43,24 @@ class ProfileHeader extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
-                  child: const Icon(Icons.verified, color: Colors.white, size: 14),
+                  child: const Icon(
+                    Icons.verified,
+                    color: Colors.white,
+                    size: 14,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 14),
-          Text(
-            controller.nama.value,
-            style: const TextStyle(
-              color: Color(0xFF1E293B),
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
+          Obx(
+            () => Text(
+              controller.nama.value,
+              style: const TextStyle(
+                color: Color(0xFF1E293B),
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],

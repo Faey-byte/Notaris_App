@@ -2,32 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:notaris_app/Model/ppat_model.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
-/// PpatDocItem — versi simple.
-///
-/// CATATAN PENTING (kenapa ini diubah):
-/// Sebelumnya widget ini mencoba men-download file dari Cloudinary lalu
-/// mendekripsi bytes-nya sendiri di client pakai AES + `matchkey`, meniru
-/// pola NotarisDocItem. Ternyata skema enkripsi file PPAT BERBEDA dari
-/// notaris (sudah dibuktikan lewat percobaan banyak kombinasi key/IV/mode
-/// yang semuanya gagal menghasilkan gambar valid).
-///
-/// Backend PPAT sudah punya endpoint khusus yang MENDEKRIPSI FILE DI SISI
-/// SERVER: `/api/v1/read-ppat` (lihat DetailBerkasController.displayDocument).
-/// Jadi client tidak perlu (dan tidak boleh) coba dekripsi manual lagi —
-/// tinggal panggil endpoint itu dan render bytes yang dikembalikan.
-///
-/// Widget ini sekarang murni tampilan (dumb widget): saat di-tap, dia
-/// cuma memanggil callback [onPreview] yang disediakan oleh halaman
-/// pemanggil (biasanya `() => controller.displayDocument(...)`).
 class PpatDocItem extends StatelessWidget {
   final PpatDocMetadata doc;
   final VoidCallback onPreview;
 
-  const PpatDocItem({
-    super.key,
-    required this.doc,
-    required this.onPreview,
-  });
+  const PpatDocItem({super.key, required this.doc, required this.onPreview});
 
   @override
   Widget build(BuildContext context) {

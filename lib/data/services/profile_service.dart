@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:notaris_app/config/base_url.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class ProfileService {
   static const String baseUrl = "${ApiConfig.baseUrl}/api/v1";
@@ -31,10 +32,10 @@ class ProfileService {
       }),
     );
 
-    print("=== PROFILE UPDATE ===");
-    print("URL: $uri");
-    print("Status: ${response.statusCode}");
-    print("Body: ${response.body}");
+    AppLogger.log("=== PROFILE UPDATE ===");
+    AppLogger.log("URL: $uri");
+    AppLogger.log("Status: ${response.statusCode}");
+    AppLogger.log("Body: ${response.body}");
 
     final decoded = jsonDecode(response.body);
 
@@ -42,7 +43,8 @@ class ProfileService {
       return decoded['message'] ?? "Profile updated successfully";
     }
 
-    final errorMsg = decoded['message'] ?? decoded['error'] ?? "Gagal update profile";
+    final errorMsg =
+        decoded['message'] ?? decoded['error'] ?? "Gagal update profile";
     throw Exception(errorMsg);
   }
 }

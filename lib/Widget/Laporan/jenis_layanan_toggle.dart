@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notaris_app/utils/app_colors.dart';
+
 enum JenisLayanan { notaris, ppat }
 
 class JenisLayananToggle extends StatelessWidget {
@@ -19,10 +20,7 @@ class JenisLayananToggle extends StatelessWidget {
       children: [
         const Text(
           'Jenis Layanan',
-          style: TextStyle(
-            fontSize: 11,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 4),
         Container(

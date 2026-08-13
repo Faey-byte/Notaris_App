@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Form_Notaris_controller.dart';
+import 'package:notaris_app/Controller/form_notaris_controller.dart';
 
 class AktaDateField extends StatelessWidget {
   final NotarisFormController controller;
@@ -31,11 +31,17 @@ class AktaDateField extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: date == null ? const Color(0xFF94A3B8) : const Color(0xFF1E293B),
+                  color: date == null
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF1E293B),
                   fontSize: 15,
                 ),
               ),
-              const Icon(Icons.calendar_today_outlined, size: 18, color: Color(0xFF94A3B8)),
+              const Icon(
+                Icons.calendar_today_outlined,
+                size: 18,
+                color: Color(0xFF94A3B8),
+              ),
             ],
           ),
         ),

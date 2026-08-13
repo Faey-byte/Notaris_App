@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
-/// Tombol bulat kecil buat re-fetch lokasi device saat ini.
 class MapLocateMeButton extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onPressed;
 
   const MapLocateMeButton({
-    Key? key,
+    super.key,
     required this.isLoading,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -10,14 +10,14 @@ class DetailDropdownCard extends StatelessWidget {
   final Color textColor;
 
   const DetailDropdownCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.currentValue,
     required this.items,
     required this.onChanged,
     required this.backgroundColor,
     required this.textColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,24 +33,38 @@ class DetailDropdownCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.5),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 8),
           PopupMenuButton<String>(
             onSelected: onChanged,
-            itemBuilder: (context) => items.map((String val) {
-              return PopupMenuItem<String>(
-                value: val,
-                child: Text(val, style: const TextStyle(color: AppColors.textPrimary)),
-              );
-            }).toList(),
+            itemBuilder: (context) => items
+                .map(
+                  (value) => PopupMenuItem<String>(
+                    value: value,
+                    child: Text(
+                      value,
+                      style: const TextStyle(color: AppColors.textPrimary),
+                    ),
+                  ),
+                )
+                .toList(),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Text(
                     currentValue,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

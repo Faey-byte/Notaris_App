@@ -20,7 +20,11 @@ class TambahBerkasTopBar extends StatelessWidget {
                 color: const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.arrow_back, color: Color(0xFF334155), size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Color(0xFF334155),
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 12),

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:notaris_app/Model/ppat_model.dart';
-import 'package:notaris_app/Pages/Calculator_Page.dart';
-import 'package:notaris_app/Pages/Tambah_Pekerjaan_Page.dart';
+import 'package:notaris_app/Pages/calculator_page.dart';
+import 'package:notaris_app/Pages/tambah_pekerjaan_page.dart';
 import 'package:notaris_app/config/base_url.dart';
-import 'package:notaris_app/data/services/auth_service.dart';
 import 'package:notaris_app/data/services/logging_service.dart';
 import 'package:notaris_app/utils/app_colors.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class StatusModel {
   final String label;
@@ -36,7 +36,7 @@ class PpatController extends GetxController {
   var berkasList = <PpatDetailModel>[].obs;
   var filteredList = <PpatDetailModel>[].obs;
 
-  static const String baseUrl = "${ApiConfig.baseUrl}";
+  static const String baseUrl = ApiConfig.baseUrl;
 
   static const Map<String, String> backendStatusToLabel = {
     "pending": "PENDING",
@@ -215,7 +215,9 @@ class PpatController extends GetxController {
             final currentStatus = labelFromBackendStatus(
               item['status_pengerjaan']?.toString(),
             );
-            final index = berkasList.indexWhere((b) => b.id == serverId);
+            final index = berkasList.indexWhere(
+              (b) => b.id.toString() == serverId,
+            );
             if (index != -1) {
               (berkasList[index] as dynamic).status = currentStatus;
             }
@@ -225,7 +227,7 @@ class PpatController extends GetxController {
         }
       }
     } catch (e) {
-      print("Gagal sinkronisasi GraphQL: $e");
+      AppLogger.log("Gagal sinkronisasi GraphQL: $e");
     }
   }
 

@@ -1,8 +1,8 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:notaris_app/data/services/logging_service.dart';
 import 'package:notaris_app/config/base_url.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class AuthService {
   static const String baseUrl = "${ApiConfig.baseUrl}/api/v1";
@@ -19,8 +19,8 @@ class AuthService {
       body: jsonEncode({"email": email, "password": password}),
     );
 
-    print("LOGIN STATUS: ${response.statusCode}");
-    print("LOGIN BODY: ${response.body}");
+    AppLogger.log("LOGIN STATUS: ${response.statusCode}");
+    AppLogger.log("LOGIN BODY: ${response.body}");
 
     final data = jsonDecode(response.body);
 
@@ -54,8 +54,8 @@ class AuthService {
       }),
     );
 
-    print("SIGNUP STATUS: ${response.statusCode}");
-    print("SIGNUP BODY: ${response.body}");
+    AppLogger.log("SIGNUP STATUS: ${response.statusCode}");
+    AppLogger.log("SIGNUP BODY: ${response.body}");
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
 
@@ -85,14 +85,11 @@ class AuthService {
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'otpCode': otp,
-      }),
+      body: jsonEncode({'email': email, 'otpCode': otp}),
     );
 
-    print("VERIFY OTP STATUS: ${response.statusCode}");
-    print("VERIFY OTP BODY: ${response.body}");
+    AppLogger.log("VERIFY OTP STATUS: ${response.statusCode}");
+    AppLogger.log("VERIFY OTP BODY: ${response.body}");
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
 
@@ -122,8 +119,8 @@ class AuthService {
       body: jsonEncode({'email': email}),
     );
 
-    print("RESEND OTP STATUS: ${response.statusCode}");
-    print("RESEND OTP BODY: ${response.body}");
+    AppLogger.log("RESEND OTP STATUS: ${response.statusCode}");
+    AppLogger.log("RESEND OTP BODY: ${response.body}");
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
 
@@ -157,8 +154,8 @@ class AuthService {
       body: jsonEncode({'email': email}),
     );
 
-    print("REQUEST RESET PASSWORD STATUS: ${response.statusCode}");
-    print("REQUEST RESET PASSWORD BODY: ${response.body}");
+    AppLogger.log("REQUEST RESET PASSWORD STATUS: ${response.statusCode}");
+    AppLogger.log("REQUEST RESET PASSWORD BODY: ${response.body}");
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
 
@@ -166,7 +163,8 @@ class AuthService {
       return body;
     }
 
-    final errorMessage = body['error'] ?? body['message'] ?? 'Gagal mengirim kode reset';
+    final errorMessage =
+        body['error'] ?? body['message'] ?? 'Gagal mengirim kode reset';
 
     switch (response.statusCode) {
       case 404:
@@ -195,8 +193,8 @@ class AuthService {
       }),
     );
 
-    print("RESET PASSWORD STATUS: ${response.statusCode}");
-    print("RESET PASSWORD BODY: ${response.body}");
+    AppLogger.log("RESET PASSWORD STATUS: ${response.statusCode}");
+    AppLogger.log("RESET PASSWORD BODY: ${response.body}");
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
 
@@ -204,7 +202,8 @@ class AuthService {
       return body;
     }
 
-    final errorMessage = body['error'] ?? body['message'] ?? 'Gagal reset password';
+    final errorMessage =
+        body['error'] ?? body['message'] ?? 'Gagal reset password';
 
     switch (response.statusCode) {
       case 404:

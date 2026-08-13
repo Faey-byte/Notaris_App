@@ -135,10 +135,7 @@ class StaffModel {
   final int id;
   final String staffName;
 
-  StaffModel({
-    required this.id,
-    required this.staffName,
-  });
+  StaffModel({required this.id, required this.staffName});
 
   factory StaffModel.fromJson(Map<String, dynamic> json) {
     return StaffModel(
@@ -148,21 +145,14 @@ class StaffModel {
   }
 }
 
-/// Notaris / kantor yang menangani transaksi
 class InstituteModel {
   final int id;
   final String name;
 
-  InstituteModel({
-    required this.id,
-    required this.name,
-  });
+  InstituteModel({required this.id, required this.name});
 
   factory InstituteModel.fromJson(Map<String, dynamic> json) {
-    return InstituteModel(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? "",
-    );
+    return InstituteModel(id: json['id'] ?? 0, name: json['name'] ?? "");
   }
 }
 
@@ -170,10 +160,7 @@ class DocumentTransactionModel {
   final int id;
   final AssetModel asset;
 
-  DocumentTransactionModel({
-    required this.id,
-    required this.asset,
-  });
+  DocumentTransactionModel({required this.id, required this.asset});
 
   factory DocumentTransactionModel.fromJson(Map<String, dynamic> json) {
     return DocumentTransactionModel(
@@ -192,20 +179,22 @@ class AssetModel {
     var rawMetadata = json['metadata'];
     List<PpatDocMetadata> metaList = [];
 
-    // metadata bisa berupa List langsung, atau Map berisi { files: [...] }
     if (rawMetadata is List) {
       metaList = rawMetadata
           .whereType<Map>()
-          .map((item) =>
-              PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)))
+          .map(
+            (item) => PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)),
+          )
           .toList();
     } else if (rawMetadata is Map) {
       final rawFiles = rawMetadata['files'];
       if (rawFiles is List) {
         metaList = rawFiles
             .whereType<Map>()
-            .map((item) =>
-                PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)))
+            .map(
+              (item) =>
+                  PpatDocMetadata.fromJson(Map<String, dynamic>.from(item)),
+            )
             .toList();
       }
     }
@@ -230,14 +219,17 @@ class PpatDocMetadata {
   factory PpatDocMetadata.fromJson(Map<String, dynamic> json) {
     return PpatDocMetadata(
       id: json['id']?.toString() ?? json['file_id']?.toString() ?? '',
-      label: json['label'] ?? json['name'] ?? json['title'] ?? 'Dokumen tanpa nama',
+      label:
+          json['label'] ??
+          json['name'] ??
+          json['title'] ??
+          'Dokumen tanpa nama',
       url: json['url'] ?? json['file_url'] ?? '',
       matchkey: json['matchkey'] ?? json['match_key'] ?? '',
     );
   }
 }
 
-/// Data pihak I (transferor), pihak II (transferee), objek tanah & pajak
 class TransactionAddressModel {
   final int id;
   final int transactionId;
@@ -284,7 +276,7 @@ class TransactionAddressModel {
   });
 
   factory TransactionAddressModel.fromJson(Map<String, dynamic> json) {
-    int _toInt(dynamic v) {
+    int toInt(dynamic v) {
       if (v is int) return v;
       if (v is double) return v.toInt();
       if (v is String) return int.tryParse(v) ?? 0;
@@ -292,8 +284,8 @@ class TransactionAddressModel {
     }
 
     return TransactionAddressModel(
-      id: _toInt(json['id']),
-      transactionId: _toInt(json['transaction_id']),
+      id: toInt(json['id']),
+      transactionId: toInt(json['transaction_id']),
       transferorName: json['transferor_name']?.toString() ?? '',
       transferorAddress: json['transferor_address']?.toString() ?? '',
       transferorNpwp: json['transferor_npwp']?.toString() ?? '',
@@ -302,21 +294,20 @@ class TransactionAddressModel {
       transfereeNpwp: json['transferee_npwp']?.toString() ?? '',
       hamlet: json['hamlet']?.toString() ?? '',
       village: json['village']?.toString() ?? '',
-      landArea: _toInt(json['land_area']),
-      buildingArea: _toInt(json['building_area']),
+      landArea: toInt(json['land_area']),
+      buildingArea: toInt(json['building_area']),
       book: json['book']?.toString() ?? '',
       number: json['number']?.toString() ?? '',
-      taxYear: _toInt(json['tax_year']),
+      taxYear: toInt(json['tax_year']),
       nop: json['nop']?.toString() ?? '',
-      njop: _toInt(json['njop']),
-      bphtb: _toInt(json['bphtb']),
-      createdAt: _toInt(json['created_at']),
-      updatedAt: _toInt(json['updated_at']),
+      njop: toInt(json['njop']),
+      bphtb: toInt(json['bphtb']),
+      createdAt: toInt(json['created_at']),
+      updatedAt: toInt(json['updated_at']),
     );
   }
 }
 
-/// Data akta / sertipikat
 class CertificateModel {
   final int id;
   final int transactionId;
@@ -341,7 +332,7 @@ class CertificateModel {
   });
 
   factory CertificateModel.fromJson(Map<String, dynamic> json) {
-    int _toInt(dynamic v) {
+    int toInt(dynamic v) {
       if (v is int) return v;
       if (v is double) return v.toInt();
       if (v is String) return int.tryParse(v) ?? 0;
@@ -349,15 +340,15 @@ class CertificateModel {
     }
 
     return CertificateModel(
-      id: _toInt(json['id']),
-      transactionId: _toInt(json['transaction_id']),
+      id: toInt(json['id']),
+      transactionId: toInt(json['transaction_id']),
       deedNumber: json['deed_number']?.toString() ?? '',
-      deedDate: _toInt(json['deed_date']),
+      deedDate: toInt(json['deed_date']),
       deedType: json['deed_type']?.toString() ?? '',
       rightType: json['right_type']?.toString() ?? '',
       rightNumber: json['right_number']?.toString() ?? '',
-      createdAt: _toInt(json['created_at']),
-      updatedAt: _toInt(json['updated_at']),
+      createdAt: toInt(json['created_at']),
+      updatedAt: toInt(json['updated_at']),
     );
   }
 }

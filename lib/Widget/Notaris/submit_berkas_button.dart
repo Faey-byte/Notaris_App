@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:notaris_app/Controller/Form_Notaris_controller.dart';
+import 'package:notaris_app/Controller/form_notaris_controller.dart';
 
 class SubmitBerkasButton extends StatelessWidget {
   final NotarisFormController controller;
@@ -15,12 +15,18 @@ class SubmitBerkasButton extends StatelessWidget {
         icon: const Icon(Icons.save_outlined, color: Colors.white),
         label: const Text(
           'Simpan Berkas',
-          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF913632),
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           elevation: 4,
         ),
       ),

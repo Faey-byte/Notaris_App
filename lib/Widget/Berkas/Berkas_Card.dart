@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:notaris_app/Model/ppat_model.dart';
-import 'package:notaris_app/Pages/Detail_Berkas_PPAT.dart';
-import 'package:notaris_app/Controller/Ppat_Controller.dart';
+import 'package:notaris_app/Pages/detail_berkas_ppat.dart';
+import 'package:notaris_app/Controller/ppat_controller.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class BerkasCard extends StatelessWidget {
   final PpatDetailModel data;
@@ -13,15 +14,35 @@ class BerkasCard extends StatelessWidget {
   _StatusStyle _getStatusStyle(String status) {
     switch (status.toLowerCase()) {
       case "proses":
-        return _StatusStyle("PROSES BPN", const Color(0xFFFF9800), const Color(0xFFFFF3E0));
+        return _StatusStyle(
+          "PROSES BPN",
+          const Color(0xFFFF9800),
+          const Color(0xFFFFF3E0),
+        );
       case "selesai":
-        return _StatusStyle("SELESAI", const Color(0xFF4CAF50), const Color(0xFFE8F5E9));
+        return _StatusStyle(
+          "SELESAI",
+          const Color(0xFF4CAF50),
+          const Color(0xFFE8F5E9),
+        );
       case "revisi":
-        return _StatusStyle("REVISI PAJAK", const Color(0xFFF44336), const Color(0xFFFFEBEE));
+        return _StatusStyle(
+          "REVISI PAJAK",
+          const Color(0xFFF44336),
+          const Color(0xFFFFEBEE),
+        );
       case "pending":
-        return _StatusStyle("PENDING", const Color(0xFF2196F3), const Color(0xFFE3F2FD));
+        return _StatusStyle(
+          "PENDING",
+          const Color(0xFF2196F3),
+          const Color(0xFFE3F2FD),
+        );
       default:
-        return _StatusStyle(status.toUpperCase(), const Color(0xFF9E9E9E), const Color(0xFFF5F5F5));
+        return _StatusStyle(
+          status.toUpperCase(),
+          const Color(0xFF9E9E9E),
+          const Color(0xFFF5F5F5),
+        );
     }
   }
 
@@ -49,7 +70,7 @@ class BerkasCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -78,11 +99,17 @@ class BerkasCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         "No. Berkas: ${data.id}",
-                        style: const TextStyle(fontSize: 13, color: Color(0xFF888888)),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF888888),
+                        ),
                       ),
                       Text(
                         data.client.publicId,
-                        style: const TextStyle(fontSize: 12, color: Color(0xFFAAAAAA)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFAAAAAA),
+                        ),
                       ),
                     ],
                   ),
@@ -95,22 +122,35 @@ class BerkasCard extends StatelessWidget {
             const SizedBox(height: 10),
             Row(
               children: [
-                Icon(_getJenisIcon(data.caseData.caseName),
-                    size: 16, color: const Color(0xFF888888)),
+                Icon(
+                  _getJenisIcon(data.caseData.caseName),
+                  size: 16,
+                  color: const Color(0xFF888888),
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     data.caseData.caseName.replaceAll('_', ' ').toUpperCase(),
-                    style: const TextStyle(fontSize: 13, color: Color(0xFF555555)),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF555555),
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Icon(Icons.calendar_today_outlined, size: 14, color: Color(0xFF888888)),
+                const Icon(
+                  Icons.calendar_today_outlined,
+                  size: 14,
+                  color: Color(0xFF888888),
+                ),
                 const SizedBox(width: 6),
                 Text(
                   _formatTimestamp(data.createdAt),
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF555555)),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF555555),
+                  ),
                 ),
               ],
             ),
@@ -131,12 +171,13 @@ class BerkasCard extends StatelessWidget {
                   onTap: () {
                     Get.to(() => DetailBerkasPage(data: data))?.then((value) {
                       try {
-                        // Mencari PpatController yang aktif di memori GetX
                         final ppatController = Get.find<PpatController>();
 
                         ppatController.onInit();
                       } catch (e) {
-                        print("Gagal me-refresh halaman daftar berkas utama: $e");
+                        AppLogger.log(
+                          "Gagal me-refresh halaman daftar berkas utama: $e",
+                        );
                       }
                     });
                   },
@@ -164,7 +205,11 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         style.label,
-        style: TextStyle(color: style.textColor, fontSize: 12, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: style.textColor,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -177,7 +222,8 @@ class _AvatarIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 28, height: 28,
+      width: 28,
+      height: 28,
       decoration: BoxDecoration(
         color: const Color(0xFFF0F2F5),
         borderRadius: BorderRadius.circular(8),
@@ -197,9 +243,15 @@ class _DetailButton extends StatelessWidget {
       onTap: onTap,
       child: const Row(
         children: [
-          Text("Detail",
-            style: TextStyle(color: Color(0xFF8B1A1A), fontWeight: FontWeight.w600, fontSize: 13)),
-          const SizedBox(width: 2),
+          Text(
+            "Detail",
+            style: TextStyle(
+              color: Color(0xFF8B1A1A),
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+          SizedBox(width: 2),
           Icon(Icons.chevron_right, size: 18, color: Color(0xFF8B1A1A)),
         ],
       ),

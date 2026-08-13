@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Pages/Otp_Pages.dart';
+import 'package:notaris_app/Pages/otp_pages.dart';
 import 'package:notaris_app/data/services/auth_service.dart';
+import 'package:notaris_app/utils/logger.dart';
 
 class SignupController extends GetxController {
   var isLoading = false.obs;
@@ -90,7 +90,7 @@ class SignupController extends GetxController {
       Get.to(() => const OtpPages(), arguments: userEmail);
     } catch (e) {
       Get.snackbar("Error", e.toString());
-      print(e);
+      AppLogger.log(e);
     } finally {
       isLoading.value = false;
     }
@@ -102,7 +102,6 @@ class SignupController extends GetxController {
     // emailC.dispose();
     // passC.dispose();
     // companyC.dispose();
-
     super.onClose();
   }
 }

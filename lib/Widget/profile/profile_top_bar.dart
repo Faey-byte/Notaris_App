@@ -15,8 +15,12 @@ class ProfileTopBar extends StatelessWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.toNamed('/HomePage'),
-            child: const Icon(Icons.arrow_back, color: Color(0xFF1E293B), size: 22),
+            onTap: () => Get.back(),
+            child: const Icon(
+              Icons.arrow_back,
+              color: Color(0xFF1E293B),
+              size: 22,
+            ),
           ),
           const Expanded(
             child: Text(
@@ -31,7 +35,11 @@ class ProfileTopBar extends StatelessWidget {
           ),
           GestureDetector(
             onTap: controller.openEditDialog,
-            child: const Icon(Icons.edit_outlined, color: Color(0xFF1E293B), size: 20),
+            child: const Icon(
+              Icons.edit_outlined,
+              color: Color(0xFF1E293B),
+              size: 20,
+            ),
           ),
         ],
       ),

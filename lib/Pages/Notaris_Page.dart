@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Notaris_Controller.dart';
+import 'package:notaris_app/Controller/notaris_controller.dart';
 import 'package:notaris_app/Controller/rekap_laporan_controller.dart';
-import 'package:notaris_app/Pages/Calculator_Page.dart';
-import 'package:notaris_app/Pages/Home_Page.dart';
+import 'package:notaris_app/Pages/calculator_page.dart';
+import 'package:notaris_app/Pages/home_page.dart';
 import 'package:notaris_app/Pages/ppat_page.dart';
 import 'package:notaris_app/Pages/Tambah_Berkas_Notaris.dart';
-import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
-import 'package:notaris_app/Widget/Notaris/Notaris_Card.dart';
-import 'package:notaris_app/Widget/Berkas/Page_Header_Widget.dart';
-import 'package:notaris_app/Widget/Berkas/Search_Bar_Widget.dart';
-import 'package:notaris_app/Widget/Berkas/Status_Chip.dart';
+import 'package:notaris_app/Widget/app_bottom_navbar.dart';
+import 'package:notaris_app/Widget/Notaris/notaris_card.dart';
+import 'package:notaris_app/Widget/Berkas/page_header_widget.dart';
+import 'package:notaris_app/Widget/Berkas/search_bar_widget.dart';
+import 'package:notaris_app/Widget/Berkas/status_chip.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class NotarisPage extends StatelessWidget {

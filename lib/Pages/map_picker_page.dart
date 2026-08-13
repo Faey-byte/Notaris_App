@@ -6,16 +6,10 @@ import 'package:notaris_app/Widget/map_search_field.dart';
 import 'package:notaris_app/data/services/location_service.dart';
 
 class MapPickerPage extends StatefulWidget {
-  /// null = belum ada koordinat tersimpan -> halaman ini bakal
-  /// auto-ambil lokasi device begitu dibuka.
   final double? initialLat;
   final double? initialLng;
 
-  const MapPickerPage({
-    Key? key,
-    this.initialLat,
-    this.initialLng,
-  }) : super(key: key);
+  const MapPickerPage({super.key, this.initialLat, this.initialLng});
 
   @override
   State<MapPickerPage> createState() => _MapPickerPageState();
@@ -40,10 +34,8 @@ class _MapPickerPageState extends State<MapPickerPage> {
     super.initState();
 
     if (_hasSavedLocation) {
-      // Mode edit: sudah ada koordinat sebelumnya, jangan auto-locate.
       _selectedLocation = LatLng(widget.initialLat!, widget.initialLng!);
     } else {
-      // Mode baru: auto ambil lokasi device begitu halaman kebuka.
       _selectedLocation = _fallbackLocation;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _handleLocateMe();

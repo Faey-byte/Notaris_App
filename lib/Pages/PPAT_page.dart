@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:notaris_app/Controller/Ppat_Controller.dart';
+import 'package:notaris_app/Controller/ppat_controller.dart';
 import 'package:notaris_app/Controller/rekap_laporan_controller.dart';
-import 'package:notaris_app/Model/rekap_laporan_model.dart';
-import 'package:notaris_app/Pages/Calculator_Page.dart';
-import 'package:notaris_app/Pages/Home_Page.dart';
-import 'package:notaris_app/Pages/Notaris_Page.dart';
-import 'package:notaris_app/Pages/rekap_laporan_page.dart';
-import 'package:notaris_app/Widget/App_Bottom_Navbar.dart';
-import 'package:notaris_app/Widget/Berkas/Berkas_Card.dart';
-import 'package:notaris_app/Widget/Berkas/Jenis_Filter_Chip.dart';
-import 'package:notaris_app/Widget/Berkas/Page_Header_Widget.dart';
-import 'package:notaris_app/Widget/Berkas/Search_Bar_Widget.dart';
-import 'package:notaris_app/Widget/Berkas/Status_Chip.dart';
-import 'package:notaris_app/Widget/Laporan/jenis_layanan_toggle.dart';
+import 'package:notaris_app/Pages/calculator_page.dart';
+import 'package:notaris_app/Pages/home_page.dart';
+import 'package:notaris_app/Pages/notaris_page.dart';
+import 'package:notaris_app/Widget/app_bottom_navbar.dart';
+import 'package:notaris_app/Widget/Berkas/berkas_card.dart';
+import 'package:notaris_app/Widget/Berkas/jenis_filter_chip.dart';
+import 'package:notaris_app/Widget/Berkas/page_header_widget.dart';
+import 'package:notaris_app/Widget/Berkas/search_bar_widget.dart';
+import 'package:notaris_app/Widget/Berkas/status_chip.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class PpatPage extends StatelessWidget {
@@ -34,7 +31,6 @@ class PpatPage extends StatelessWidget {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-
               SliverToBoxAdapter(
                 child: PageHeaderWidget(
                   title: "Berkas PPAT",
@@ -58,15 +54,18 @@ class PpatPage extends StatelessWidget {
                       const SizedBox(height: 8),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        child: Obx(() => Row(
-                          children: controller.jenisList.map((jenis) {
-                            return JenisFilterChip(
-                              label: jenis,
-                              isSelected: controller.selectedJenis.value == jenis,
-                              onTap: () => controller.setJenis(jenis),
-                            );
-                          }).toList(),
-                        )),
+                        child: Obx(
+                          () => Row(
+                            children: controller.jenisList.map((jenis) {
+                              return JenisFilterChip(
+                                label: jenis,
+                                isSelected:
+                                    controller.selectedJenis.value == jenis,
+                                onTap: () => controller.setJenis(jenis),
+                              );
+                            }).toList(),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 10),
                       SingleChildScrollView(
@@ -77,21 +76,36 @@ class PpatPage extends StatelessWidget {
                               padding: EdgeInsets.only(right: 10),
                               child: Row(
                                 children: [
-                                  Icon(Icons.filter_list, size: 16, color: AppColors.textSecondary),
+                                  Icon(
+                                    Icons.filter_list,
+                                    size: 16,
+                                    color: AppColors.textSecondary,
+                                  ),
                                   SizedBox(width: 4),
-                                  Text("STATUS",
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                                  Text(
+                                    "STATUS",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                            ...controller.statusList.map((s) => Obx(() => StatusChip(
-                              label: s.label,
-                              textColor: s.textColor,
-                              bgColor: s.bgColor,
-                              isSelected: controller.selectedStatus.value == s.label,
-                              onTap: () => controller.setStatus(s.label),
-                            ))),
+                            ...controller.statusList.map(
+                              (s) => Obx(
+                                () => StatusChip(
+                                  label: s.label,
+                                  textColor: s.textColor,
+                                  bgColor: s.bgColor,
+                                  isSelected:
+                                      controller.selectedStatus.value ==
+                                      s.label,
+                                  onTap: () => controller.setStatus(s.label),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -106,13 +120,25 @@ class PpatPage extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("DAFTAR BERKAS TERKINI",
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8, color: AppColors.primary),
+                      const Text(
+                        "DAFTAR BERKAS TERKINI",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                          color: AppColors.primary,
+                        ),
                       ),
-                      Obx(() => Text("${controller.filteredList.length} Berkas ditemukan",
-                        style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500),
-                      )),
+                      Obx(
+                        () => Text(
+                          "${controller.filteredList.length} Berkas ditemukan",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -132,14 +158,22 @@ class PpatPage extends StatelessWidget {
 
               SliverToBoxAdapter(
                 child: Obx(() {
-                  if (!controller.isLoading.value && controller.filteredList.isEmpty) {
+                  if (!controller.isLoading.value &&
+                      controller.filteredList.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.all(40),
                       child: Column(
                         children: [
-                          Icon(Icons.folder_off_outlined, size: 48, color: AppColors.border),
+                          Icon(
+                            Icons.folder_off_outlined,
+                            size: 48,
+                            color: AppColors.border,
+                          ),
                           SizedBox(height: 12),
-                          Text("Tidak ada data", style: TextStyle(color: AppColors.textSecondary)),
+                          Text(
+                            "Tidak ada data",
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
                         ],
                       ),
                     );
@@ -148,15 +182,18 @@ class PpatPage extends StatelessWidget {
                 }),
               ),
 
-              Obx(() => SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => BerkasCard(data: controller.filteredList[index]),
-                    childCount: controller.filteredList.length,
+              Obx(
+                () => SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) =>
+                          BerkasCard(data: controller.filteredList[index]),
+                      childCount: controller.filteredList.length,
+                    ),
                   ),
                 ),
-              )),
+              ),
 
               SliverToBoxAdapter(
                 child: Obx(() {
@@ -166,19 +203,24 @@ class PpatPage extends StatelessWidget {
                       child: Center(child: CircularProgressIndicator()),
                     );
                   }
-                  if (!controller.hasMore.value && controller.filteredList.isNotEmpty) {
+                  if (!controller.hasMore.value &&
+                      controller.filteredList.isNotEmpty) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
                       child: Center(
-                        child: Text("Semua data sudah dimuat",
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                        child: Text(
+                          "Semua data sudah dimuat",
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     );
                   }
                   return const SizedBox(height: 16);
                 }),
               ),
-
             ],
           ),
         ),
@@ -188,10 +230,10 @@ class PpatPage extends StatelessWidget {
         onTap: (index) {
           switch (index) {
             case 0:
-              Get.offAll(() =>  HomePage());
+              Get.offAll(() => HomePage());
               break;
             case 1:
-              Get.offAll(() =>  NotarisPage());
+              Get.offAll(() => NotarisPage());
               break;
             case 2:
               Get.offAll(() => PpatPage());
@@ -208,4 +250,3 @@ class PpatPage extends StatelessWidget {
     );
   }
 }
-

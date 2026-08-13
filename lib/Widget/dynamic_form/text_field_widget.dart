@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notaris_app/Controller/dynamic_form_controller.dart';
+import 'package:notaris_app/Model/dynamic_field_model.dart';
 import 'package:notaris_app/utils/app_colors.dart';
 
 class TextFieldWidget extends StatelessWidget {
@@ -21,9 +22,7 @@ class TextFieldWidget extends StatelessWidget {
           hintText: field.placeholder,
           filled: true,
           fillColor: AppColors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
     );

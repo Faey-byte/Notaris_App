@@ -44,11 +44,7 @@ class _DateInputField extends StatelessWidget {
   final String value;
   final VoidCallback? onTap;
 
-  const _DateInputField({
-    required this.label,
-    required this.value,
-    this.onTap,
-  });
+  const _DateInputField({required this.label, required this.value, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +53,7 @@ class _DateInputField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 4),
         GestureDetector(

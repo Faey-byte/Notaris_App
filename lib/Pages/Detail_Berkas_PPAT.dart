@@ -167,26 +167,21 @@ class DetailBerkasPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(DetailBerkasController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          controller.fallbackName,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+    Widget _buildHeader(DetailBerkasController controller) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            controller.fallbackName,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          "#${controller.publicId.value}",
-          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-        ),
-      ],
-    );
-  }
+        ],
+      );
+    }
 
   Widget _buildStatusRow(DetailBerkasController controller) {
     return Row(

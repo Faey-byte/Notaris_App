@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notaris_app/Controller/profile_controller.dart';
-import 'package:notaris_app/Widget/common/thin_divider.dart';
 
 class ProfileInfoSection extends StatelessWidget {
   final ProfileController controller;
-
   const ProfileInfoSection({super.key, required this.controller});
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -25,12 +22,11 @@ class ProfileInfoSection extends StatelessWidget {
               isFirst: true,
             ),
           ),
-          const ThinDivider(),
           Obx(
             () => _InfoRow(
-              icon: Icons.cake_outlined,
-              label: 'TANGGAL LAHIR',
-              value: controller.tanggalLahir.value,
+              icon: Icons.email_outlined,
+              label: 'EMAIL',
+              value: controller.email.value,
               isLast: true,
             ),
           ),
@@ -46,7 +42,6 @@ class _InfoRow extends StatelessWidget {
   final String value;
   final bool isFirst;
   final bool isLast;
-
   const _InfoRow({
     required this.icon,
     required this.label,
@@ -54,7 +49,6 @@ class _InfoRow extends StatelessWidget {
     this.isFirst = false,
     this.isLast = false,
   });
-
   @override
   Widget build(BuildContext context) {
     return Container(

@@ -52,12 +52,26 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const FormLabel('Jenis Pekerjaan'),
+                          Obx(
+                            () => FormLabel(
+                              'Jenis Pekerjaan',
+                              required: true,
+                              showError: c.attemptedSubmit.value &&
+                                  c.isJenisPekerjaanEmpty,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           JenisPekerjaanInput(controller: c),
                           const SizedBox(height: 20),
 
-                          const FormLabel('Nama Klien / Nama Perusahaan'),
+                          Obx(
+                            () => FormLabel(
+                              'Nama Klien / Nama Perusahaan',
+                              required: true,
+                              showError: c.attemptedSubmit.value &&
+                                  c.isNamaKlienEmpty,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           AppTextField(
                             controller: c.namaKlienCtrl,
@@ -65,7 +79,14 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 20),
 
-                          const FormLabel('Nomor Akta'),
+                          Obx(
+                            () => FormLabel(
+                              'Nomor Akta',
+                              required: true,
+                              showError: c.attemptedSubmit.value &&
+                                  c.isNomorAktaEmpty,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           AppTextField(
                             controller: c.nomorAktaCtrl,
@@ -73,12 +94,26 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 20),
 
-                          const FormLabel('Tanggal Akta'),
+                          Obx(
+                            () => FormLabel(
+                              'Tanggal Akta',
+                              required: true,
+                              showError: c.attemptedSubmit.value &&
+                                  c.isAktaDateEmpty,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           AktaDateField(controller: c),
                           const SizedBox(height: 20),
 
-                          const FormLabel('Sifat / Jenis Akta'),
+                          Obx(
+                            () => FormLabel(
+                              'Sifat / Jenis Akta',
+                              required: true,
+                              showError: c.attemptedSubmit.value &&
+                                  c.isAktaNatureEmpty,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           AppTextField(
                             controller: c.aktaNatureCtrl,
@@ -87,12 +122,26 @@ class TambahBerkasNotarisPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 20),
 
-                          const FormLabel('Total Biaya Layanan'),
+                          Obx(
+                            () => FormLabel(
+                              'Total Biaya Layanan',
+                              required: true,
+                              showError: c.attemptedSubmit.value &&
+                                  c.isBiayaEmpty,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           BiayaField(controller: c),
                           const SizedBox(height: 20),
 
-                          const FormLabel('Nama Staff'),
+                          Obx(
+                            () => FormLabel(
+                              'Nama Staff',
+                              required: true,
+                              showError: c.attemptedSubmit.value &&
+                                  c.isNamaStaffEmpty,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           AppTextField(
                             controller: c.namaStaffCtrl,

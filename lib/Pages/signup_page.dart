@@ -200,7 +200,10 @@ class SignupPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
 
                     children: [
-                      const Text("Sudah punya akun?"),
+                      const Text(
+                        "Sudah punya akun?",
+                        style: TextStyle(color: Color(0xFFB23B35)),
+                        ),
 
                       TextButton(
                         onPressed: () {

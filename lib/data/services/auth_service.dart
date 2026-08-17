@@ -31,7 +31,7 @@ class AuthService {
       );
       return data;
     } else {
-      throw Exception(data["message"] ?? "Login gagal");
+      throw Exception(data["message"] ?? "gmail atau password salah");
     }
   }
 

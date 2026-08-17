@@ -99,21 +99,14 @@ class BerkasCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         "No. Berkas: ${data.id}",
-                        style: const TextStyle(
+                          style: const TextStyle(
                           fontSize: 13,
                           color: Color(0xFF888888),
                         ),
                       ),
-                      Text(
-                        data.client.publicId,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFFAAAAAA),
-                        ),
-                      ),
                     ],
                   ),
-                ),
+                ),  
                 _StatusBadge(style: style),
               ],
             ),

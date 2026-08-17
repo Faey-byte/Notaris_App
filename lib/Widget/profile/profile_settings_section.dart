@@ -1,28 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:notaris_app/Widget/common/thin_divider.dart';
 
-class ProfileSettingsSection extends StatelessWidget {
+class ProfileSettingsSection extends StatefulWidget {
   const ProfileSettingsSection({super.key});
+
+  @override
+  State<ProfileSettingsSection> createState() =>
+      _ProfileSettingsSectionState();
+}
+
+class _ProfileSettingsSectionState extends State<ProfileSettingsSection> {
+  String _appVersion = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() {
+      // info.version diambil dari field "version" di pubspec.yaml
+      // (bagian sebelum tanda '+', misal "1.2.4+4" -> "1.2.4")
+      _appVersion = 'v${info.version}';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
-        children: const [
-          _SettingsRow(
-            icon: Icons.lock_outline,
-            title: 'Ubah Password',
-            isFirst: true,
-          ),
-          ThinDivider(),
+        children: [
+          const ThinDivider(),
           _SettingsRow(
             icon: Icons.info_outline,
             title: 'Tentang Aplikasi',
-            trailing: 'v1.2.4',
+            trailing: _appVersion.isNotEmpty ? _appVersion : '...',
             isLast: true,
           ),
         ],

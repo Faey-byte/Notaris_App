@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:notaris_app/data/services/profile_service.dart';
 import 'package:notaris_app/config/base_url.dart';
@@ -11,6 +13,7 @@ class ProfileController extends GetxController {
 
   final RxString nama = ''.obs;
   final RxString tanggalLahir = ''.obs;
+  final RxString email = ''.obs;
 
   final RxBool isLoading = false.obs;
   final RxBool isUpdating = false.obs;
@@ -21,6 +24,7 @@ class ProfileController extends GetxController {
   void onInit() {
     super.onInit();
     loadProfileFromPrefs();
+    fetchProfile();
   }
 
   Future<void> loadProfileFromPrefs() async {
@@ -30,8 +34,62 @@ class ProfileController extends GetxController {
 
       nama.value = prefs.getString('nama') ?? '-';
       tanggalLahir.value = prefs.getString('tanggal_lahir') ?? '-';
+      email.value = prefs.getString('email') ?? '-';
     } catch (e) {
       AppLogger.log("❌ [PROFILE] Gagal memuat data profil: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchProfile() async {
+    try {
+      isLoading.value = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final uri = Uri.parse('$baseUrl/api/v1/profile/get');
+
+      final response = await http.get(
+        uri,
+        headers: {
+          "Accept": "application/json",
+          if (token.isNotEmpty) "Authorization": "Bearer $token",
+        },
+      );
+
+      AppLogger.log("=== PROFILE GET ===");
+      AppLogger.log("URL: $uri");
+      AppLogger.log("Status: ${response.statusCode}");
+      AppLogger.log("Body: ${response.body}");
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          "Gagal memuat profil (Status: ${response.statusCode})",
+        );
+      }
+
+      final decoded = json.decode(response.body);
+      final user = decoded['user'];
+
+      if (user == null) {
+        throw Exception("Data user tidak ditemukan pada response.");
+      }
+
+      final staffName = (user['staff_name'] ?? '').toString();
+      final birthday = (user['birthday'] ?? '').toString();
+      final userEmail = (user['email'] ?? '').toString();
+
+      nama.value = staffName.isNotEmpty ? staffName : '-';
+      tanggalLahir.value = birthday.isNotEmpty ? birthday : '-';
+      email.value = userEmail.isNotEmpty ? userEmail : '-';
+
+      await prefs.setString('nama', nama.value);
+      await prefs.setString('tanggal_lahir', tanggalLahir.value);
+      await prefs.setString('email', email.value);
+    } catch (e) {
+      AppLogger.log("❌ [PROFILE] Gagal fetch profil dari API: $e");
     } finally {
       isLoading.value = false;
     }

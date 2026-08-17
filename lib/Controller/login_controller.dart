@@ -117,7 +117,7 @@ class LoginController extends GetxController {
       Get.offAllNamed(AppRoutes.homepage);
     } catch (e) {
       AppLogger.log("ERROR LOGIN: $e");
-      Get.snackbar("Error", e.toString().replaceAll("Exception: ", ""));
+      Get.snackbar("!!!!", e.toString().replaceAll("Exception: ", ""));
     } finally {
       isLoading.value = false;
     }

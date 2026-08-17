@@ -110,7 +110,10 @@ class LoginPage extends StatelessWidget {
                   onPressed: () {
                     Get.toNamed(AppRoutes.signuppage);
                   },
-                  child: const Text("Belum punya akun? Daftar "),
+                  child: const Text(
+                    "Belum punya akun? Daftar ",
+                    style: TextStyle(color: Color(0xFFB23B35)),
+                    ),
                 ),
               ],
             ),

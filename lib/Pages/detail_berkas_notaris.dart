@@ -66,21 +66,13 @@ class DetailBerkasNotarisPage extends StatelessWidget {
                   children: [
                     Text(
                       controller.fallbackName.value,
-                      style: const TextStyle(
+                        style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "#${controller.publicId.value}",
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
                     DetailInfoCard(
                       title: "JENIS PEKERJAAN",

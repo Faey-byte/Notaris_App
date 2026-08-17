@@ -8,6 +8,7 @@ import 'package:notaris_app/data/db_Helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:notaris_app/utils/logger.dart';
+import 'package:notaris_app/utils/formatters.dart';
 
 class NotarisDocField {
   final String label;
@@ -54,12 +55,10 @@ class NotarisFormController extends GetxController {
   late final String berkasId;
 
   final _token = "".obs;
-
   final _teamKey = "".obs;
 
   var jenisPekerjaanList = <String>[].obs;
   final manualJenisCtrl = TextEditingController();
-
   final namaKlienCtrl = TextEditingController();
   final nomorAktaCtrl = TextEditingController();
   final biayaCtrl = TextEditingController();
@@ -67,6 +66,7 @@ class NotarisFormController extends GetxController {
   final aktaNatureCtrl = TextEditingController();
 
   var aktaDateValue = Rxn<DateTime>();
+  var attemptedSubmit = false.obs;
 
   final List<String> jenisPekerjaanOptions = [
     "Akta Pendirian PT",
@@ -393,8 +393,23 @@ class NotarisFormController extends GetxController {
     }
   }
 
+  bool get isJenisPekerjaanEmpty => jenisPekerjaanList.isEmpty;
+  bool get isNamaKlienEmpty => namaKlienCtrl.text.trim().isEmpty;
+  bool get isNomorAktaEmpty => nomorAktaCtrl.text.trim().isEmpty;
+  bool get isBiayaEmpty => biayaCtrl.text.trim().isEmpty;
+  bool get isNamaStaffEmpty => namaStaffCtrl.text.trim().isEmpty;
+  bool get isAktaNatureEmpty => aktaNatureCtrl.text.trim().isEmpty;
+  bool get isAktaDateEmpty => aktaDateValue.value == null;
+  bool isDocFieldEmpty(NotarisDocField field) =>
+      field.fileValue.value.trim().isEmpty;
+  bool isPenghadapNameEmpty(NotarisPenghadap penghadap) =>
+      penghadap.nameCtrl.text.trim().isEmpty;
+  bool isPenghadapTitleEmpty(NotarisPenghadap penghadap) =>
+      penghadap.titleCtrl.text.trim().isEmpty;
   bool validateFields() {
-    if (jenisPekerjaanList.isEmpty) {
+    attemptedSubmit.value = true;
+
+    if (isJenisPekerjaanEmpty) {
       Get.snackbar(
         "Peringatan",
         "Pilih atau isi minimal 1 jenis pekerjaan",
@@ -403,9 +418,7 @@ class NotarisFormController extends GetxController {
       );
       return false;
     }
-    if (namaKlienCtrl.text.isEmpty ||
-        nomorAktaCtrl.text.isEmpty ||
-        namaStaffCtrl.text.isEmpty) {
+    if (isNamaKlienEmpty || isNomorAktaEmpty || isNamaStaffEmpty) {
       Get.snackbar(
         "Peringatan",
         "Lengkapi dulu semua kolom teks",
@@ -415,7 +428,7 @@ class NotarisFormController extends GetxController {
       return false;
     }
 
-    if (aktaNatureCtrl.text.trim().isEmpty) {
+    if (isAktaNatureEmpty) {
       Get.snackbar(
         "Peringatan",
         "Sifat/Jenis Akta belum diisi",
@@ -425,7 +438,7 @@ class NotarisFormController extends GetxController {
       return false;
     }
 
-    if (aktaDateValue.value == null) {
+    if (isAktaDateEmpty) {
       Get.snackbar(
         "Peringatan",
         "Tanggal Akta belum dipilih",
@@ -445,8 +458,7 @@ class NotarisFormController extends GetxController {
       return false;
     }
     for (var penghadap in penghadapList) {
-      if (penghadap.nameCtrl.text.trim().isEmpty ||
-          penghadap.titleCtrl.text.trim().isEmpty) {
+      if (isPenghadapNameEmpty(penghadap) || isPenghadapTitleEmpty(penghadap)) {
         Get.snackbar(
           "Peringatan",
           "Lengkapi nama dan title untuk setiap penghadap",
@@ -458,7 +470,7 @@ class NotarisFormController extends GetxController {
     }
 
     for (var field in docFields) {
-      if (field.fileValue.value.isEmpty) {
+      if (isDocFieldEmpty(field)) {
         Get.snackbar(
           "Peringatan",
           "${field.label} belum diupload",
@@ -507,7 +519,7 @@ class NotarisFormController extends GetxController {
       "clientName": namaKlienCtrl.text.trim(),
       "institude_id": instituteId,
       "staff_name": namaStaffCtrl.text.trim(),
-      "amount": int.tryParse(biayaCtrl.text.trim()) ?? 0,
+      "amount": parseThousandsInt(biayaCtrl.text),
       "notary_type": jenisPekerjaanList,
       "akta_nature": aktaNatureCtrl.text.trim(),
       "akta_date": _formatAktaDate(),
@@ -541,7 +553,6 @@ class NotarisFormController extends GetxController {
     }
 
     final decoded = jsonDecode(response.body);
-
     final message = decoded['message'] ?? "upload success";
     final isExisting = decoded['is_existing'] ?? false;
     final publicIDs = decoded['public_ids'] ?? [];

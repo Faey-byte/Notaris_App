@@ -49,27 +49,27 @@ class CalculatorController extends GetxController {
   }
 
   void hitungFinal() {
-    if (nilaiController.text.isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Nilai belum diisi",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    if (isBPHTB && npoptkpController.text.isEmpty) {
-      Get.snackbar(
-        "Error",
-        "NPOPTKP belum diisi",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    hitungOtomatis();
-    isCalculated.value = true;
+  if (nilaiController.text.isEmpty) {
+    Get.snackbar(
+      "Belum Lengkap",
+      "Mohon masukkan nilai terlebih dahulu.",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+    return;
   }
+
+  if (isBPHTB && npoptkpController.text.isEmpty) {
+    Get.snackbar(
+      "Belum Lengkap",
+      "Nilai NPOPTKP wajib diisi untuk perhitungan BPHTB.",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+    return;
+  }
+
+  hitungOtomatis();
+  isCalculated.value = true;
+}
 
   String formatRupiah(double value) {
     return "Rp ${formatter.format(value)}";

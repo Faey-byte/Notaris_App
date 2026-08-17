@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:notaris_app/Controller/form_notaris_controller.dart';
+import 'package:notaris_app/utils/formatters.dart';
 
 class BiayaField extends StatelessWidget {
   final NotarisFormController controller;
@@ -33,6 +35,10 @@ class BiayaField extends StatelessWidget {
             child: TextField(
               controller: controller.biayaCtrl,
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                ThousandsSeparatorInputFormatter(),
+              ],
               decoration: const InputDecoration(
                 hintText: '0',
                 hintStyle: TextStyle(color: Color(0xFF94A3B8)),
